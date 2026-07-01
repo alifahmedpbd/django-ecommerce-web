@@ -1,3 +1,69 @@
-<nav>
-    <h2>Django Ecommerce</h2>
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+.navbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:#0d6efd;
+    padding:15px 50px;
+}
+
+.logo h2{
+    color:white;
+}
+
+.nav-links{
+    display:flex;
+    list-style:none;
+    gap:20px;
+}
+
+.nav-links a{
+    text-decoration:none;
+    color:white;
+}
+</style>
+
+<nav class="navbar">
+    <div class="logo">
+        <h2>
+            <a href="{% url 'home' %}" style="text-decoration:none; color:white;">
+                Django Ecommerce
+            </a>
+        </h2>
+    </div>
+
+    <ul class="nav-links">
+        <li><a href="{% url 'home' %}">Home</a></li>
+        <li><a href="#">Products</a></li>
+        <li><a href="#">Categories</a></li>
+        <li><a href="#">Cart</a></li>
+
+{% if user.is_authenticated %}
+
+<li>
+    <a href="{% url 'accounts:profile' %}">
+        {% if user.profile_image %}
+            <img src="{{ user.profile_image.url }}"
+                 alt="Profile"
+                 style="width:40px;height:40px;border-radius:50%;object-fit:cover;vertical-align:middle;">
+        {% else %}
+            <img src="https://via.placeholder.com/40"
+                 alt="Profile"
+                 style="width:40px;height:40px;border-radius:50%;vertical-align:middle;">
+        {% endif %}
+    </a>
+</li>
+<li><a href="{% url 'accounts:logout' %}">Logout</a></li>
+
+{% else %}
+            <li><a href="{% url 'accounts:login' %}">Login</a></li>
+            <li><a href="{% url 'accounts:register' %}">Register</a></li>
+        {% endif %}
+    </ul>
 </nav>
