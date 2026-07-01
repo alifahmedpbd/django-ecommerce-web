@@ -1,47 +1,99 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block content %}
 
-<h1>Products</h1>
+<div style="display:flex; gap:40px;">
 
-{% for product in products %}
+    <div style="width:220px;">
 
-<hr>
+        <h3>Categories</h3>
 
-<h2>
+        <ul>
 
-<a href="{{ product.get_absolute_url }}">
+            <li>
 
-{{ product.name }}
+                <a href="{% url 'store:product_list' %}">
 
-</a>
+                    All Products
 
-</h2>
+                </a>
 
-<p>
+            </li>
 
-Price : {{ product.price }}
+            {% for cat in categories %}
 
-</p>
+            <li>
 
-<p>
+                <a
+                href="{% url 'store:products_by_category' cat.slug %}"
 
-Stock : {{ product.stock }}
+                {% if category and category.id == cat.id %}
 
-</p>
+                style="font-weight:bold;color:red;"
+                
+                {% endif %}
+                >
 
-{% if product.image %}
+                    {{ cat.name }}
 
-<img
+                    ({{ cat.products.count }})
 
-src="{{ product.image.url }}"
+                </a>
 
-width="250"
+            </li>
 
->
+            {% endfor %}
 
-{% endif %}
+        </ul>
 
-{% endfor %}
+    </div>
+
+    <div>
+
+        {% if category %}
+
+        <h2>{{ category.name }}</h2>
+
+        {% else %}
+
+        <h2>All Products</h2>
+
+        {% endif %}
+
+        <hr>
+
+        {% for product in products %}
+
+        <h3>
+
+            <a href="{{ product.get_absolute_url }}">
+
+                {{ product.name }}
+
+            </a>
+
+        </h3>
+
+        <p>৳ {{ product.price }}</p>
+
+        <p>Stock: {{ product.stock }}</p>
+
+        {% if product.image %}
+
+        <img src="{{ product.image.url }}" width="220">
+
+        {% endif %}
+
+        <hr>
+
+        {% empty %}
+
+        <p>No products found.</p>
+
+        {% endfor %}
+
+    </div>
+
+</div>
 
 {% endblock %}
