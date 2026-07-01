@@ -1,9 +1,9 @@
 from urllib import request
-
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from .forms import UserRegisterForm
+from .forms import UserRegisterForm, UserUpdateForm
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 def register_view(request):
@@ -42,3 +42,16 @@ def logout_view(request):
     logout(request)
     return redirect("home")
 
+@login_required
+def profile_view(request):
+
+    if request.method == "POST":
+
+        form = UserUpdateForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile Updated Successfully.")
+            return redirect("accounts:profile")
+        else:
+            form = UserUpdateForm(instance=request.user)
+            return render(request, "accounts/profile.html", {"form": form})
