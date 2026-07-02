@@ -1,31 +1,114 @@
 {% extends "base.html" %}
 
-{% block content %}
-
-<h2>Login</h2>
-
-<form method="POST">
-
-{% csrf_token %}
-
-<input
-type="text"
-name="username"
-placeholder="Username"
->
-
-<input
-type="password"
-name="password"
-placeholder="Password"
->
-
-<button>
+{% block title %}
 
 Login
 
-</button>
+{% endblock %}
 
-</form>
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-md-6 col-lg-5">
+
+            <div class="card shadow">
+
+                <div class="card-body p-4">
+
+                    <!-- Page Title -->
+
+                    <h2 class="text-center mb-4">
+
+                        Login
+
+                    </h2>
+
+                    <!-- Login Form -->
+
+                    <form method="POST">
+
+                        {% csrf_token %}
+
+                        <!-- Username -->
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Username
+
+                            </label>
+
+                            <input
+                                type="text"
+                                name="username"
+                                class="form-control"
+                                placeholder="Enter Username"
+                                required
+                            >
+
+                        </div>
+
+                        <!-- Password -->
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Password
+
+                            </label>
+
+                            <input
+                                type="password"
+                                name="password"
+                                class="form-control"
+                                placeholder="Enter Password"
+                                required
+                            >
+
+                        </div>
+
+                        <!-- Login Button -->
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100"
+                        >
+
+                            Login
+
+                        </button>
+
+                    </form>
+
+                    <hr>
+
+                    <!-- Register Link -->
+
+                    <p class="text-center mb-0">
+
+                        Don't have an account?
+
+                        <a href="{% url 'accounts:register' %}">
+
+                            Register
+
+                        </a>
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 {% endblock %}

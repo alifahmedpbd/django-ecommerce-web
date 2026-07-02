@@ -1,27 +1,65 @@
 {% extends "base.html" %}
 
+{% block title %}
+
+My Profile
+
+{% endblock %}
+
 {% block content %}
 
-<h2>Profile</h2>
+<div class="container mt-5">
 
-<form
+    <div class="row justify-content-center">
 
-method="POST"
+        <div class="col-md-8 col-lg-6">
 
-enctype="multipart/form-data"
+            <div class="card shadow">
 
->
+                <div class="card-body p-4">
 
-{% csrf_token %}
+                    <!-- Page Title -->
 
-{{ form.as_p }}
+                    <h2 class="text-center mb-4">
 
-<button>
+                        My Profile
 
-Save
+                    </h2>
 
-</button>
+                    <!-- Profile Form -->
 
-</form>
+                    <form
+                        method="POST"
+                        enctype="multipart/form-data"
+                    >
+
+                        {% csrf_token %}
+
+                        {{ form.as_p }}
+
+                        <div class="d-grid mt-4">
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                            >
+
+                                Save Changes
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 {% endblock %}

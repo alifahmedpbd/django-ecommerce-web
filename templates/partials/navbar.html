@@ -1,69 +1,180 @@
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
+<!-- ======================================
+     Bootstrap Navbar
+====================================== -->
 
-.navbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    background:#0d6efd;
-    padding:15px 50px;
-}
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
 
-.logo h2{
-    color:white;
-}
+    <div class="container">
 
-.nav-links{
-    display:flex;
-    list-style:none;
-    gap:20px;
-}
+        <!-- ===========================
+             Website Logo
+        ============================ -->
 
-.nav-links a{
-    text-decoration:none;
-    color:white;
-}
-</style>
+        <a class="navbar-brand fw-bold" href="{% url 'home' %}">
+            Django Ecommerce
+        </a>
 
-<nav class="navbar">
-    <div class="logo">
-        <h2>
-            <a href="{% url 'home' %}" style="text-decoration:none; color:white;">
-                Django Ecommerce
-            </a>
-        </h2>
+        <!-- ===========================
+             Mobile Menu Button
+        ============================ -->
+
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+        >
+
+            <span class="navbar-toggler-icon"></span>
+
+        </button>
+
+        <!-- ===========================
+             Navbar Menu
+        ============================ -->
+
+        <div
+            class="collapse navbar-collapse"
+            id="navbarNav"
+        >
+
+            <!-- Left Menu -->
+
+            <ul class="navbar-nav me-auto">
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="{% url 'home' %}"
+                    >
+                        Home
+                    </a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="{% url 'store:product_list' %}"
+                    >
+                        Products
+                    </a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="#"
+                    >
+                        Categories
+                    </a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="#"
+                    >
+                        Cart
+                    </a>
+
+                </li>
+
+            </ul>
+
+            <!-- Right Menu -->
+
+            <ul class="navbar-nav">
+
+                {% if user.is_authenticated %}
+
+                    <!-- Profile Image -->
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="{% url 'accounts:profile' %}"
+                        >
+
+                            {% if user.profile_image %}
+
+                                <img
+                                    src="{{ user.profile_image.url }}"
+                                    alt="Profile"
+                                    width="40"
+                                    height="40"
+                                    class="rounded-circle"
+                                    style="object-fit:cover;"
+                                >
+
+                            {% else %}
+
+                                <img
+                                    src="https://via.placeholder.com/40"
+                                    alt="Profile"
+                                    class="rounded-circle"
+                                >
+
+                            {% endif %}
+
+                        </a>
+
+                    </li>
+
+                    <!-- Logout -->
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="{% url 'accounts:logout' %}"
+                        >
+                            Logout
+                        </a>
+
+                    </li>
+
+                {% else %}
+
+                    <!-- Login -->
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="{% url 'accounts:login' %}"
+                        >
+                            Login
+                        </a>
+
+                    </li>
+
+                    <!-- Register -->
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="{% url 'accounts:register' %}"
+                        >
+                            Register
+                        </a>
+
+                    </li>
+
+                {% endif %}
+
+            </ul>
+
+        </div>
+
     </div>
 
-    <ul class="nav-links">
-        <li><a href="{% url 'home' %}">Home</a></li>
-        <li><a href="{% url 'store:product_list' %}">Products</a></li>
-        <li><a href="#">Categories</a></li>
-        <li><a href="#">Cart</a></li>
-
-{% if user.is_authenticated %}
-
-<li>
-    <a href="{% url 'accounts:profile' %}">
-        {% if user.profile_image %}
-            <img src="{{ user.profile_image.url }}"
-                 alt="Profile"
-                 style="width:40px;height:40px;border-radius:50%;object-fit:cover;vertical-align:middle;">
-        {% else %}
-            <img src="https://via.placeholder.com/40"
-                 alt="Profile"
-                 style="width:40px;height:40px;border-radius:50%;vertical-align:middle;">
-        {% endif %}
-    </a>
-</li>
-<li><a href="{% url 'accounts:logout' %}">Logout</a></li>
-
-{% else %}
-            <li><a href="{% url 'accounts:login' %}">Login</a></li>
-            <li><a href="{% url 'accounts:register' %}">Register</a></li>
-        {% endif %}
-    </ul>
 </nav>

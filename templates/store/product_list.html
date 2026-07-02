@@ -1,327 +1,489 @@
 {% extends "base.html" %}
 
+{% block title %}Products{% endblock %}
+
 {% block content %}
 
-<!-- ===========================
-     Main Container
-=========================== -->
-<div style="display:flex; gap:40px;">
+<div class="container mt-4">
 
-    <!-- ===========================
-         Sidebar
-    =========================== -->
-    <div style="width:220px;">
+    <div class="row">
 
-        <!-- Category List -->
-        <h3>Categories</h3>
+        <!-- ===========================
+             Sidebar
+        =========================== -->
 
-        <ul>
+        <div class="col-lg-3 mb-4">
 
-            <!-- Show All Products -->
-            <li>
-                <a href="{% url 'store:product_list' %}">
+            <!-- Categories -->
+
+            <h4 class="mb-3">
+
+                Categories
+
+            </h4>
+
+            <div class="list-group mb-4">
+
+                <a
+                    href="{% url 'store:product_list' %}"
+                    class="list-group-item list-group-item-action {% if not category %}active{% endif %}"
+                >
+
                     All Products
+
                 </a>
-            </li>
 
-            <!-- Loop Through Categories -->
-            {% for cat in categories %}
-
-            <li>
+                {% for cat in categories %}
 
                 <a
                     href="{% url 'store:products_by_category' cat.slug %}"
-
-                    {% if category and category.id == cat.id %}
-                        style="font-weight:bold; color:red;"
-                    {% endif %}
+                    class="list-group-item list-group-item-action {% if category and category.id == cat.id %}active{% endif %}"
                 >
 
                     {{ cat.name }}
-                    ({{ cat.products.count }})
+
+                    <span class="badge bg-secondary float-end">
+
+                        {{ cat.products.count }}
+
+                    </span>
 
                 </a>
 
-            </li>
+                {% endfor %}
 
-            {% endfor %}
+            </div>
 
-        </ul>
+            <!-- Featured -->
 
-        <hr>
+            <h5 class="mb-3">
 
-        <!-- Featured Products -->
-        <h3>Featured Products</h3>
+                Featured Products
 
-        {% for item in featured_products %}
+            </h5>
 
-            <p>
-                <a href="{{ item.get_absolute_url }}">
-                    {{ item.name }}
-                </a>
-            </p>
+            <div class="list-group mb-4">
 
-        {% empty %}
+                {% for item in featured_products %}
 
-            <p>No featured products.</p>
-
-        {% endfor %}
-
-        <hr>
-
-        <!-- Latest Products -->
-        <h3>Latest Products</h3>
-
-        {% for item in latest_products %}
-
-            <p>
-                <a href="{{ item.get_absolute_url }}">
-                    {{ item.name }}
-                </a>
-            </p>
-
-        {% empty %}
-
-            <p>No latest products.</p>
-
-        {% endfor %}
-
-        <hr>
-
-        <!-- Popular Products -->
-        <h3>Popular Products</h3>
-
-        {% for item in popular_products %}
-
-            <p>
-                <a href="{{ item.get_absolute_url }}">
-                    {{ item.name }}
-                </a>
-            </p>
-
-        {% empty %}
-
-            <p>No popular products.</p>
-
-        {% endfor %}
-
-    </div>
-
-    <!-- ===========================
-         Product Section
-    =========================== -->
-
-    <div style="flex:1;">
-
-        <!-- Page Title -->
-
-        {% if category %}
-            <h2>{{ category.name }}</h2>
-        {% else %}
-            <h2>All Products</h2>
-        {% endif %}
-
-        <hr>
-
-        <!-- ===========================
-             Search Form
-        =========================== -->
-
-        <form method="GET">
-
-            <input
-                type="text"
-                name="q"
-                placeholder="Search Product..."
-                value="{{ request.GET.q }}"
-            >
-
-            <button type="submit">
-                Search
-            </button>
-
-        </form>
-
-        <br>
-
-        <!-- ===========================
-             Sort Form
-        =========================== -->
-
-        <form method="GET">
-
-            <!-- Keep Search Value -->
-            {% if request.GET.q %}
-                <input type="hidden" name="q" value="{{ request.GET.q }}">
-            {% endif %}
-
-            <!-- Keep Price Filter -->
-            {% if request.GET.min_price %}
-                <input type="hidden" name="min_price" value="{{ request.GET.min_price }}">
-            {% endif %}
-
-            {% if request.GET.max_price %}
-                <input type="hidden" name="max_price" value="{{ request.GET.max_price }}">
-            {% endif %}
-
-            <select
-                name="sort"
-                onchange="this.form.submit()"
-            >
-
-                <option value="">Sort By</option>
-
-                <option
-                    value="low"
-                    {% if request.GET.sort == "low" %}
-                        selected
-                    {% endif %}
+                <a
+                    href="{{ item.get_absolute_url }}"
+                    class="list-group-item list-group-item-action"
                 >
-                    Price Low → High
-                </option>
 
-                <option
-                    value="high"
-                    {% if request.GET.sort == "high" %}
-                        selected
-                    {% endif %}
-                >
-                    Price High → Low
-                </option>
+                    {{ item.name }}
 
-            </select>
-
-        </form>
-
-        <br>
-
-        <!-- ===========================
-             Price Filter
-        =========================== -->
-
-        <form method="GET">
-
-            <input
-                type="number"
-                name="min_price"
-                placeholder="Min Price"
-                value="{{ request.GET.min_price }}"
-            >
-
-            <input
-                type="number"
-                name="max_price"
-                placeholder="Max Price"
-                value="{{ request.GET.max_price }}"
-            >
-
-            <button type="submit">
-                Filter
-            </button>
-
-        </form>
-
-        <br>
-
-        <!-- ===========================
-             Stock Filter
-        =========================== -->
-
-        <form method="GET">
-
-            <select
-                name="stock"
-                onchange="this.form.submit()"
-            >
-
-                <option value="">Stock</option>
-
-                <option value="in">
-                    In Stock
-                </option>
-
-                <option value="out">
-                    Out of Stock
-                </option>
-
-            </select>
-
-        </form>
-
-        <hr>
-
-        <!-- ===========================
-             Product List
-        =========================== -->
-
-        {% for product in products %}
-
-            <h3>
-
-                <a href="{{ product.get_absolute_url }}">
-                    {{ product.name }}
                 </a>
 
-            </h3>
+                {% empty %}
 
-            <p><strong>Price:</strong> ৳ {{ product.price }}</p>
+                <p>No featured products.</p>
 
-            <p><strong>Stock:</strong> {{ product.stock }}</p>
+                {% endfor %}
 
-            {% if product.image %}
+            </div>
 
-                <img
-                    src="{{ product.image.url }}"
-                    width="220"
+            <!-- Latest -->
+
+            <h5 class="mb-3">
+
+                Latest Products
+
+            </h5>
+
+            <div class="list-group mb-4">
+
+                {% for item in latest_products %}
+
+                <a
+                    href="{{ item.get_absolute_url }}"
+                    class="list-group-item list-group-item-action"
                 >
+
+                    {{ item.name }}
+
+                </a>
+
+                {% empty %}
+
+                <p>No latest products.</p>
+
+                {% endfor %}
+
+            </div>
+
+            <!-- Popular -->
+
+            <h5 class="mb-3">
+
+                Popular Products
+
+            </h5>
+
+            <div class="list-group">
+
+                {% for item in popular_products %}
+
+                <a
+                    href="{{ item.get_absolute_url }}"
+                    class="list-group-item list-group-item-action"
+                >
+
+                    {{ item.name }}
+
+                </a>
+
+                {% empty %}
+
+                <p>No popular products.</p>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+        <!-- ===========================
+             Product Section
+        =========================== -->
+
+        <div class="col-lg-9">
+
+            {% if category %}
+
+                <h2>
+
+                    {{ category.name }}
+
+                </h2>
+
+            {% else %}
+
+                <h2>
+
+                    All Products
+
+                </h2>
 
             {% endif %}
 
             <hr>
 
-        {% empty %}
+            <!-- Search -->
 
-            <p>No Products Found.</p>
+            <form method="GET" class="mb-3">
 
-        {% endfor %}
+                <div class="input-group">
 
-        <!-- ===========================
-             Pagination
-        =========================== -->
+                    <input
+                        type="text"
+                        name="q"
+                        class="form-control"
+                        placeholder="Search products..."
+                        value="{{ request.GET.q }}"
+                    >
 
-        <div>
+                    <button
+                        class="btn btn-primary"
+                    >
 
-            {% if page_obj.has_previous %}
+                        Search
 
-                <a href="?page=1">
-                    First
-                </a>
+                    </button>
 
-                <a href="?page={{ page_obj.previous_page_number }}">
-                    Previous
-                </a>
+                </div>
 
-            {% endif %}
+            </form>
 
-            <strong>
+            <!-- Sort -->
 
-                Page {{ page_obj.number }}
+            <form method="GET" class="mb-3">
 
-                of
+                {% if request.GET.q %}
+                    <input type="hidden" name="q" value="{{ request.GET.q }}">
+                {% endif %}
 
-                {{ page_obj.paginator.num_pages }}
+                <select
+                    name="sort"
+                    class="form-select"
+                    onchange="this.form.submit()"
+                >
 
-            </strong>
+                    <option value="">
 
-            {% if page_obj.has_next %}
+                        Sort By
 
-                <a href="?page={{ page_obj.next_page_number }}">
-                    Next
-                </a>
+                    </option>
 
-                <a href="?page={{ page_obj.paginator.num_pages }}">
-                    Last
-                </a>
+                    <option
+                        value="low"
+                        {% if request.GET.sort == "low" %}selected{% endif %}
+                    >
+
+                        Price Low → High
+
+                    </option>
+
+                    <option
+                        value="high"
+                        {% if request.GET.sort == "high" %}selected{% endif %}
+                    >
+
+                        Price High → Low
+
+                    </option>
+
+                </select>
+
+            </form>
+
+            <!-- Price Filter -->
+
+            <form method="GET" class="row g-2 mb-3">
+
+                <div class="col-md-5">
+
+                    <input
+                        type="number"
+                        name="min_price"
+                        class="form-control"
+                        placeholder="Minimum Price"
+                        value="{{ request.GET.min_price }}"
+                    >
+
+                </div>
+
+                <div class="col-md-5">
+
+                    <input
+                        type="number"
+                        name="max_price"
+                        class="form-control"
+                        placeholder="Maximum Price"
+                        value="{{ request.GET.max_price }}"
+                    >
+
+                </div>
+
+                <div class="col-md-2">
+
+                    <button
+                        class="btn btn-success w-100"
+                    >
+
+                        Filter
+
+                    </button>
+
+                </div>
+
+            </form>
+
+            <!-- Stock Filter -->
+
+            <form method="GET" class="mb-4">
+
+                <select
+                    name="stock"
+                    class="form-select"
+                    onchange="this.form.submit()"
+                >
+
+                    <option value="">
+
+                        Filter By Stock
+
+                    </option>
+
+                    <option value="in">
+
+                        In Stock
+
+                    </option>
+
+                    <option value="out">
+
+                        Out of Stock
+
+                    </option>
+
+                </select>
+
+            </form>
+
+            <!-- Product Cards Start Here -->
+            <!-- ===========================
+                Product Cards
+            =========================== -->
+
+            <div class="row">
+
+                {% for product in products %}
+
+                <div class="col-md-6 col-xl-4 mb-4">
+
+                    <div class="card h-100 shadow-sm border-0">
+
+                        <!-- Product Image -->
+
+                        {% if product.image %}
+
+                            <img
+                                src="{{ product.image.url }}"
+                                class="card-img-top"
+                                style="height:220px; object-fit:cover;"
+                                alt="{{ product.name }}"
+                            >
+
+                        {% else %}
+
+                            <img
+                                src="https://placehold.co/600x400?text=No+Image"
+                                class="card-img-top"
+                                style="height:220px; object-fit:cover;"
+                                alt="No Image"
+                            >
+
+                        {% endif %}
+
+                        <!-- Card Body -->
+
+                        <div class="card-body d-flex flex-column">
+
+                            <small class="text-muted">
+
+                                {{ product.category.name }}
+
+                            </small>
+
+                            <h5 class="card-title mt-2">
+
+                                {{ product.name|truncatechars:30 }}
+
+                            </h5>
+
+                            {% if product.description %}
+
+                            <p class="card-text text-muted">
+
+                                {{ product.description|truncatechars:70 }}
+
+                            </p>
+
+                            {% endif %}
+
+                            <h4 class="text-success fw-bold">
+
+                                ৳ {{ product.price }}
+
+                            </h4>
+
+                            {% if product.stock > 0 %}
+
+                                <span class="badge bg-success mb-3">
+
+                                    In Stock ({{ product.stock }})
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-danger mb-3">
+
+                                    Out of Stock
+
+                                </span>
+
+                            {% endif %}
+
+                            <a
+                                href="{{ product.get_absolute_url }}"
+                                class="btn btn-primary mt-auto"
+                            >
+
+                                View Details
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <div class="col-12">
+
+                    <div class="alert alert-warning">
+
+                        No Products Found.
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            <!-- ===========================
+                 Pagination
+            =========================== -->
+
+            {% if page_obj.paginator.num_pages > 1 %}
+
+            <nav class="mt-4">
+
+                <ul class="pagination justify-content-center">
+
+                    {% if page_obj.has_previous %}
+
+                    <li class="page-item">
+
+                        <a
+                            class="page-link"
+                            href="?page={{ page_obj.previous_page_number }}"
+                        >
+
+                            Previous
+
+                        </a>
+
+                    </li>
+
+                    {% endif %}
+
+                    <li class="page-item active">
+
+                        <span class="page-link">
+
+                            {{ page_obj.number }}
+
+                        </span>
+
+                    </li>
+
+                    {% if page_obj.has_next %}
+
+                    <li class="page-item">
+
+                        <a
+                            class="page-link"
+                            href="?page={{ page_obj.next_page_number }}"
+                        >
+
+                            Next
+
+                        </a>
+
+                    </li>
+
+                    {% endif %}
+
+                </ul>
+
+            </nav>
 
             {% endif %}
 

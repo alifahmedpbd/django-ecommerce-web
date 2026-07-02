@@ -1,11 +1,173 @@
 {% extends "base.html" %}
 
 {% block title %}
+
 Home
+
 {% endblock %}
 
 {% block content %}
 
-<h1>Welcome to Django Ecommerce</h1>
+<div class="container mt-5">
+
+    <!-- ===========================
+         Hero Section
+    =========================== -->
+
+    <div class="p-5 mb-5 bg-primary text-white rounded text-center">
+
+        <h1 class="display-4 fw-bold">
+
+            Welcome to Django Ecommerce
+
+        </h1>
+
+        <p class="lead mt-3">
+
+            Build. Learn. Shop.
+
+            A modern Ecommerce website built with Django & Bootstrap 5.
+
+        </p>
+
+        <a
+            href="{% url 'store:product_list' %}"
+            class="btn btn-light btn-lg mt-3"
+        >
+
+            Shop Now
+
+        </a>
+
+    </div>
+
+    <!-- ===========================
+         Features
+    =========================== -->
+
+    <div class="row text-center mb-5">
+
+        <div class="col-md-4">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <h2>
+
+                        🚚
+
+                    </h2>
+
+                    <h5>
+
+                        Fast Delivery
+
+                    </h5>
+
+                    <p>
+
+                        Get your products delivered quickly and safely.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <h2>
+
+                        🔒
+
+                    </h2>
+
+                    <h5>
+
+                        Secure Shopping
+
+                    </h5>
+
+                    <p>
+
+                        Safe checkout and secure payment experience.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <h2>
+
+                        ⭐
+
+                    </h2>
+
+                    <h5>
+
+                        Best Quality
+
+                    </h5>
+
+                    <p>
+
+                        Carefully selected products with the best quality.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ===========================
+         Call To Action
+    =========================== -->
+
+    <div class="text-center my-5">
+
+        <h2>
+
+            Ready to Explore?
+
+        </h2>
+
+        <p class="text-muted">
+
+            Browse all our products and find your perfect choice.
+
+        </p>
+
+        <a
+            href="{% url 'store:product_list' %}"
+            class="btn btn-primary btn-lg"
+        >
+
+            Explore Products
+
+        </a>
+
+    </div>
+
+</div>
 
 {% endblock %}
