@@ -2,21 +2,29 @@
 
 {% block content %}
 
+<!-- ===========================
+     Main Container
+=========================== -->
 <div style="display:flex; gap:40px;">
 
-    <!-- Sidebar -->
+    <!-- ===========================
+         Sidebar
+    =========================== -->
     <div style="width:220px;">
 
+        <!-- Category List -->
         <h3>Categories</h3>
 
         <ul>
 
+            <!-- Show All Products -->
             <li>
                 <a href="{% url 'store:product_list' %}">
                     All Products
                 </a>
             </li>
 
+            <!-- Loop Through Categories -->
             {% for cat in categories %}
 
             <li>
@@ -25,12 +33,11 @@
                     href="{% url 'store:products_by_category' cat.slug %}"
 
                     {% if category and category.id == cat.id %}
-                        style="font-weight:bold;color:red;"
+                        style="font-weight:bold; color:red;"
                     {% endif %}
                 >
 
                     {{ cat.name }}
-
                     ({{ cat.products.count }})
 
                 </a>
@@ -43,18 +50,15 @@
 
         <hr>
 
+        <!-- Featured Products -->
         <h3>Featured Products</h3>
 
         {% for item in featured_products %}
 
             <p>
-
                 <a href="{{ item.get_absolute_url }}">
-
                     {{ item.name }}
-
                 </a>
-
             </p>
 
         {% empty %}
@@ -63,10 +67,53 @@
 
         {% endfor %}
 
+        <hr>
+
+        <!-- Latest Products -->
+        <h3>Latest Products</h3>
+
+        {% for item in latest_products %}
+
+            <p>
+                <a href="{{ item.get_absolute_url }}">
+                    {{ item.name }}
+                </a>
+            </p>
+
+        {% empty %}
+
+            <p>No latest products.</p>
+
+        {% endfor %}
+
+        <hr>
+
+        <!-- Popular Products -->
+        <h3>Popular Products</h3>
+
+        {% for item in popular_products %}
+
+            <p>
+                <a href="{{ item.get_absolute_url }}">
+                    {{ item.name }}
+                </a>
+            </p>
+
+        {% empty %}
+
+            <p>No popular products.</p>
+
+        {% endfor %}
+
     </div>
 
-    <!-- Product Section -->
+    <!-- ===========================
+         Product Section
+    =========================== -->
+
     <div style="flex:1;">
+
+        <!-- Page Title -->
 
         {% if category %}
             <h2>{{ category.name }}</h2>
@@ -74,7 +121,12 @@
             <h2>All Products</h2>
         {% endif %}
 
-        <!-- Search -->
+        <hr>
+
+        <!-- ===========================
+             Search Form
+        =========================== -->
+
         <form method="GET">
 
             <input
@@ -85,27 +137,42 @@
             >
 
             <button type="submit">
-
                 Search
-
             </button>
 
         </form>
 
         <br>
 
-        <!-- Sorting -->
+        <!-- ===========================
+             Sort Form
+        =========================== -->
+
         <form method="GET">
 
+            <!-- Keep Search Value -->
             {% if request.GET.q %}
                 <input type="hidden" name="q" value="{{ request.GET.q }}">
             {% endif %}
 
-            <select name="sort" onchange="this.form.submit()">
+            <!-- Keep Price Filter -->
+            {% if request.GET.min_price %}
+                <input type="hidden" name="min_price" value="{{ request.GET.min_price }}">
+            {% endif %}
+
+            {% if request.GET.max_price %}
+                <input type="hidden" name="max_price" value="{{ request.GET.max_price }}">
+            {% endif %}
+
+            <select
+                name="sort"
+                onchange="this.form.submit()"
+            >
 
                 <option value="">Sort By</option>
 
-                <option value="low"
+                <option
+                    value="low"
                     {% if request.GET.sort == "low" %}
                         selected
                     {% endif %}
@@ -113,7 +180,8 @@
                     Price Low → High
                 </option>
 
-                <option value="high"
+                <option
+                    value="high"
                     {% if request.GET.sort == "high" %}
                         selected
                     {% endif %}
@@ -125,27 +193,87 @@
 
         </form>
 
+        <br>
+
+        <!-- ===========================
+             Price Filter
+        =========================== -->
+
+        <form method="GET">
+
+            <input
+                type="number"
+                name="min_price"
+                placeholder="Min Price"
+                value="{{ request.GET.min_price }}"
+            >
+
+            <input
+                type="number"
+                name="max_price"
+                placeholder="Max Price"
+                value="{{ request.GET.max_price }}"
+            >
+
+            <button type="submit">
+                Filter
+            </button>
+
+        </form>
+
+        <br>
+
+        <!-- ===========================
+             Stock Filter
+        =========================== -->
+
+        <form method="GET">
+
+            <select
+                name="stock"
+                onchange="this.form.submit()"
+            >
+
+                <option value="">Stock</option>
+
+                <option value="in">
+                    In Stock
+                </option>
+
+                <option value="out">
+                    Out of Stock
+                </option>
+
+            </select>
+
+        </form>
+
         <hr>
+
+        <!-- ===========================
+             Product List
+        =========================== -->
 
         {% for product in products %}
 
             <h3>
 
                 <a href="{{ product.get_absolute_url }}">
-
                     {{ product.name }}
-
                 </a>
 
             </h3>
 
-            <p>Price: ৳ {{ product.price }}</p>
+            <p><strong>Price:</strong> ৳ {{ product.price }}</p>
 
-            <p>Stock: {{ product.stock }}</p>
+            <p><strong>Stock:</strong> {{ product.stock }}</p>
 
             {% if product.image %}
 
-                <img src="{{ product.image.url }}" width="220">
+                <img
+                    src="{{ product.image.url }}"
+                    width="220"
+                >
 
             {% endif %}
 
@@ -153,17 +281,21 @@
 
         {% empty %}
 
-            <p>No products found.</p>
+            <p>No Products Found.</p>
 
         {% endfor %}
 
-        <!-- Pagination -->
+        <!-- ===========================
+             Pagination
+        =========================== -->
 
         <div>
 
             {% if page_obj.has_previous %}
 
-                <a href="?page=1">First</a>
+                <a href="?page=1">
+                    First
+                </a>
 
                 <a href="?page={{ page_obj.previous_page_number }}">
                     Previous

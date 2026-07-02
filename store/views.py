@@ -37,6 +37,31 @@ def product_list(request, category_slug=None):
     elif sort == "high":
         products = products.order_by("-price")
 
+    # min and max price filter
+    min_price = request.GET.get("min_price")
+    max_price = request.GET.get("max_price")
+
+    if min_price:
+        products = products.filter(price__gte=min_price)
+
+    if max_price:
+        products = products.filter(price__lte=max_price)
+
+    # Stock filter
+    stock = request.GET.get("stock")
+
+    if stock == "in":
+        products = products.filter(stock__gt=0)
+
+    elif stock == "out":
+        products = products.filter(stock=0)
+
+    # Latest Products
+    latest_products = Product.objects.filter(available=True).order_by("-created_at")[:5]
+
+    # Popular Products
+    popular_products = Product.objects.filter(available=True).order_by("-views")[:5]
+
     #Featured Products
     featured_products = Product.objects.filter(featured=True, available=True)[:4]
 
@@ -53,7 +78,8 @@ def product_list(request, category_slug=None):
         "products": page_obj,
         "page_obj": page_obj,
         "featured_products": featured_products,
-        
+        "latest_products": latest_products,
+        "popular_products": popular_products,
     }
 
     return render(request, "store/product_list.html", context)

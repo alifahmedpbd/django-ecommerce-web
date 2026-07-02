@@ -23,6 +23,7 @@ class Product(models.Model):
     stock = models.PositiveIntegerField(default=0)
     available = models.BooleanField(default=True)
     featured = models.BooleanField(default=False)
+    views = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
