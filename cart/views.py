@@ -28,3 +28,29 @@ def cart_remove(request, product_id):
     cart.remove(product)
 
     return redirect("cart:cart_detail")
+
+def cart_update(request, product_id, action):
+
+    cart = Cart(request)
+
+    product = get_object_or_404(Product, id=product_id)
+
+    quantity = cart.cart[str(product.id)]["quantity"]
+
+    if action == "increase":
+
+        quantity += 1
+    
+    elif action == "decrease":
+
+        quantity -= 1
+
+    if quantity <= 0:
+
+        cart.remove(product)
+    
+    else:
+
+        cart.update(product, quantity)
+
+    return redirect("cart:cart_detail")

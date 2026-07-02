@@ -58,7 +58,25 @@ Shopping Cart
 
                 <td>
 
-                    {{ item.quantity }}
+                    <a
+                        href="{% url 'cart:cart_update' item.product.id 'decrease' %}"
+                        class="btn btn-outline-danger btn-sm"
+                    >
+                        -
+                    </a>
+
+                    <span class="mx-2 fw-bold">
+
+                        {{ item.quantity }}
+
+                    </span>
+
+                    <a
+                        href="{% url 'cart:cart_update' item.product.id 'increase' %}"
+                        class="btn btn-outline-success btn-sm"
+                    >
+                        +
+                    </a>
 
                 </td>
 

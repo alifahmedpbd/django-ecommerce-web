@@ -66,7 +66,7 @@ def product_list(request, category_slug=None):
     featured_products = Product.objects.filter(featured=True, available=True)[:4]
 
     #Pagination
-    paginator = Paginator(products, 4) # Show 4 peoducts per page
+    paginator = Paginator(products, 6) # Show 6 products per page
 
     page_number = request.GET.get("page")
 
