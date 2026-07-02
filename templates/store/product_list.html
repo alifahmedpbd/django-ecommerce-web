@@ -4,6 +4,7 @@
 
 <div style="display:flex; gap:40px;">
 
+    <!-- Sidebar -->
     <div style="width:220px;">
 
         <h3>Categories</h3>
@@ -11,13 +12,9 @@
         <ul>
 
             <li>
-
                 <a href="{% url 'store:product_list' %}">
-
                     All Products
-
                 </a>
-
             </li>
 
             {% for cat in categories %}
@@ -25,13 +22,11 @@
             <li>
 
                 <a
-                href="{% url 'store:products_by_category' cat.slug %}"
+                    href="{% url 'store:products_by_category' cat.slug %}"
 
-                {% if category and category.id == cat.id %}
-
-                style="font-weight:bold;color:red;"
-                
-                {% endif %}
+                    {% if category and category.id == cat.id %}
+                        style="font-weight:bold;color:red;"
+                    {% endif %}
                 >
 
                     {{ cat.name }}
@@ -46,51 +41,159 @@
 
         </ul>
 
+        <hr>
+
+        <h3>Featured Products</h3>
+
+        {% for item in featured_products %}
+
+            <p>
+
+                <a href="{{ item.get_absolute_url }}">
+
+                    {{ item.name }}
+
+                </a>
+
+            </p>
+
+        {% empty %}
+
+            <p>No featured products.</p>
+
+        {% endfor %}
+
     </div>
 
-    <div>
+    <!-- Product Section -->
+    <div style="flex:1;">
 
         {% if category %}
-
-        <h2>{{ category.name }}</h2>
-
+            <h2>{{ category.name }}</h2>
         {% else %}
-
-        <h2>All Products</h2>
-
+            <h2>All Products</h2>
         {% endif %}
+
+        <!-- Search -->
+        <form method="GET">
+
+            <input
+                type="text"
+                name="q"
+                placeholder="Search Product..."
+                value="{{ request.GET.q }}"
+            >
+
+            <button type="submit">
+
+                Search
+
+            </button>
+
+        </form>
+
+        <br>
+
+        <!-- Sorting -->
+        <form method="GET">
+
+            {% if request.GET.q %}
+                <input type="hidden" name="q" value="{{ request.GET.q }}">
+            {% endif %}
+
+            <select name="sort" onchange="this.form.submit()">
+
+                <option value="">Sort By</option>
+
+                <option value="low"
+                    {% if request.GET.sort == "low" %}
+                        selected
+                    {% endif %}
+                >
+                    Price Low → High
+                </option>
+
+                <option value="high"
+                    {% if request.GET.sort == "high" %}
+                        selected
+                    {% endif %}
+                >
+                    Price High → Low
+                </option>
+
+            </select>
+
+        </form>
 
         <hr>
 
         {% for product in products %}
 
-        <h3>
+            <h3>
 
-            <a href="{{ product.get_absolute_url }}">
+                <a href="{{ product.get_absolute_url }}">
 
-                {{ product.name }}
+                    {{ product.name }}
 
-            </a>
+                </a>
 
-        </h3>
+            </h3>
 
-        <p>৳ {{ product.price }}</p>
+            <p>Price: ৳ {{ product.price }}</p>
 
-        <p>Stock: {{ product.stock }}</p>
+            <p>Stock: {{ product.stock }}</p>
 
-        {% if product.image %}
+            {% if product.image %}
 
-        <img src="{{ product.image.url }}" width="220">
+                <img src="{{ product.image.url }}" width="220">
 
-        {% endif %}
+            {% endif %}
 
-        <hr>
+            <hr>
 
         {% empty %}
 
-        <p>No products found.</p>
+            <p>No products found.</p>
 
         {% endfor %}
+
+        <!-- Pagination -->
+
+        <div>
+
+            {% if page_obj.has_previous %}
+
+                <a href="?page=1">First</a>
+
+                <a href="?page={{ page_obj.previous_page_number }}">
+                    Previous
+                </a>
+
+            {% endif %}
+
+            <strong>
+
+                Page {{ page_obj.number }}
+
+                of
+
+                {{ page_obj.paginator.num_pages }}
+
+            </strong>
+
+            {% if page_obj.has_next %}
+
+                <a href="?page={{ page_obj.next_page_number }}">
+                    Next
+                </a>
+
+                <a href="?page={{ page_obj.paginator.num_pages }}">
+                    Last
+                </a>
+
+            {% endif %}
+
+        </div>
 
     </div>
 
