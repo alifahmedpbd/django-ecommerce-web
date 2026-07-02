@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}
+Shopping Cart
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <h2>Shopping Cart</h2>
+
+    <hr>
+
+    <p>
+
+        Product successfully added to cart.
+
+    </p>
+
+    <a
+        href="{% url 'store:product_list' %}"
+        class="btn btn-primary"
+    >
+
+        Continue Shopping
+
+    </a>
+
+</div>
+
+{% endblock %}
