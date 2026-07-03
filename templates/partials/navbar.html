@@ -81,7 +81,12 @@
                         class="nav-link"
                         href="{% url 'cart:cart_detail' %}"
                     >
-                        Cart
+                       🛒 Cart
+                       <span class="badge bg-danger">
+                        
+                        {{ cart|length }}
+
+                       </span>
                     </a>
 
                 </li>

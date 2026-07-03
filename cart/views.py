@@ -54,3 +54,9 @@ def cart_update(request, product_id, action):
         cart.update(product, quantity)
 
     return redirect("cart:cart_detail")
+
+def checkout(request):
+
+    cart = Cart(request)
+
+    return render(request, "cart/checkout.html", {"cart": cart})

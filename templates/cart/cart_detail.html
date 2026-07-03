@@ -1,133 +1,191 @@
 {% extends "base.html" %}
 
 {% block title %}
-
 Shopping Cart
-
 {% endblock %}
 
 {% block content %}
 
-<div class="container mt-5">
+<div class="container py-5">
 
     <h2 class="mb-4">
-
-        Shopping Cart
-
+        🛒 Shopping Cart
     </h2>
 
     {% if cart %}
 
-    <table class="table table-bordered align-middle">
+    <div class="table-responsive">
 
-        <thead class="table-dark">
+        <table class="table table-bordered table-hover align-middle">
 
-            <tr>
+            <thead class="table-dark">
 
-                <th>Product</th>
+                <tr>
 
-                <th>Price</th>
+                    <th>Image</th>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th width="180">Quantity</th>
+                    <th>Total</th>
+                    <th>Action</th>
 
-                <th>Qty</th>
+                </tr>
 
-                <th>Total</th>
+            </thead>
 
-                <th>Action</th>
-
-            </tr>
-
-        </thead>
-
-        <tbody>
+            <tbody>
 
             {% for item in cart %}
 
-            <tr>
+                <tr>
 
-                <td>
+                    <td width="120">
 
-                    {{ item.product.name }}
+                        {% if item.product.image %}
 
-                </td>
+                        <img
+                            src="{{ item.product.image.url }}"
+                            class="img-fluid rounded"
+                            style="height:80px;object-fit:cover;"
+                        >
 
-                <td>
+                        {% endif %}
 
-                    ৳ {{ item.price }}
+                    </td>
 
-                </td>
+                    <td>
 
-                <td>
+                        <strong>
 
-                    <a
-                        href="{% url 'cart:cart_update' item.product.id 'decrease' %}"
-                        class="btn btn-outline-danger btn-sm"
-                    >
-                        -
-                    </a>
+                            {{ item.product.name }}
 
-                    <span class="mx-2 fw-bold">
+                        </strong>
 
-                        {{ item.quantity }}
+                    </td>
 
-                    </span>
+                    <td>
 
-                    <a
-                        href="{% url 'cart:cart_update' item.product.id 'increase' %}"
-                        class="btn btn-outline-success btn-sm"
-                    >
-                        +
-                    </a>
+                        ৳ {{ item.price }}
 
-                </td>
+                    </td>
 
-                <td>
+                    <td>
 
-                    ৳ {{ item.total_price }}
+                        <a
+                            href="{% url 'cart:cart_update' item.product.id 'decrease' %}"
+                            class="btn btn-outline-danger btn-sm"
+                        >
+                            −
+                        </a>
 
-                </td>
+                        <span class="mx-2 fw-bold">
 
-                <td>
+                            {{ item.quantity }}
 
-                    <a
-                        href="{% url 'cart:cart_remove' item.product.id %}"
-                        class="btn btn-danger btn-sm"
-                    >
+                        </span>
 
-                        Remove
+                        <a
+                            href="{% url 'cart:cart_update' item.product.id 'increase' %}"
+                            class="btn btn-outline-success btn-sm"
+                        >
+                            +
+                        </a>
 
-                    </a>
+                    </td>
 
-                </td>
+                    <td>
 
-            </tr>
+                        ৳ {{ item.total_price }}
+
+                    </td>
+
+                    <td>
+
+                        <a
+                            href="{% url 'cart:cart_remove' item.product.id %}"
+                            class="btn btn-danger btn-sm"
+                        >
+                            Remove
+                        </a>
+
+                    </td>
+
+                </tr>
 
             {% endfor %}
 
-        </tbody>
+            </tbody>
 
-    </table>
+        </table>
 
-    <div class="text-end">
+    </div>
 
-        <h4>
+    <div class="card mt-4 shadow-sm">
 
-            Grand Total :
+        <div class="card-body text-end">
 
-            <span class="text-success">
+            <h4>
 
-                ৳ {{ cart.get_total_price }}
+                Grand Total :
 
-            </span>
+                <span class="text-success">
 
-        </h4>
+                    ৳ {{ cart.get_total_price }}
+
+                </span>
+
+            </h4>
+
+        </div>
+
+    </div>
+
+    <div class="mt-4 d-flex justify-content-between">
+
+        <a
+            href="{% url 'store:product_list' %}"
+            class="btn btn-outline-primary"
+        >
+
+            ← Continue Shopping
+
+        </a>
+
+        <a
+            href="{% url 'cart:checkout' %}"
+            class="btn btn-success"
+        >
+
+            Proceed to Checkout →
+
+        </a>
 
     </div>
 
     {% else %}
 
-    <div class="alert alert-warning">
+    <div class="text-center py-5">
 
-        Your cart is empty.
+        <h3>
+
+            🛒 Your cart is empty
+
+        </h3>
+
+        <p class="text-muted">
+
+            Start shopping to add products.
+
+        </p>
+
+        <a
+            href="{% url 'store:product_list' %}"
+            class="btn btn-primary"
+        >
+
+            Shop Now
+
+        </a>
 
     </div>
 

@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}
+Checkout
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="row">
+
+        <!-- Shipping Form -->
+
+        <div class="col-lg-7">
+
+            <div class="card shadow-sm">
+
+                <div class="card-header">
+
+                    <h3>
+
+                        Shipping Information
+
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <form method="POST">
+
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Full Name
+
+                            </label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                placeholder="Enter your full name"
+                            >
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Email
+
+                            </label>
+
+                            <input
+                                type="email"
+                                class="form-control"
+                                placeholder="example@gmail.com"
+                            >
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Phone
+
+                            </label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                placeholder="01XXXXXXXXX"
+                            >
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Address
+
+                            </label>
+
+                            <textarea
+                                class="form-control"
+                                rows="4"
+                                placeholder="Your shipping address"
+                            ></textarea>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Order Summary -->
+
+        <div class="col-lg-5">
+
+            <div class="card shadow-sm">
+
+                <div class="card-header">
+
+                    <h3>
+
+                        Order Summary
+
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    {% for item in cart %}
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span>
+
+                            {{ item.product.name }}
+
+                            ×
+
+                            {{ item.quantity }}
+
+                        </span>
+
+                        <strong>
+
+                            ৳ {{ item.total_price }}
+
+                        </strong>
+
+                    </div>
+
+                    {% endfor %}
+
+                    <hr>
+
+                    <h4 class="text-end text-success">
+
+                        Total :
+
+                        ৳ {{ cart.get_total_price }}
+
+                    </h4>
+
+                    <button
+                        class="btn btn-success w-100 mt-3"
+                    >
+
+                        Place Order
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
