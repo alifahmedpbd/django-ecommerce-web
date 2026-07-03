@@ -85,3 +85,10 @@ class Cart:
         
         return sum(item["quantity"] for item in self.cart.values())
     
+    def clear(self):
+
+        if "cart" in self.session:
+
+            del self.session["cart"]
+
+        self.session.modified = True

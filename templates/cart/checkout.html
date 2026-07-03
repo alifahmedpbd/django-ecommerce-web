@@ -32,69 +32,13 @@ Checkout
 
                         {% csrf_token %}
 
-                        <div class="mb-3">
+                        {{ form.as_p }}
 
-                            <label class="form-label">
-
-                                Full Name
-
-                            </label>
-
-                            <input
-                                type="text"
-                                class="form-control"
-                                placeholder="Enter your full name"
-                            >
-
-                        </div>
-
-                        <div class="mb-3">
-
-                            <label class="form-label">
-
-                                Email
-
-                            </label>
-
-                            <input
-                                type="email"
-                                class="form-control"
-                                placeholder="example@gmail.com"
-                            >
-
-                        </div>
-
-                        <div class="mb-3">
-
-                            <label class="form-label">
-
-                                Phone
-
-                            </label>
-
-                            <input
-                                type="text"
-                                class="form-control"
-                                placeholder="01XXXXXXXXX"
-                            >
-
-                        </div>
-
-                        <div class="mb-3">
-
-                            <label class="form-label">
-
-                                Address
-
-                            </label>
-
-                            <textarea
-                                class="form-control"
-                                rows="4"
-                                placeholder="Your shipping address"
-                            ></textarea>
-
-                        </div>
+                        <button
+                            class="btn btn-success w-100 mt-3"
+                        >
+                            Place Order
+                        </button>
 
                     </form>
 

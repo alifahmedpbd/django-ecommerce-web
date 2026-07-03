@@ -1,7 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from store.models import Product
 from .cart import Cart
-
+from orders.forms import OrderCreateForm
+from orders.models import OrderItem
 # Create your views here.
 
 def cart_add(request, product_id):
@@ -59,4 +60,37 @@ def checkout(request):
 
     cart = Cart(request)
 
-    return render(request, "cart/checkout.html", {"cart": cart})
+    if len(cart) == 0:
+
+        return redirect("store:product_list")
+
+    if request.method == "POST":
+
+        form = OrderCreateForm(request.POST)
+
+        if form.is_valid():
+
+            order = form.save(commit=False)
+
+            order.user = request.user
+
+            order.save()
+
+            for item in cart:
+
+                OrderItem.objects.create(
+                    order=order,
+                    product=item["product"],
+                    price=item["price"],
+                    quantity=item["quantity"]
+                )
+                
+            cart.clear()
+
+            return redirect("orders:order_success", order.id)
+        
+    else:
+
+        form = OrderCreateForm()
+
+    return render(request, "cart/checkout.html", {"cart": cart, "form": form, })
