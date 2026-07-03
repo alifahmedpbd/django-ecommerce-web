@@ -13,14 +13,24 @@ class OrderAdmin(admin.ModelAdmin):
         "id",
         "user",
         "paid",
+        "payment_method",
+        "status",
         "created_at",
     )
 
     list_filter = (
         "paid",
-        "created_at",
+        "status",
+        "payment_method",
+    )
+
+    search_fields = (
+        "full_name",
+        "email",
     )
 
     inlines = [
         OrderItemInline,
     ]
+
+admin.site.register(OrderItem)

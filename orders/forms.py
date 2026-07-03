@@ -10,6 +10,7 @@ class OrderCreateForm(forms.ModelForm):
             "email",
             "phone",
             "address",
+            "payment_method",
         ]
 
         widgets = {

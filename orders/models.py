@@ -5,6 +5,19 @@ from store.models import Product
 
 class Order(models.Model):
 
+    PAYMENT_METHODS = (
+        ("cod", "Cash On Delivery"),
+        ("sslcommerz", "SSSCommerz"),
+        ("stripe", "Stripe"),
+    )
+
+    STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("processing", "Processing"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+    )
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
     full_name = models.CharField(max_length=200)
     email = models.EmailField()
@@ -12,6 +25,9 @@ class Order(models.Model):
     address = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     paid = models.BooleanField(default=False)
+    payment_method = models.CharField(max_length=200, choices=PAYMENT_METHODS, default="cod")
+    payment_id = models.CharField(max_length=200, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
 
     def __str__(self):
         return f"Order #{self.id}"
