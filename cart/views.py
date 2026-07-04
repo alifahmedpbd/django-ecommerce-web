@@ -9,6 +9,11 @@ from .cart import Cart
 from orders.forms import OrderCreateForm
 from orders.models import Order, OrderItem
 
+from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
@@ -225,5 +230,41 @@ def payment_success(request, order_id):
 
     cart = Cart(request)
     cart.clear()
+
+# ==========================================
+# HTML Confirmation Email
+# ==========================================
+
+    html_message = render_to_string(
+        "emails/order_confirmation.html",
+        {
+            "order": order,
+            "site_url": request.build_absolute_uri("/")[:-1],
+        }
+    )
+
+    plain_message = strip_tags(html_message)
+
+    email = EmailMultiAlternatives(
+
+        subject=f"Order #{order.id} Confirmed - Shopora",
+
+        body=plain_message,
+
+        from_email=settings.DEFAULT_FROM_EMAIL,
+
+        to=[order.email],
+
+    )
+
+    email.attach_alternative(
+
+        html_message,
+
+        "text/html"
+
+    )
+
+    email.send()
 
     return redirect("orders:order_success", order.id)
