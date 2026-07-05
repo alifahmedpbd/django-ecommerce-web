@@ -362,6 +362,10 @@
 
                             </h5>
 
+                            ⭐ {{ product.average_rating|floatformat:1 }}
+
+                            ({{ product.reviews.count }})
+
                             {% if product.description %}
 
                             <p class="card-text text-muted">

@@ -55,6 +55,54 @@
                 {{ product.name }}
 
             </h1>
+            <div class="mb-3">
+
+                <h5>
+
+                    ⭐ {{ average_rating|floatformat:1 }}/5
+
+                </h5>
+
+                <small class="text-muted">
+
+                    {{ total_reviews }} Review{{ total_reviews|pluralize }}
+
+                </small>
+
+            </div>
+
+            <div class="mt-3">
+
+                {% for item in rating_summary %}
+
+                <div class="d-flex align-items-center mb-2">
+
+                    <div style="width:60px;">
+
+                        {{ item.star }} ★
+
+                    </div>
+
+                    <div class="progress flex-grow-1" style="height:10px;">
+
+                    <div
+                        class="progress-bar bg-warning"
+                        style="width: {{ item.percentage|floatformat:0 }}%;"
+                    ></div>
+
+                </div>
+
+                <small class="ms-2">
+
+                    {{ item.count }}
+
+                </small>
+
+            </div>
+
+            {% endfor %}
+
+            </div>
 
             <h3 class="text-success my-3">
 
@@ -142,6 +190,166 @@
         </div>
 
     </div>
+
+    <hr>
+
+<h3>
+
+    {% if form.instance.pk %}
+
+        Update Your Review
+
+    {% else %}
+
+        Write a Review
+
+    {% endif %}
+
+</h3>
+
+{% if user.is_authenticated %}
+
+<form method="post">
+
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <button
+        type="submit"
+        class="btn btn-primary"
+    >
+
+        {% if form.instance.pk %}
+
+            Update Review
+
+        {% else %}
+
+            Submit Review
+
+        {% endif %}
+
+    </button>
+
+</form>
+
+{% else %}
+
+<p>
+
+    Please login to write a review.
+
+</p>
+
+{% endif %}
+
+<hr>
+
+<h3>
+
+    Customer Reviews
+
+</h3>
+
+{% for review in reviews %}
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-body">
+
+        <div class="d-flex justify-content-between">
+
+            <div class="d-flex align-items-center">
+
+                <div
+                    class="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center me-3"
+                    style="
+                        width:55px;
+                        height:55px;
+                        font-size:22px;
+                        font-weight:bold;
+                    "
+                >
+
+                    {{ review.user.username|first|upper }}
+
+                </div>
+
+                <div>
+
+                    <h6 class="mb-0">
+
+                        {{ review.user.username }}
+
+                    </h6>
+
+                    <small class="text-muted">
+
+                        {{ review.created_at|date:"d M Y" }}
+
+                    </small>
+
+                </div>
+
+            </div>
+
+            {% if review.user == request.user %}
+
+                <div>
+
+                    <a
+                        href="{% url 'store:delete_review' review.id %}"
+                        class="btn btn-sm btn-outline-danger"
+                    >
+
+                        Delete
+
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+        <div class="mt-3">
+
+            {% for i in "12345" %}
+
+                {% if forloop.counter <= review.rating %}
+
+                    <span class="text-warning fs-5">★</span>
+
+                {% else %}
+
+                    <span class="text-secondary fs-5">☆</span>
+
+                {% endif %}
+
+            {% endfor %}
+
+        </div>
+
+        <p class="mt-3 mb-0">
+
+            {{ review.comment }}
+
+        </p>
+
+    </div>
+
+</div>
+
+{% empty %}
+
+<div class="alert alert-info">
+
+    No reviews yet.
+
+</div>
+
+{% endfor %}
 
     <!-- ===========================
          Related Products

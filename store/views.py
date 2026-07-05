@@ -1,8 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, Category, Wishlist
+from .models import Product, Category, Wishlist, Review
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+from .forms import ReviewForm
+from django.db.models import Count
+from django.contrib import messages
 # Create your views here.
 
 def product_list(request, category_slug=None):
@@ -99,7 +102,40 @@ def product_list(request, category_slug=None):
 
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug, available=True)
+    form = None
     related_products = Product.objects.filter(category=product.category, available=True).exclude(id=product.id)[:4]
+    product.views += 1
+    product.save()
+
+    reviews = product.reviews.all()
+
+    average_rating = product.average_rating()
+
+    total_reviews = reviews.count()
+
+    rating_summary = []
+
+    for star in range(5, 0, -1):
+
+        count = reviews.filter(
+            rating=star
+        ).count()
+
+        percentage = 0
+
+        if total_reviews:
+
+            percentage = (count / total_reviews) * 100
+
+        rating_summary.append({
+
+            "star": star,
+
+            "count": count,
+
+            "percentage": percentage,
+
+        })
 
     is_wishlisted = False
 
@@ -110,13 +146,91 @@ def product_detail(request, slug):
             product=product
         ).exists()
 
+    # Review Form
+    if request.user.is_authenticated:
+
+        review = Review.objects.filter(
+            product=product,
+            user=request.user,
+        ).first()
+
+        if request.method == "POST":
+
+            form = ReviewForm(
+                request.POST,
+                instance=review,
+            )
+
+            if form.is_valid():
+
+                review = form.save(commit=False)
+
+                review.user = request.user
+
+                review.product = product
+
+                review.save()
+
+                messages.success(
+                    request,
+                    "Thank you for your review."
+                )
+
+
+
+                return redirect(
+                    "store:product_detail",
+                    slug=product.slug,
+                )
+
+        else:
+
+            form = ReviewForm(
+                instance=review,
+            )
+
+    else:
+
+        form = None
+
     context = {
         "product": product,
         "related_products": related_products,
+        "reviews": reviews,
+        "rating_summary": rating_summary,
+        "average_rating": average_rating,
+        "total_reviews": total_reviews,
+        "form": form,
         "is_wishlisted": is_wishlisted
     }
 
     return render(request, "store/product_detail.html", context)
+
+
+from django.contrib import messages
+
+@login_required
+def delete_review(request, review_id):
+
+    review = get_object_or_404(
+        Review,
+        id=review_id,
+        user=request.user,
+    )
+
+    product_slug = review.product.slug
+
+    review.delete()
+
+    messages.success(
+        request,
+        "Review deleted successfully."
+    )
+
+    return redirect(
+        "store:product_detail",
+        slug=product_slug,
+    )
 
 # ==========================================
 # Add Product To Wishlist
