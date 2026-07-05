@@ -43,22 +43,9 @@ class Product(models.Model):
 
 class Wishlist(models.Model):
 
-    user = models.ForeignKey(
-        User, 
-        on_delete=models.CASCADE, 
-        related_name="Wishlist",
-    )
-
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        related_name="wishlisted_by",
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="Wishlist",)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="wishlisted_by",)
+    created_at = models.DateTimeField(auto_now_add=True)
     class Meta:
 
         unique_together = ("user", "product")
