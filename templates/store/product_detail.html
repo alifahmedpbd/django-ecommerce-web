@@ -104,6 +104,29 @@
                     Add to Cart
 
                 </a>
+                {% if user.is_authenticated %}
+
+                    {% if is_wishlisted %}
+
+                        <a
+                            href="{% url 'store:remove_from_wishlist' product.id %}"
+                            class="btn btn-danger"
+                        >
+                            ❤️ Remove Wishlist
+                        </a>
+
+                    {% else %}
+
+                        <a
+                            href="{% url 'store:add_to_wishlist' product.id %}"
+                            class="btn btn-outline-danger"
+                        >
+                            🤍 Add Wishlist
+                        </a>
+
+                    {% endif %}
+
+                {% endif %}
 
                 <a
                     href="{% url 'store:product_list' %}"

@@ -1,5 +1,6 @@
 from django.db import models
 from django.urls import reverse
+from accounts.models import User
 # Create your models here.
 
 class Category(models.Model):
@@ -35,3 +36,35 @@ class Product(models.Model):
     
     def get_absolute_url(self):
         return reverse("store:product_detail", args=[self.slug])
+    
+# ==========================================
+# Wishlist Model
+# ==========================================
+
+class Wishlist(models.Model):
+
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name="Wishlist",
+    )
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="wishlisted_by",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+
+        unique_together = ("user", "product")
+
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.username} ❤️ {self.product.name}"
+    

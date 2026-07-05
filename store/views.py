@@ -1,7 +1,8 @@
-from django.shortcuts import render, get_object_or_404
-from .models import Product, Category
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Product, Category, Wishlist
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 def product_list(request, category_slug=None):
@@ -72,6 +73,17 @@ def product_list(request, category_slug=None):
 
     page_obj = paginator.get_page(page_number)
 
+    wishlist_products = []
+
+    if request.user.is_authenticated:
+
+        wishlist_products = Wishlist.objects.filter(
+            user=request.user
+        ).values_list(
+            "product_id",
+            flat=True
+        )
+
     context = {
         "category": category,
         "categories": categories,
@@ -80,6 +92,7 @@ def product_list(request, category_slug=None):
         "featured_products": featured_products,
         "latest_products": latest_products,
         "popular_products": popular_products,
+        "wishlist_products": wishlist_products,
     }
 
     return render(request, "store/product_list.html", context)
@@ -88,9 +101,70 @@ def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug, available=True)
     related_products = Product.objects.filter(category=product.category, available=True).exclude(id=product.id)[:4]
 
+    is_wishlisted = False
+
+    if request.user.is_authenticated:
+
+        is_wishlisted = Wishlist.objects.filter(
+            user=request.user,
+            product=product
+        ).exists()
+
     context = {
         "product": product,
         "related_products": related_products,
+        "is_wishlisted": is_wishlisted
     }
 
     return render(request, "store/product_detail.html", context)
+
+# ==========================================
+# Add Product To Wishlist
+# ==========================================
+
+@login_required
+def add_to_wishlist(request, product_id):
+
+    product = get_object_or_404(
+        Product,
+        id=product_id,
+    )
+
+    Wishlist.objects.get_or_create(
+        user=request.user,
+        product=product,
+    )
+
+    return redirect(request.META.get("HTTP_REFERER", "store:product_list"))
+
+# ==========================================
+# Remove Product From Wishlist
+# ==========================================
+
+@login_required
+def remove_from_wishlist(request, product_id):
+
+    product = get_object_or_404(
+        Product,
+        id=product_id,
+    )
+
+    Wishlist.objects.filter(
+        user=request.user,
+        product=product,
+    ).delete()
+
+    return redirect(request.META.get("HTTP_REFERER", "store:product_list"))
+
+# ==========================================
+# Wishlist Page
+# ==========================================
+
+@login_required
+def wishlist(request):
+
+    wishlist_items = Wishlist.objects.filter(
+        user=request.user
+    ).select_related("product")
+
+    return render(request, "store/wishlist.html", {"wishlist_items": wishlist_items},)

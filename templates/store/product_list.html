@@ -378,6 +378,30 @@
 
                             </h4>
 
+                            {% if user.is_authenticated %}
+
+                                {% if product.id in wishlist_products %}
+
+                                    <a
+                                        href="{% url 'store:remove_from_wishlist' product.id %}"
+                                        class="btn btn-outline-danger btn-sm"
+                                    >
+                                        ❤️ Remove Wishlist
+                                    </a>
+
+                                {% else %}
+
+                                    <a
+                                        href="{% url 'store:add_to_wishlist' product.id %}"
+                                        class="btn btn-outline-secondary btn-sm"
+                                    >
+                                        🤍 Add Wishlist
+                                    </a>
+
+                                {% endif %}
+
+                            {% endif %}
+
                             {% if product.stock > 0 %}
 
                                 <span class="badge bg-success mb-3">
