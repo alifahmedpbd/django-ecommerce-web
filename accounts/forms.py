@@ -18,8 +18,55 @@ class UserUpdateForm(ModelForm):
     class Meta:
         model = User
         fields = [
-            "username",
+            "first_name",
+            "last_name",
             "email",
             "phone",
             "profile_image",
         ]
+
+        widgets = {
+
+            "first_name": forms.TextInput(
+
+                attrs={
+
+                    "class": "form-control",
+
+                }
+
+            ),
+
+            "last_name": forms.TextInput(
+
+                attrs={
+
+                    "class": "form-control",
+
+                }
+
+            ),
+
+            "email": forms.EmailInput(
+
+                attrs={
+
+                    "class": "form-control",
+
+                }
+
+            ),
+
+            "phone": forms.TextInput(
+
+                attrs={
+
+                    "class": "form-control",
+
+                    "placeholder": "+8801XXXXXXXXX",
+
+                }
+
+            ),
+
+        }

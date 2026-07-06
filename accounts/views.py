@@ -4,6 +4,8 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from .forms import UserRegisterForm, UserUpdateForm
 from django.contrib.auth.decorators import login_required
+from orders.models import Order
+from store.models import Wishlist, Review
 # Create your views here.
 
 def register_view(request):
@@ -45,15 +47,57 @@ def logout_view(request):
 @login_required
 def profile_view(request):
 
+    total_orders = Order.objects.filter(user=request.user).count()
+
+    completed_orders = Order.objects.filter(user=request.user, status="delivered",).count()
+
+    wishlist_count = Wishlist.objects.filter(user=request.user,).count()
+
+    review_count = Review.objects.filter(user=request.user,).count()
+
+    recent_orders = Order.objects.filter(user=request.user,).order_by("-created_at")[:5]
+
+    recent_reviews = Review.objects.filter(user=request.user,).select_related(
+        "product",
+    ).order_by("-created_at")[:3]
+
+    wishlist_items = Wishlist.objects.filter(user=request.user,).select_related(
+        "product",
+    ).order_by("-created_at")[:3]
+
+
     if request.method == "POST":
+
         form = UserUpdateForm(request.POST, request.FILES, instance=request.user)
 
         if form.is_valid():
+
             form.save()
+
             messages.success(request, "Profile Updated Successfully.")
+
             return redirect("accounts:profile")
 
     else:
-        form = UserUpdateForm(instance=request.user)
 
-    return render(request, "accounts/profile.html", {"form": form})
+        form = UserUpdateForm(instance=request.user)
+    
+    context = {
+        "form": form,
+
+        "total_orders": total_orders,
+
+        "completed_orders": completed_orders,
+
+        "wishlist_count": wishlist_count,
+
+        "review_count": review_count,
+
+        "recent_orders": recent_orders,
+
+        "recent_reviews": recent_reviews,
+
+        "wishlist_items": wishlist_items,
+    }
+
+    return render(request, "accounts/profile.html", context,)

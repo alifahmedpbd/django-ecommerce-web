@@ -2,55 +2,183 @@
 
 {% block title %}
 
-My Profile
+My Dashboard
 
 {% endblock %}
 
 {% block content %}
 
-<div class="container mt-5">
+<div class="container py-5">
 
-    <div class="row justify-content-center">
+    <!-- Welcome -->
 
-        <div class="col-md-8 col-lg-6">
+    <div
+        class="bg-primary text-white rounded-4 p-5 mb-5 shadow-lg"
+        style="background:linear-gradient(135deg,#0d6efd,#3d8bfd);"
+    >
 
-            <div class="card shadow">
+        <h2 class="fw-bold">
 
-                <div class="card-body p-4">
+            👋 Welcome,
+            {{ request.user.get_full_name|default:request.user.username }}
 
-                    <!-- Page Title -->
+        </h2>
 
-                    <h2 class="text-center mb-4">
+        <p class="mb-0 opacity-75">
 
-                        My Profile
+            Great to see you again! Manage your orders, wishlist and account settings from one place.
 
-                    </h2>
+        </p>
 
-                    <!-- Profile Form -->
+    </div>
 
-                    <form
-                        method="POST"
-                        enctype="multipart/form-data"
+<div class="card shadow-sm border-0 mb-5">
+
+    <div class="card-body">
+
+        <div class="row align-items-center">
+
+            <div class="col-md-2 text-center">
+
+                {% if request.user.profile_image %}
+
+                    <img
+                        src="{{ request.user.profile_image.url }}"
+                        class="rounded-circle shadow"
+                        style="
+                            width:120px;
+                            height:120px;
+                            object-fit:cover;
+                        "
                     >
 
-                        {% csrf_token %}
+                {% else %}
 
-                        {{ form.as_p }}
+                    <div
+                        class="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center mx-auto shadow"
+                        style="
+                            width:120px;
+                            height:120px;
+                            font-size:48px;
+                            font-weight:bold;
+                        "
+                    >
 
-                        <div class="d-grid mt-4">
+                        {{ request.user.username|first|upper }}
 
-                            <button
-                                type="submit"
-                                class="btn btn-primary"
-                            >
+                    </div>
 
-                                Save Changes
+                {% endif %}
 
-                            </button>
+            </div>
 
-                        </div>
+            <div class="col-md-10">
 
-                    </form>
+                <h3>
+
+                    {{ request.user.get_full_name|default:request.user.username }}
+
+                </h3>
+
+                <p class="mb-1">
+
+                    📧 {{ request.user.email }}
+
+                </p>
+
+                {% if request.user.phone %}
+
+                <p class="mb-1">
+
+                    📱 {{ request.user.phone }}
+
+                </p>
+
+                {% endif %}
+
+                <p class="text-muted mb-0">
+
+                    Joined {{ request.user.date_joined|date:"d M Y" }}
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+    <!-- Statistics -->
+
+    <div class="row mb-5">
+
+        <div class="col-md-3 mb-3">
+
+            <div class="card shadow-sm text-center h-100 dashboard-card">
+
+                <div class="card-body">
+
+                    <h1>📦</h1>
+
+                    <h3>{{ total_orders }}</h3>
+
+                    <p>Total Orders</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-3 mb-3">
+
+            <div class="card shadow-sm text-center h-100">
+
+                <div class="card-body">
+
+                    <h1>❤️</h1>
+
+                    <h3>{{ wishlist_count }}</h3>
+
+                    <p>Wishlist</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-3 mb-3">
+
+            <div class="card shadow-sm text-center h-100">
+
+                <div class="card-body">
+
+                    <h1>⭐</h1>
+
+                    <h3>{{ review_count }}</h3>
+
+                    <p>Reviews</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-3 mb-3">
+
+            <div class="card shadow-sm text-center h-100">
+
+                <div class="card-body">
+
+                    <h1>✅</h1>
+
+                    <h3>{{ completed_orders }}</h3>
+
+                    <p>Delivered</p>
 
                 </div>
 
@@ -59,6 +187,555 @@ My Profile
         </div>
 
     </div>
+
+<div class="card shadow-sm border-0 mb-5">
+
+    <div class="card-header bg-white">
+
+        <h4 class="mb-0">
+
+            ⚡ Quick Actions
+
+        </h4>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row text-center">
+
+            <div class="col-md-3 mb-3">
+
+                <a
+                    href="{% url 'orders:order_list' %}"
+                    class="btn btn-outline-primary w-100 py-3"
+                >
+
+                    📦<br>
+
+                    My Orders
+
+                </a>
+
+            </div>
+
+            <div class="col-md-3 mb-3">
+
+                <a
+                    href="{% url 'store:wishlist' %}"
+                    class="btn btn-outline-danger w-100"
+                >
+
+                    ❤️<br>
+
+                    Wishlist
+
+                </a>
+
+            </div>
+
+            <div class="col-md-3 mb-3">
+
+                <a
+                    href="{% url 'store:product_list' %}"
+                    class="btn btn-outline-success w-100"
+                >
+
+                    🛒<br>
+
+                    Shop
+
+                </a>
+
+            </div>
+
+            <div class="col-md-3 mb-3">
+
+                <a
+                    href="{% url 'accounts:logout' %}"
+                    class="btn btn-outline-dark w-100"
+                >
+
+                    🚪<br>
+
+                    Logout
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+    <!-- Recent Orders -->
+
+    <div class="card shadow-sm mb-5">
+
+        <div class="card-header">
+
+            <h4 class="mb-0">
+
+                📦 Recent Orders
+
+            </h4>
+
+        </div>
+
+        <div class="card-body">
+
+            {% if recent_orders %}
+
+                <table class="table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>ID</th>
+
+                            <th>Status</th>
+
+                            <th>Date</th>
+
+                            <th></th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for order in recent_orders %}
+
+                        <tr>
+
+                            <td>
+
+                                #{{ order.id }}
+
+                            </td>
+
+                            <td>
+
+                                {% if order.status == "pending" %}
+
+                                <span class="badge bg-warning text-dark">
+
+                                Pending
+
+                                </span>
+
+                                {% elif order.status == "processing" %}
+
+                                <span class="badge bg-info">
+
+                                Processing
+
+                                </span>
+
+                                {% elif order.status == "shipped" %}
+
+                                <span class="badge bg-primary">
+
+                                Shipped
+
+                                </span>
+
+                                {% elif order.status == "delivered" %}
+
+                                <span class="badge bg-success">
+
+                                Delivered
+
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge bg-danger">
+
+                                Cancelled
+
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {{ order.created_at|date:"d M Y" }}
+
+                            </td>
+
+                            <td>
+
+                                <a
+                                    href="{% url 'orders:order_detail' order.id %}"
+                                    class="btn btn-sm btn-outline-primary"
+                                >
+
+                                    View
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            {% else %}
+
+                <div class="alert alert-info">
+
+                    No Orders Yet.
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+<div class="row">
+
+    <!-- Wishlist Preview -->
+
+    <div class="col-lg-6 mb-4">
+
+        <div class="card shadow-sm h-100">
+
+            <div class="card-header bg-white">
+
+                <h5 class="mb-0">
+
+                    ❤️ Wishlist Preview
+
+                </h5>
+
+            </div>
+
+            <div class="card-body">
+
+                {% for item in wishlist_items %}
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+
+                        <span>
+
+                            {{ item.product.name }}
+
+                        </span>
+
+                        <a
+                            href="{{ item.product.get_absolute_url }}"
+                            class="btn btn-sm btn-outline-primary"
+                        >
+
+                            View
+
+                        </a>
+
+                    </div>
+
+                {% empty %}
+
+                    <p class="text-muted mb-0">
+
+                        No wishlist items.
+
+                    </p>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Recent Reviews -->
+
+<div class="col-lg-6 mb-4">
+
+        <div class="card shadow-sm h-100">
+
+            <div class="card-header bg-white">
+
+                <h5 class="mb-0">
+
+                    ⭐ Recent Reviews
+
+                </h5>
+
+            </div>
+
+            <div class="card-body">
+
+                {% for review in recent_reviews %}
+
+                    <div class="mb-3">
+
+                        <strong>
+
+                            {{ review.product.name }}
+
+                        </strong>
+
+                        <br>
+
+                        <span class="text-warning">
+
+                            {% for i in "12345" %}
+
+                                {% if forloop.counter <= review.rating %}
+
+                                    ★
+
+                                {% else %}
+
+                                    ☆
+
+                                {% endif %}
+
+                            {% endfor %}
+
+                        </span>
+
+                        <br>
+
+                        <small class="text-muted">
+
+                            {{ review.comment|truncatechars:60 }}
+
+                        </small>
+
+                    </div>
+
+                    {% if not forloop.last %}
+
+                        <hr>
+
+                    {% endif %}
+
+                {% empty %}
+
+                    <p class="text-muted mb-0">
+
+                        No reviews yet.
+
+                    </p>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="card shadow-sm mb-4">
+
+    <div class="card-header bg-white">
+
+        <h4 class="mb-0">
+
+            📋 Account Information
+
+        </h4>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+
+                <strong>First Name</strong>
+
+                <p class="text-muted mb-0">
+
+                    {{ request.user.username }}
+
+                </p>
+
+            </div>
+
+            <div class="col-md-6 mb-3">
+
+                <strong>Email</strong>
+
+                <p class="text-muted mb-0">
+
+                    {{ request.user.email }}
+
+                </p>
+
+            </div>
+
+            <div class="col-md-6 mb-3">
+
+                <strong>Phone</strong>
+
+                <p class="text-muted mb-0">
+
+                    {{ request.user.phone|default:"Not Added" }}
+
+                </p>
+
+            </div>
+
+            <div class="col-md-6 mb-3">
+
+                <strong>Role</strong>
+
+                <p class="text-muted mb-0">
+
+                    {{ request.user.get_role_display }}
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+    <!-- Edit Profile -->
+
+<div class="card shadow-sm mb-4">
+
+    <div class="card-header bg-white">
+
+        <h4 class="mb-0">
+
+            ✏️ Edit Profile
+
+        </h4>
+
+    </div>
+
+    <div class="card-body">
+
+        <form method="POST" enctype="multipart/form-data">
+
+            {% csrf_token %}
+
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+
+                    <label class="form-label">
+
+                        First Name
+
+                    </label>
+
+                    {{ form.first_name }}
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <label class="form-label">
+
+                        Last Name
+
+                    </label>
+
+                    {{ form.last_name }}
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <label class="form-label">
+
+                        Email
+
+                    </label>
+
+                    {{ form.email }}
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <label class="form-label">
+
+                        Phone Number
+
+                    </label>
+
+                    {{ form.phone }}
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <!-- বর্তমান Profile Image -->
+
+                    {% if request.user.profile_image %}
+
+                    <div class="mb-3">
+
+                        <img
+                            src="{{ request.user.profile_image.url }}"
+                            class="rounded-circle shadow"
+                            style="
+                                width:120px;
+                                height:120px;
+                                object-fit:cover;
+                            "
+                        >
+
+                    </div>
+
+                    {% endif %}
+
+                    <label class="form-label">
+
+                        Profile Image
+
+                    </label>
+
+                    {{ form.profile_image }}
+
+                </div>
+
+            </div>
+
+            <div class="text-end mt-3">
+
+                <button
+                    type="submit"
+                    class="btn btn-primary px-4"
+                >
+
+                    💾 Save Changes
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
 
 </div>
 

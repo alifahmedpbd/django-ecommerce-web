@@ -1,22 +1,13 @@
-<!-- ======================================
-     Bootstrap Navbar
-====================================== -->
-
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
 
     <div class="container">
 
-        <!-- ===========================
-             Website Logo
-        ============================ -->
-
-        <a class="navbar-brand fw-bold" href="{% url 'home' %}">
-            Shopora
+        <a
+            class="navbar-brand fw-bold fs-3"
+            href="{% url 'home' %}"
+        >
+            🛍️ Shopora
         </a>
-
-        <!-- ===========================
-             Mobile Menu Button
-        ============================ -->
 
         <button
             class="navbar-toggler"
@@ -29,16 +20,10 @@
 
         </button>
 
-        <!-- ===========================
-             Navbar Menu
-        ============================ -->
-
         <div
             class="collapse navbar-collapse"
             id="navbarNav"
         >
-
-            <!-- Left Menu -->
 
             <ul class="navbar-nav me-auto">
 
@@ -48,7 +33,7 @@
                         class="nav-link"
                         href="{% url 'home' %}"
                     >
-                        Home
+                        🏠 Home
                     </a>
 
                 </li>
@@ -59,44 +44,85 @@
                         class="nav-link"
                         href="{% url 'store:product_list' %}"
                     >
-                        Products
+                        🛒 Products
                     </a>
 
                 </li>
+
+                {% if user.is_authenticated %}
 
                 <li class="nav-item">
 
                     <a
                         class="nav-link"
-                        href="#"
+                        href="{% url 'orders:order_list' %}"
                     >
-                        Categories
+                        📦 My Orders
                     </a>
 
                 </li>
 
+                {% endif %}
+
+            </ul>
+
+                        <form
+                class="d-flex me-3"
+                method="get"
+                action="{% url 'store:product_list' %}"
+            >
+
+                <input
+                    class="form-control me-2"
+                    type="search"
+                    name="q"
+                    placeholder="Search products..."
+                >
+
+                <button
+                    class="btn btn-light"
+                    type="submit"
+                >
+
+                    🔍
+
+                </button>
+
+            </form>
+
+            <ul class="navbar-nav align-items-center">
+
                 <li class="nav-item">
 
                     <a
-                        class="nav-link"
+                        class="nav-link position-relative"
                         href="{% url 'cart:cart_detail' %}"
                     >
-                       🛒 Cart
-                       <span class="badge bg-danger">
-                        
-                        {{ cart|length }}
 
-                       </span>
+                        🛒 Cart
+
+                        <span class="badge bg-danger rounded-pill">
+
+                            {{ cart|length }}
+
+                        </span>
+
                     </a>
 
                 </li>
 
+                {% if user.is_authenticated %}
+
                 <li class="nav-item">
 
-                    <a class="nav-link" href="{% url 'store:wishlist' %}">
+                    <a
+                        class="nav-link position-relative"
+                        href="{% url 'store:wishlist' %}"
+                    >
+
                         ❤️ Wishlist
 
-                        <span class="badge bg-danger">
+                        <span class="badge bg-danger rounded-pill">
 
                             {{ wishlist_count }}
 
@@ -106,105 +132,109 @@
 
                 </li>
 
-            </ul>
-
-            <!-- My Orders -->
-
-                <li class="nav-item">
+                                <li class="nav-item dropdown ms-2">
 
                     <a
-                        class="nav-link"
-                        href="{% url 'orders:order_list' %}"
+                        class="nav-link dropdown-toggle d-flex align-items-center"
+                        href="#"
+                        data-bs-toggle="dropdown"
                     >
 
-                        My Orders
+                        {% if user.profile_image %}
+
+                        <img
+                            src="{{ user.profile_image.url }}"
+                            class="rounded-circle me-2"
+                            width="40"
+                            height="40"
+                            style="object-fit:cover;"
+                        >
+
+                        {% else %}
+
+                        <img
+                            src="https://via.placeholder.com/40"
+                            class="rounded-circle me-2"
+                        >
+
+                        {% endif %}
+
+                        {{ user.username }}
+
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end">
+
+                        <li>
+
+                            <a
+                                class="dropdown-item"
+                                href="{% url 'accounts:profile' %}"
+                            >
+                                👤 Profile
+                            </a>
+
+                        </li>
+
+                        <li>
+
+                            <a
+                                class="dropdown-item"
+                                href="{% url 'orders:order_list' %}"
+                            >
+                                📦 My Orders
+                            </a>
+
+                        </li>
+
+                        <li>
+
+                            <hr class="dropdown-divider">
+
+                        </li>
+
+                        <li>
+
+                            <a
+                                class="dropdown-item text-danger"
+                                href="{% url 'accounts:logout' %}"
+                            >
+                                🚪 Logout
+                            </a>
+
+                        </li>
+
+                    </ul>
+
+                </li>
+
+                {% else %}
+
+                <li class="nav-item me-2">
+
+                    <a
+                        href="{% url 'accounts:login' %}"
+                        class="btn btn-outline-light"
+                    >
+
+                        Login
 
                     </a>
 
                 </li>
 
+                <li class="nav-item">
 
-            <!-- Right Menu -->
+                    <a
+                        href="{% url 'accounts:register' %}"
+                        class="btn btn-light text-primary fw-bold"
+                    >
 
-            <ul class="navbar-nav">
+                        Register
 
-                {% if user.is_authenticated %}
+                    </a>
 
-                    <!-- Profile Image -->
-
-                    <li class="nav-item">
-
-                        <a
-                            class="nav-link"
-                            href="{% url 'accounts:profile' %}"
-                        >
-
-                            {% if user.profile_image %}
-
-                                <img
-                                    src="{{ user.profile_image.url }}"
-                                    alt="Profile"
-                                    width="40"
-                                    height="40"
-                                    class="rounded-circle"
-                                    style="object-fit:cover;"
-                                >
-
-                            {% else %}
-
-                                <img
-                                    src="https://via.placeholder.com/40"
-                                    alt="Profile"
-                                    class="rounded-circle"
-                                >
-
-                            {% endif %}
-
-                        </a>
-
-                    </li>
-
-                    <!-- Logout -->
-
-                    <li class="nav-item">
-
-                        <a
-                            class="nav-link"
-                            href="{% url 'accounts:logout' %}"
-                        >
-                            Logout
-                        </a>
-
-                    </li>
-
-                {% else %}
-
-                    <!-- Login -->
-
-                    <li class="nav-item">
-
-                        <a
-                            class="nav-link"
-                            href="{% url 'accounts:login' %}"
-                        >
-                            Login
-                        </a>
-
-                    </li>
-                    
-
-                    <!-- Register -->
-
-                    <li class="nav-item">
-
-                        <a
-                            class="nav-link"
-                            href="{% url 'accounts:register' %}"
-                        >
-                            Register
-                        </a>
-
-                    </li>
+                </li>
 
                 {% endif %}
 
