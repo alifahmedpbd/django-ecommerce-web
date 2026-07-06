@@ -14,8 +14,4 @@ urlpatterns = [
 
     path("checkout/", views.checkout, name="checkout"),
 
-    # Stripe Checkout
-    path("create-checkout-session/<int:order_id>/", views.create_checkout_session, name="create_checkout_session"),
-    path("payment-success/<int:order_id>/", views.payment_success, name="payment_success",
-),
 ]
