@@ -133,8 +133,39 @@ def checkout(request):
 
                 )
 
-            # Stripe Checkout এ যাবে
-            return redirect("cart:create_checkout_session", order.id)
+# ===============================
+# Payment Method
+# ===============================
+
+            if order.payment_method == "stripe":
+
+                return redirect(
+                    "cart:create_checkout_session",
+                    order.id,
+                )
+
+            elif order.payment_method == "cod":
+
+                order.paid = False
+
+                order.status = "pending"
+
+                order.save()
+
+                cart.clear()
+
+                return redirect(
+                    "orders:order_success",
+                    order.id,
+                )
+
+# Future SSLCommerz
+            elif order.payment_method == "sslcommerz":
+
+                return redirect(
+                    "cart:create_checkout_session",
+                    order.id,
+                )
 
     else:
 
@@ -223,8 +254,8 @@ def payment_success(request, order_id):
         order.payment_id = session.payment_intent or session.id
 
     order.paid = True
-    order.payment_method = "stripe"
-    order.status = "completed"
+
+    order.status = "processing"
 
     order.save()
 

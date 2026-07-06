@@ -18,7 +18,7 @@ My Orders
 
         <table class="table table-bordered table-hover align-middle">
 
-            <thead class="table-dark">
+            <thead class="table-primary">
 
                 <tr>
 
@@ -58,29 +58,43 @@ My Orders
 
                     <td>
 
-                        <span class="badge bg-primary">
+                        {% if order.status == "pending" %}
 
-                            {{ order.status }}
+                            <span class="badge bg-warning text-dark">
 
-                        </span>
-
-                    </td>
-
-                    <td>
-
-                        {% if order.paid %}
-
-                            <span class="badge bg-success">
-
-                                Paid
+                                ⏳ Pending
 
                             </span>
 
-                        {% else %}
+                        {% elif order.status == "processing" %}
+
+                            <span class="badge bg-info">
+
+                                ⚙️ Processing
+
+                            </span>
+
+                        {% elif order.status == "shipped" %}
+
+                            <span class="badge bg-primary">
+
+                                🚚 Shipped
+
+                            </span>
+
+                        {% elif order.status == "delivered" %}
+
+                            <span class="badge bg-success">
+
+                                ✅ Delivered
+
+                            </span>
+
+                        {% elif order.status == "cancelled" %}
 
                             <span class="badge bg-danger">
 
-                                Unpaid
+                                ❌ Cancelled
 
                             </span>
 
@@ -90,7 +104,53 @@ My Orders
 
                     <td>
 
-                        {{ order.payment_method|title }}
+                        {% if order.paid %}
+
+                            <span class="badge bg-success">
+
+                                💳 Paid
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-danger">
+
+                                ❌ Unpaid
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {% if order.payment_method == "cod" %}
+
+                            <span class="badge bg-secondary">
+
+                                💵 Cash On Delivery
+
+                            </span>
+
+                        {% elif order.payment_method == "stripe" %}
+
+                            <span class="badge bg-primary">
+
+                                💳 Stripe
+
+                            </span>
+
+                        {% elif order.payment_method == "sslcommerz" %}
+
+                            <span class="badge bg-success">
+
+                                🏦 SSLCommerz
+
+                            </span>
+
+                        {% endif %}
 
                     </td>
 
@@ -98,10 +158,10 @@ My Orders
 
                         <a
                             href="{% url 'orders:order_detail' order.id %}"
-                                class="btn btn-sm btn-primary"
+                            class="btn btn-outline-primary btn-sm"
                         >
 
-                            View Details
+                            👁 View Details
 
                         </a>
 
@@ -119,9 +179,34 @@ My Orders
 
     {% else %}
 
-    <div class="alert alert-info">
+    <div class="text-center py-5">
 
-        You have not placed any orders yet.
+        <h1>
+
+            📦
+
+        </h1>
+
+        <h4>
+
+            No Orders Yet
+
+        </h4>
+
+        <p class="text-muted">
+
+            Looks like you haven't placed any orders.
+
+        </p>
+
+        <a
+            href="{% url 'store:product_list' %}"
+            class="btn btn-primary"
+        >
+
+            Start Shopping
+
+        </a>
 
     </div>
 

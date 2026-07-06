@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from .models import Order
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -11,6 +11,7 @@ from reportlab.platypus import (
     Paragraph,
     Spacer,
 )
+from django.contrib import messages
 # Create your views here.
 
 def order_success(request, order_id):
@@ -366,3 +367,27 @@ def invoice_pdf(request, order_id):
     doc.build(elements)
 
     return response
+
+# ==========================================
+# Cancel Order
+# ==========================================
+
+@login_required
+def cancel_order(request, order_id):
+
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    if order.status == "pending":
+
+        order.status = "cancelled"
+
+        order.save()
+
+        messages.success(
+            request, "Your order has been cancelled successfully."
+        )
+
+    else:
+        messages.error(request, "This order can no longer be cancelled.")
+
+    return redirect("orders:order_detail", order.id,)
