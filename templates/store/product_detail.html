@@ -22,7 +22,7 @@
 
                 <img
                     src="{{ product.image.url }}"
-                    class="img-fluid rounded shadow"
+                    class="img-fluid rounded-4 shadow-lg"
                     alt="{{ product.name }}"
                 >
 
@@ -30,7 +30,7 @@
 
                 <img
                     src="https://placehold.co/600x500?text=No+Image"
-                    class="img-fluid rounded shadow"
+                    class="img-fluid rounded-4 shadow-lg"
                     alt="No Image"
                 >
 
@@ -50,7 +50,7 @@
 
             </small>
 
-            <h1 class="mt-2">
+            <h1 class="display-5 fw-bold mt-2">
 
                 {{ product.name }}
 
@@ -104,7 +104,7 @@
 
             </div>
 
-            <h3 class="text-success my-3">
+            <h2 class="text-success fw-bold my-4">
 
                 ৳ {{ product.price }}
 
@@ -112,7 +112,7 @@
 
             {% if product.stock > 0 %}
 
-                <span class="badge bg-success">
+                <span class="badge bg-success fs-6 px-3 py-2">
 
                     In Stock ({{ product.stock }})
 
@@ -120,7 +120,7 @@
 
             {% else %}
 
-                <span class="badge bg-danger">
+                <span class="badge bg-danger fs-6 px-3 py-2">
 
                     Out of Stock
 
@@ -146,7 +146,7 @@
 
                 <a
                     href="{% url 'cart:cart_add' product.id %}"
-                    class="btn btn-primary btn-lg"
+                    class="btn btn-primary btn-lg rounded-pill px-4"
                 >
 
                     Add to Cart
@@ -158,7 +158,7 @@
 
                         <a
                             href="{% url 'store:remove_from_wishlist' product.id %}"
-                            class="btn btn-danger"
+                            class="btn btn-danger rounded-pill px-4"
                         >
                             ❤️ Remove Wishlist
                         </a>
@@ -167,7 +167,7 @@
 
                         <a
                             href="{% url 'store:add_to_wishlist' product.id %}"
-                            class="btn btn-outline-danger"
+                            class="btn btn-outline-danger rounded-pill px-4"
                         >
                             🤍 Add Wishlist
                         </a>
@@ -178,7 +178,7 @@
 
                 <a
                     href="{% url 'store:product_list' %}"
-                    class="btn btn-outline-secondary btn-lg"
+                    class="btn btn-outline-secondary btn-lg rounded-pill px-4"
                 >
 
                     Continue Shopping
@@ -217,7 +217,7 @@
 
     <button
         type="submit"
-        class="btn btn-primary"
+        class="btn btn-primary rounded-pill px-4"
     >
 
         {% if form.instance.pk %}
@@ -300,7 +300,7 @@
 
                     <a
                         href="{% url 'store:delete_review' review.id %}"
-                        class="btn btn-sm btn-outline-danger"
+                        class="btn btn-sm btn-outline-danger rounded-pill"
                     >
 
                         Delete
@@ -369,7 +369,7 @@
 
         <div class="col-md-4 mb-4">
 
-            <div class="card h-100 shadow-sm">
+            <div class="card h-100 shadow border-0 rounded-4">
 
                 {% if item.image %}
 
@@ -405,7 +405,7 @@
 
                     <a
                         href="{{ item.get_absolute_url }}"
-                        class="btn btn-outline-primary mt-auto"
+                        class="btn btn-outline-primary rounded-pill mt-auto"
                     >
 
                         View Product

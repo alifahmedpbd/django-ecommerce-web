@@ -16,13 +16,13 @@
 
             <!-- Categories -->
 
-            <h4 class="mb-3">
+            <h4 class="fw-bold text-primary mb-3">
 
                 Categories
 
             </h4>
 
-            <div class="list-group mb-4">
+            <div class="list-group shadow-sm rounded-3 mb-4">
 
                 <a
                     href="{% url 'store:product_list' %}"
@@ -56,13 +56,13 @@
 
             <!-- Featured -->
 
-            <h5 class="mb-3">
+            <h5 class="fw-bold text-primary mb-3">
 
                 Featured Products
 
             </h5>
 
-            <div class="list-group mb-4">
+            <div class="list-group shadow-sm rounded-3 mb-4">
 
                 {% for item in featured_products %}
 
@@ -85,13 +85,13 @@
 
             <!-- Latest -->
 
-            <h5 class="mb-3">
+            <h5 class="fw-bold text-primary mb-3">
 
                 Latest Products
 
             </h5>
 
-            <div class="list-group mb-4">
+            <div class="list-group shadow-sm rounded-3 mb-4">
 
                 {% for item in latest_products %}
 
@@ -114,7 +114,7 @@
 
             <!-- Popular -->
 
-            <h5 class="mb-3">
+            <h5 class="fw-bold text-primary mb-3">
 
                 Popular Products
 
@@ -151,17 +151,17 @@
 
             {% if category %}
 
-                <h2>
+                <h2 class="fw-bold mb-3">
 
-                    {{ category.name }}
+                    📂 {{ category.name }}
 
                 </h2>
 
             {% else %}
 
-                <h2>
+                <h2 class="fw-bold mb-3">
 
-                    All Products
+                    🛍️ All Products
 
                 </h2>
 
@@ -173,7 +173,7 @@
 
             <form method="GET" class="mb-3">
 
-                <div class="input-group">
+                <div class="input-group shadow-sm">
 
                     <input
                         type="text"
@@ -184,7 +184,7 @@
                     >
 
                     <button
-                        class="btn btn-primary"
+                        class="btn btn-primary px-4"
                     >
 
                         Search
@@ -268,7 +268,7 @@
                 <div class="col-md-2">
 
                     <button
-                        class="btn btn-success w-100"
+                        class="btn btn-success w-100 rounded-pill"
                     >
 
                         Filter
@@ -322,7 +322,7 @@
 
                 <div class="col-md-6 col-xl-4 mb-4">
 
-                    <div class="card h-100 shadow-sm border-0">
+                    <div class="card h-100 shadow-sm rounded-4">
 
                         <!-- Product Image -->
 
@@ -331,7 +331,11 @@
                             <img
                                 src="{{ product.image.url }}"
                                 class="card-img-top"
-                                style="height:220px; object-fit:cover;"
+                                style="
+                                    height:240px;
+                                    object-fit:cover;
+                                    transition:.35s;
+                                "
                                 alt="{{ product.name }}"
                             >
 
@@ -340,7 +344,11 @@
                             <img
                                 src="https://placehold.co/600x400?text=No+Image"
                                 class="card-img-top"
-                                style="height:220px; object-fit:cover;"
+                                style="
+                                    height:240px;
+                                    object-fit:cover;
+                                    transition:.35s;
+                                "
                                 alt="No Image"
                             >
 
@@ -426,7 +434,7 @@
 
                             <a
                                 href="{{ product.get_absolute_url }}"
-                                class="btn btn-primary mt-auto"
+                                class="btn btn-primary rounded-pill mt-auto"
                             >
 
                                 View Details

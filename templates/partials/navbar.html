@@ -1,10 +1,25 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
 
     <div class="container">
 
-        <a class="navbar-brand fw-bold fs-3" href="{% url 'home' %}">
-            🛍️ {{ SHOP_NAME }}
+        <!-- Brand -->
+
+        <a
+            class="navbar-brand fw-bold fs-3"
+            href="{% url 'home' %}"
+        >
+
+            <span class="text-primary">🛍️</span>
+
+            <span class="text-dark">
+
+                {{ SHOP_NAME }}
+
+            </span>
+
         </a>
+
+        <!-- Mobile Button -->
 
         <button
             class="navbar-toggler"
@@ -12,29 +27,72 @@
             data-bs-toggle="collapse"
             data-bs-target="#navbarNav"
         >
+
             <span class="navbar-toggler-icon"></span>
+
         </button>
 
-        <div class="collapse navbar-collapse" id="navbarNav">
+        <!-- Navbar -->
 
-            <!-- Left -->
+        <div
+            class="collapse navbar-collapse"
+            id="navbarNav"
+        >
+
+            <!-- Left Menu -->
 
             <ul class="navbar-nav me-auto">
 
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'home' %}">🏠 Home</a>
+
+                    <a
+                        class="nav-link fw-medium"
+                        href="{% url 'home' %}"
+                    >
+
+                        Home
+
+                    </a>
+
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'store:product_list' %}">🛒 Products</a>
+
+                    <a
+                        class="nav-link fw-medium"
+                        href="{% url 'store:product_list' %}"
+                    >
+
+                        Products
+
+                    </a>
+
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'about' %}">ℹ️ About</a>
+
+                    <a
+                        class="nav-link fw-medium"
+                        href="{% url 'about' %}"
+                    >
+
+                        About
+
+                    </a>
+
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'contact' %}">📞 Contact</a>
+
+                    <a
+                        class="nav-link fw-medium"
+                        href="{% url 'contact' %}"
+                    >
+
+                        Contact
+
+                    </a>
+
                 </li>
 
             </ul>
@@ -42,13 +100,13 @@
             <!-- Search -->
 
             <form
-                class="d-flex me-3"
+                class="d-flex mx-lg-4 my-3 my-lg-0"
                 method="GET"
                 action="{% url 'store:product_list' %}"
             >
 
                 <input
-                    class="form-control"
+                    class="form-control rounded-pill"
                     type="search"
                     name="q"
                     placeholder="Search products..."
@@ -58,9 +116,11 @@
 
             <!-- Right -->
 
-            <ul class="navbar-nav align-items-center">
+            <ul class="navbar-nav align-items-lg-center">
 
-                <li class="nav-item me-2">
+                <!-- Cart -->
+
+                <li class="nav-item me-lg-2">
 
                     <a
                         class="nav-link"
@@ -69,7 +129,7 @@
 
                         🛒 Cart
 
-                        <span class="badge bg-danger">
+                        <span class="badge bg-primary rounded-pill">
 
                             {{ cart|length }}
 
@@ -81,7 +141,9 @@
 
                 {% if user.is_authenticated %}
 
-                <li class="nav-item me-2">
+                <!-- Wishlist -->
+
+                <li class="nav-item me-lg-2">
 
                     <a
                         class="nav-link"
@@ -90,7 +152,7 @@
 
                         ❤️ Wishlist
 
-                        <span class="badge bg-danger">
+                        <span class="badge bg-danger rounded-pill">
 
                             {{ wishlist_count }}
 
@@ -100,19 +162,44 @@
 
                 </li>
 
+                <!-- Profile -->
+
                 <li class="nav-item dropdown">
 
                     <a
-                        class="nav-link dropdown-toggle"
+                        class="nav-link dropdown-toggle d-flex align-items-center"
                         href="#"
                         data-bs-toggle="dropdown"
                     >
+
+                        {% if user.profile_image %}
+
+                        <img
+                            src="{{ user.profile_image.url }}"
+                            class="rounded-circle me-2"
+                            width="38"
+                            height="38"
+                            style="object-fit:cover;"
+                        >
+
+                        {% else %}
+
+                        <div
+                            class="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center me-2"
+                            style="width:38px;height:38px;font-size:15px;font-weight:bold;"
+                        >
+
+                            {{ user.username|first|upper }}
+
+                        </div>
+
+                        {% endif %}
 
                         {{ user.get_full_name|default:user.username }}
 
                     </a>
 
-                    <ul class="dropdown-menu dropdown-menu-end">
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
 
                         <li>
 
@@ -121,7 +208,7 @@
                                 href="{% url 'accounts:profile' %}"
                             >
 
-                                Profile
+                                👤 My Profile
 
                             </a>
 
@@ -134,13 +221,17 @@
                                 href="{% url 'orders:order_list' %}"
                             >
 
-                                My Orders
+                                📦 My Orders
 
                             </a>
 
                         </li>
 
-                        <li><hr class="dropdown-divider"></li>
+                        <li>
+
+                            <hr class="dropdown-divider">
+
+                        </li>
 
                         <li>
 
@@ -149,7 +240,7 @@
                                 href="{% url 'accounts:logout' %}"
                             >
 
-                                Logout
+                                🚪 Logout
 
                             </a>
 
@@ -164,7 +255,7 @@
                 <li class="nav-item me-2">
 
                     <a
-                        class="btn btn-outline-light"
+                        class="btn btn-outline-primary rounded-pill"
                         href="{% url 'accounts:login' %}"
                     >
 
@@ -177,7 +268,7 @@
                 <li class="nav-item">
 
                     <a
-                        class="btn btn-light"
+                        class="btn btn-primary rounded-pill"
                         href="{% url 'accounts:register' %}"
                     >
 

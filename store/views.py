@@ -29,7 +29,8 @@ def product_list(request, category_slug=None):
     if query:
         products = products.filter(
             Q(name__icontains=query) |
-            Q(description__icontains=query)
+            Q(description__icontains=query)|
+            Q(category__name__icontains=query)
         )
     
     #Sorting
