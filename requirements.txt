@@ -1,8 +1,10 @@
 asgiref==3.11.1
 certifi==2026.6.17
 charset-normalizer==3.4.7
+cloudinary==1.45.0
 dj-database-url==3.1.2
 Django==5.2.15
+django-cloudinary-storage==0.3.0
 gunicorn==26.0.0
 idna==3.18
 packaging==26.2
@@ -13,6 +15,7 @@ python-decouple==3.8
 python-dotenv==1.2.2
 reportlab==5.0.0
 requests==2.34.2
+six==1.17.0
 sqlparse==0.5.5
 stripe==15.3.0
 typing_extensions==4.16.0
