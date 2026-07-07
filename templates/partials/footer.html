@@ -1,27 +1,34 @@
-<footer class="bg-dark text-white mt-5">
+<!-- ======================================
+     Footer
+====================================== -->
+
+<footer class="bg-dark text-light mt-5">
 
     <div class="container py-5">
 
         <div class="row">
 
-            <div class="col-md-4">
+            <!-- Brand -->
 
-                <h4 class="fw-bold">
+            <div class="col-lg-4 mb-4">
 
-                    🛍️ Shopora
+                <h3 class="fw-bold">
 
-                </h4>
+                    🛍️ {{ SHOP_NAME }}
 
-                <p>
+                </h3>
 
-                    Modern Django Ecommerce Platform built with Django &
-                    Bootstrap.
+                <p class="text-light-emphasis">
+
+                    {{ SHOP_TAGLINE }}
 
                 </p>
 
             </div>
 
-            <div class="col-md-4">
+            <!-- Quick Links -->
+
+            <div class="col-lg-4 mb-4">
 
                 <h5>
 
@@ -35,7 +42,7 @@
 
                         <a
                             href="{% url 'home' %}"
-                            class="text-white text-decoration-none"
+                            class="text-decoration-none text-light"
                         >
 
                             Home
@@ -47,21 +54,8 @@
                     <li>
 
                         <a
-                            href="{% url 'store:product_list' %}"
-                            class="text-white text-decoration-none"
-                        >
-
-                            Products
-
-                        </a>
-
-                    </li>
-
-                    <li>
-
-                        <a
-                            href="#"
-                            class="text-white text-decoration-none"
+                            href="{% url 'about' %}"
+                            class="text-decoration-none text-light"
                         >
 
                             About
@@ -73,11 +67,24 @@
                     <li>
 
                         <a
-                            href="#"
-                            class="text-white text-decoration-none"
+                            href="{% url 'contact' %}"
+                            class="text-decoration-none text-light"
                         >
 
                             Contact
+
+                        </a>
+
+                    </li>
+
+                    <li>
+
+                        <a
+                            href="{% url 'faq' %}"
+                            class="text-decoration-none text-light"
+                        >
+
+                            FAQ
 
                         </a>
 
@@ -87,31 +94,45 @@
 
             </div>
 
-            <div class="col-md-4">
+            <!-- Policies -->
+
+            <div class="col-lg-4 mb-4">
 
                 <h5>
 
-                    Contact
+                    Policies
 
                 </h5>
 
-                <p class="mb-1">
+                <ul class="list-unstyled">
 
-                    📧 support@shopora.com
+                    <li>
 
-                </p>
+                        <a
+                            href="{% url 'privacy' %}"
+                            class="text-decoration-none text-light"
+                        >
 
-                <p class="mb-1">
+                            Privacy Policy
 
-                    📞 +880 1234-567890
+                        </a>
 
-                </p>
+                    </li>
 
-                <p>
+                    <li>
 
-                    📍 Dhaka, Bangladesh
+                        <a
+                            href="{% url 'terms' %}"
+                            class="text-decoration-none text-light"
+                        >
 
-                </p>
+                            Terms & Conditions
+
+                        </a>
+
+                    </li>
+
+                </ul>
 
             </div>
 
@@ -123,7 +144,7 @@
 
             <small>
 
-                © 2026 Shopora. Built with ❤️ using Django & Bootstrap.
+                © 2026 {{ SHOP_NAME }}. All Rights Reserved.
 
             </small>
 
