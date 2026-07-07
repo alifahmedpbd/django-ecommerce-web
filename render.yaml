@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: shopora
+    env: python
+
+    buildCommand: "./build.sh"
+
+    startCommand: "gunicorn config.wsgi:application"
+
+    plan: free
+
+    autoDeploy: true
