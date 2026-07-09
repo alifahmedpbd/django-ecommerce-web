@@ -1,0 +1,54 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}
+
+Create Brand
+
+{% endblock %}
+
+{% block dashboard_content %}
+
+<h2 class="mb-4">
+
+    Add Brand
+
+</h2>
+
+<div class="card shadow-sm">
+
+    <div class="card-body">
+
+        <form
+            method="POST"
+            enctype="multipart/form-data"
+        >
+
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <button
+                type="submit"
+                class="btn btn-success"
+            >
+
+                Save Brand
+
+            </button>
+
+            <a
+                href="{% url 'dashboard:brand_list' %}"
+                class="btn btn-secondary"
+            >
+
+                Cancel
+
+            </a>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

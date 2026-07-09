@@ -1,0 +1,115 @@
+<div class="p-3">
+
+    <h3 class="text-center text-white mb-4">
+
+        Shopora
+
+    </h3>
+
+    <hr class="text-secondary">
+
+    <!-- Dashboard -->
+
+    <a href="{% url 'dashboard:home' %}"
+       class="btn btn-dark w-100 text-start mb-2">
+
+        📊 Dashboard
+
+    </a>
+
+    <!-- Orders -->
+
+    <a href="#"
+       class="btn btn-dark w-100 text-start mb-2">
+
+        📦 Orders
+
+    </a>
+
+
+    <!-- Products -->
+
+    <a href="{% url 'dashboard:product_list' %}"
+        class="btn btn-dark w-100 text-start mb-2">
+
+        🛍 Products
+
+    </a>
+
+
+    <!-- Categories -->
+
+    <a href="{% url 'dashboard:category_list' %}"
+        class="btn btn-dark w-100 text-start mb-2">
+
+        📂 Categories
+
+    </a>
+
+    <a href="{% url 'dashboard:brand_list' %}"
+        class="btn btn-dark w-100 text-start mb-2">
+
+        🏷️ Brands
+
+    </a>
+
+    <!-- Customers -->
+
+    <a href="#"
+       class="btn btn-dark w-100 text-start mb-2">
+
+        👥 Customers
+
+    </a>
+
+    {% if request.user.role == "owner" %}
+
+        <hr class="text-secondary">
+
+        <a href="#"
+           class="btn btn-dark w-100 text-start mb-2">
+
+            👨‍💼 Employees
+
+        </a>
+
+        <a href="#"
+           class="btn btn-dark w-100 text-start mb-2">
+
+            🎁 Coupons
+
+        </a>
+
+        <a href="#"
+           class="btn btn-dark w-100 text-start mb-2">
+
+            📈 Analytics
+
+        </a>
+
+        <a href="#"
+           class="btn btn-dark w-100 text-start mb-2">
+
+            📑 Reports
+
+        </a>
+
+    {% endif %}
+
+    <hr class="text-secondary">
+
+    <a href="{% url 'accounts:profile' %}"
+       class="btn btn-dark w-100 text-start mb-2">
+
+        👤 Profile
+
+    </a>
+
+    <a href="{% url 'accounts:logout' %}"
+       class="btn btn-danger w-100">
+
+        Logout
+
+    </a>
+
+</div>

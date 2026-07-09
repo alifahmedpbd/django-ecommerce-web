@@ -1,0 +1,62 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}
+
+Update Product
+
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="card shadow">
+
+    <div class="card-header">
+
+        <h3>
+
+            Update Product
+
+        </h3>
+
+    </div>
+
+    <div class="card-body">
+
+        <form method="POST"
+              enctype="multipart/form-data">
+
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            {% if product.image %}
+
+            <img src="{{ product.image.url }}"
+                 width="120"
+                 class="rounded mb-3">
+
+            {% endif %}
+
+            <br>
+
+            <button
+                class="btn btn-success">
+
+                Update Product
+
+            </button>
+
+            <a href="{% url 'dashboard:product_list' %}"
+               class="btn btn-secondary">
+
+                Cancel
+
+            </a>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

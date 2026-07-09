@@ -1,0 +1,417 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}
+
+Products
+
+{% endblock %}
+
+{% block dashboard_content %}
+
+<!-- ========================= -->
+<!-- Statistics -->
+<!-- ========================= -->
+
+<div class="row mb-4">
+
+    <div class="col-lg-3">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                <h6 class="text-muted">
+
+                    Total Products
+
+                </h6>
+
+                <h2>
+
+                    {{ total_products }}
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-3">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                <h6 class="text-muted">
+
+                    Available
+
+                </h6>
+
+                <h2 class="text-success">
+
+                    {{ available_products }}
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-3">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                <h6 class="text-muted">
+
+                    Featured
+
+                </h6>
+
+                <h2 class="text-warning">
+
+                    {{ featured_products }}
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-3">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                <h6 class="text-muted">
+
+                    Out Of Stock
+
+                </h6>
+
+                <h2 class="text-danger">
+
+                    {{ out_of_stock }}
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ========================= -->
+<!-- Search + Add -->
+<!-- ========================= -->
+
+<div class="card shadow-sm mb-4">
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-lg-8">
+
+                <form method="GET">
+
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ query }}"
+                        class="form-control"
+                        placeholder="Search Product..."
+                    >
+
+                </form>
+
+            </div>
+
+            <div class="col-lg-4 text-end">
+
+                <a
+                    href="{% url 'dashboard:product_create' %}"
+                    class="btn btn-primary"
+                >
+
+                    + Add Product
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ========================= -->
+<!-- Product Table -->
+<!-- ========================= -->
+
+<div class="card shadow-sm">
+
+    <div class="card-body table-responsive">
+
+        <table class="table align-middle table-hover">
+
+            <thead>
+
+                <tr>
+
+                    <th>Image</th>
+
+                    <th>Name</th>
+
+                    <th>Category</th>
+
+                    <th>Price</th>
+
+                    <th>Stock</th>
+
+                    <th>Status</th>
+
+                    <th>Featured</th>
+
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for product in products %}
+
+                <tr>
+
+                    <td>
+
+                        {% if product.image %}
+
+                        <img
+                            src="{{ product.image.url }}"
+                            width="60"
+                            height="60"
+                            class="rounded"
+                            style="object-fit:cover;"
+                        >
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        <strong>
+
+                            {{ product.name }}
+
+                        </strong>
+
+                    </td>
+
+                    <td>
+
+                        {{ product.category.name }}
+
+                    </td>
+
+                    <td>
+
+                        ৳{{ product.price }}
+
+                    </td>
+
+                    <td>
+
+                        {% if product.stock == 0 %}
+
+                            <span class="badge bg-danger">
+
+                                Out Of Stock
+
+                            </span>
+
+                        {% elif product.stock <= 5 %}
+
+                            <span class="badge bg-warning text-dark">
+
+                                Low ({{ product.stock }})
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-success">
+
+                                {{ product.stock }}
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {% if product.available %}
+
+                            <span class="badge bg-success">
+
+                                Active
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-secondary">
+
+                                Hidden
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {% if product.featured %}
+
+                            ⭐
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        <a
+                            href="{% url 'dashboard:product_update' product.id %}"
+                            class="btn btn-sm btn-warning"
+                        >
+
+                            Edit
+
+                        </a>
+
+                        <a
+                            href="{% url 'dashboard:product_delete' product.id %}"
+                            class="btn btn-sm btn-danger"
+                        >
+
+                            Delete
+
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="8" class="text-center">
+
+                        No Product Found.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- ========================= -->
+<!-- Pagination -->
+<!-- ========================= -->
+
+{% if page_obj.has_other_pages %}
+
+<nav class="mt-4">
+
+    <ul class="pagination justify-content-center">
+
+        {% if page_obj.has_previous %}
+
+        <li class="page-item">
+
+            <a
+                class="page-link"
+                href="?page={{ page_obj.previous_page_number }}&q={{ query }}"
+            >
+
+                Previous
+
+            </a>
+
+        </li>
+
+        {% endif %}
+
+        {% for page in page_obj.paginator.page_range %}
+
+        <li class="page-item {% if page_obj.number == page %}active{% endif %}">
+
+            <a
+                class="page-link"
+                href="?page={{ page }}&q={{ query }}"
+            >
+
+                {{ page }}
+
+            </a>
+
+        </li>
+
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+
+        <li class="page-item">
+
+            <a
+                class="page-link"
+                href="?page={{ page_obj.next_page_number }}&q={{ query }}"
+            >
+
+                Next
+
+            </a>
+
+        </li>
+
+        {% endif %}
+
+    </ul>
+
+</nav>
+
+{% endif %}
+
+{% endblock %}

@@ -227,6 +227,23 @@
 
                         </li>
 
+                        {% if user.role == "owner" or user.role == "staff" %}
+
+                        <li>
+
+                            <a
+                                class="dropdown-item"
+                                href="{% url 'dashboard:home' %}"
+                            >
+
+                                📊 Dashboard
+
+                            </a>
+
+                        </li>
+
+                        {% endif %}
+
                         <li>
 
                             <hr class="dropdown-divider">

@@ -1,0 +1,33 @@
+from django.urls import path
+from . import views
+
+app_name = "dashboard"
+
+urlpatterns = [
+
+    path("", views.dashboard_home, name="home"),
+
+    # Categories
+    path("categories/", views.category_list, name="category_list"),
+    path("categories/add/", views.category_create, name="category_add"),
+    path("categories/<int:pk>/edit/", views.category_update, name="category_edit"),
+    path("categories/<int:pk>/delete/", views.category_delete, name="category_delete"),
+
+    # ==========================================
+    # Product
+    # ==========================================
+    path("products/", views.product_list, name="product_list"),
+    path("products/create/", views.product_create, name="product_create"),
+    path("products/<int:pk>/update/", views.product_update, name="product_update"),
+    path("products/<int:pk>/delete/", views.product_delete, name="product_delete"),
+
+    # ==========================
+    # Brand
+    # ==========================
+    path("brands/", views.brand_list, name="brand_list"),
+    path("brands/create/", views.brand_create, name="brand_create"),
+    path("brands/<int:pk>/update/", views.brand_update, name="brand_update"),
+    path("brands/<int:pk>/delete/", views.brand_delete, name="brand_delete"),
+
+
+]
