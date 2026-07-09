@@ -1,25 +1,267 @@
 from urllib import request
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from .forms import UserRegisterForm, UserUpdateForm
 from django.contrib.auth.decorators import login_required
 from orders.models import Order
 from store.models import Wishlist, Review
+from .models import EmailOTP, User
+from django.core.mail import send_mail
+from django.conf import settings
+from .utils import (send_otp_email, create_and_send_otp,)
+from django.utils import timezone
+from .forms import ForgotPasswordForm, OTPVerificationForm, ResetPasswordForm, EmailOTPLoginForm
+
 # Create your views here.
 
 def register_view(request):
-    if request.method == "POST":
-        form = UserRegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
 
-            messages.success(request, "Account Created Successfully!")
-            return redirect("home")
+    if request.method == "POST":
+
+        form = UserRegisterForm(request.POST)
+
+        if form.is_valid():
+
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+
+            create_and_send_otp(
+                user=user,
+                purpose="verify",
+            )
+
+            request.session["verify_email"] = user.email
+
+            messages.success(
+                request,
+                "Verification code has been sent to your email.",
+            )
+
+            return redirect("accounts:verify_email")
+
     else:
         form = UserRegisterForm()
-    return render(request, "accounts/register.html", {"form": form})
+
+    return render(
+        request,
+        "accounts/register.html",
+        {
+            "form": form,
+        },
+    )
+
+def verify_email_view(request):
+
+    email = request.session.get("verify_email")
+
+    if not email:
+        messages.error(request, "Verification session expired.")
+        return redirect("accounts:register")
+
+    user = get_object_or_404(
+        User,
+        email=email,
+    )
+
+    if request.method == "POST":
+
+        otp_code = request.POST.get("otp")
+
+        try:
+
+            otp = EmailOTP.objects.filter(
+                user=user,
+                purpose="verify",
+                is_verified=False,
+            ).latest("created_at")
+
+        except EmailOTP.DoesNotExist:
+
+            messages.error(request, "OTP not found.")
+            return redirect("accounts:verify_email")
+
+        if otp.is_expired():
+
+            otp.delete()
+
+            messages.error(request, "OTP expired.")
+
+            return redirect("accounts:verify_email")
+
+        if otp.otp != otp_code:
+
+            messages.error(request, "Invalid OTP.")
+
+            return redirect("accounts:verify_email")
+
+        otp.is_verified = True
+        otp.save()
+
+        user.is_active = True
+        user.save()
+
+        request.session.pop("verify_email", None)
+
+        messages.success(
+            request,
+            "Email verified successfully. Please login.",
+        )
+
+        return redirect("accounts:login")
+
+    return render(
+        request,
+        "accounts/verify_email.html",
+    )
+def resend_otp_view(request):
+
+    email = request.session.get("verify_email")
+
+    if not email:
+
+        messages.error(request, "Verification session expired.")
+
+        return redirect("accounts:register")
+
+    user = get_object_or_404(
+        User,
+        email=email,
+    )
+
+    create_and_send_otp(
+        user=user,
+        purpose="verify",
+    )
+
+    messages.success(
+        request,
+        "New OTP sent successfully.",
+    )
+
+    return redirect("accounts:verify_email")
+
+
+def email_login_view(request):
+
+    if request.method == "POST":
+
+        form = EmailOTPLoginForm(request.POST)
+
+        if form.is_valid():
+
+            email = form.cleaned_data["email"]
+
+            try:
+
+                user = User.objects.get(email=email)
+
+            except User.DoesNotExist:
+
+                messages.error(request, "No account found.")
+
+                return redirect("accounts:email_login")
+
+            if not user.is_active:
+
+                messages.error(
+                    request,
+                    "Please verify your account first.",
+                )
+
+                return redirect("accounts:login")
+
+            create_and_send_otp(
+                user=user,
+                purpose="login",
+            )
+
+            request.session["login_user_id"] = user.id
+
+            messages.success(
+                request,
+                "OTP sent to your email.",
+            )
+
+            return redirect("accounts:verify_login_otp")
+
+    else:
+
+        form = EmailOTPLoginForm()
+
+    return render(
+        request,
+        "accounts/email_login.html",
+        {
+            "form": form,
+        },
+    )
+
+
+
+def verify_login_otp_view(request):
+
+    user_id = request.session.get("login_user_id")
+
+    if not user_id:
+        return redirect("accounts:email_login")
+
+    user = get_object_or_404(
+        User,
+        id=user_id,
+    )
+
+    if request.method == "POST":
+
+        otp_code = request.POST.get("otp")
+
+        try:
+
+            email_otp = EmailOTP.objects.get(
+                user=user,
+                purpose="login",
+                otp=otp_code,
+                is_verified=False,
+            )
+
+        except EmailOTP.DoesNotExist:
+
+            messages.error(request, "Invalid OTP.")
+
+            return redirect("accounts:verify_login_otp")
+
+        if email_otp.is_expired():
+
+            email_otp.delete()
+
+            messages.error(request, "OTP expired.")
+
+            return redirect("accounts:email_login")
+
+        email_otp.is_verified = True
+        email_otp.save()
+
+        login(request, user)
+
+        EmailOTP.objects.filter(
+            user=user,
+            purpose="login",
+        ).delete()
+
+        request.session.pop("login_user_id", None)
+
+        messages.success(
+            request,
+            "Login successful.",
+        )
+
+        return redirect("home")
+
+    return render(
+        request,
+        "accounts/verify_login_otp.html",
+    )
 
 def login_view(request):
 
@@ -39,10 +281,195 @@ def login_view(request):
 
     return render(request, "accounts/login.html")
 
+
+
 def logout_view(request):
 
     logout(request)
     return redirect("home")
+
+
+
+def forgot_password_view(request):
+
+    if request.method == "POST":
+
+        form = ForgotPasswordForm(request.POST)
+
+        if form.is_valid():
+
+            email = form.cleaned_data["email"]
+
+            try:
+
+                user = User.objects.get(email=email)
+
+            except User.DoesNotExist:
+
+                messages.error(
+                    request,
+                    "No account found with this email.",
+                )
+
+                return redirect("accounts:forgot_password")
+
+            create_and_send_otp(
+                user=user,
+                purpose="reset",
+            )
+
+            request.session["reset_user_id"] = user.id
+
+            messages.success(
+                request,
+                "OTP has been sent to your email.",
+            )
+
+            return redirect("accounts:verify_reset_otp")
+
+    else:
+
+        form = ForgotPasswordForm()
+
+    return render(
+        request,
+        "accounts/forgot_password.html",
+        {
+            "form": form,
+        },
+    )
+
+
+
+def verify_reset_otp_view(request):
+
+    user_id = request.session.get("reset_user_id")
+
+    if not user_id:
+        return redirect("accounts:forgot_password")
+
+    user = get_object_or_404(
+        User,
+        id=user_id,
+    )
+
+    if request.method == "POST":
+
+        form = OTPVerificationForm(request.POST)
+
+        if form.is_valid():
+
+            otp_code = form.cleaned_data["otp"]
+
+            try:
+
+                otp = EmailOTP.objects.filter(
+                    user=user,
+                    purpose="reset",
+                    is_verified=False,
+                ).latest("created_at")
+
+            except EmailOTP.DoesNotExist:
+
+                messages.error(
+                    request,
+                    "OTP not found.",
+                )
+
+                return redirect("accounts:forgot_password")
+
+            if otp.is_expired():
+
+                otp.delete()
+
+                messages.error(
+                    request,
+                    "OTP expired.",
+                )
+
+                return redirect("accounts:forgot_password")
+
+            if otp.otp != otp_code:
+
+                messages.error(
+                    request,
+                    "Invalid OTP.",
+                )
+
+                return redirect("accounts:verify_reset_otp")
+
+            otp.is_verified = True
+            otp.save()
+
+            request.session["reset_verified"] = True
+
+            messages.success(
+                request,
+                "OTP verified successfully.",
+            )
+
+            return redirect("accounts:reset_password")
+
+    else:
+
+        form = OTPVerificationForm()
+
+    return render(
+        request,
+        "accounts/verify_reset_otp.html",
+        {
+            "form": form,
+        },
+    )
+def reset_password_view(request):
+
+    user_id = request.session.get("reset_user_id")
+    verified = request.session.get("reset_verified")
+
+    if not user_id or not verified:
+        return redirect("accounts:forgot_password")
+
+    user = get_object_or_404(
+        User,
+        id=user_id,
+    )
+
+    if request.method == "POST":
+
+        form = ResetPasswordForm(user, request.POST)
+
+        if form.is_valid():
+
+            form.save()
+
+            EmailOTP.objects.filter(
+                user=user,
+                purpose="reset",
+            ).delete()
+
+            request.session.pop("reset_user_id", None)
+            request.session.pop("reset_verified", None)
+
+            messages.success(
+                request,
+                "Password changed successfully. Please login.",
+            )
+
+            return redirect("accounts:login")
+
+    else:
+
+        form = ResetPasswordForm(user)
+
+    return render(
+        request,
+        "accounts/reset_password.html",
+        {
+            "form": form,
+        },
+    )
+
+    
 
 @login_required
 def profile_view(request):
