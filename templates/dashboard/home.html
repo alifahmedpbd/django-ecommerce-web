@@ -1,20 +1,298 @@
-<div class="col-md-3">
+<!-- ==========================================
+Dashboard Statistics
+========================================== -->
 
-    <div class="card shadow-sm">
+<div class="row g-4">
 
-        <div class="card-body">
+    <!-- Orders -->
 
-            <h6>
+    <div class="col-md-3">
 
-                Categories
+        <div class="card shadow-sm border-0">
 
-            </h6>
+            <div class="card-body">
 
-            <h3>
+                <h6 class="text-muted">
 
-                {{ total_categories }}
+                    📦 Total Orders
 
-            </h3>
+                </h6>
+
+                <h3 class="fw-bold">
+
+                    {{ total_orders }}
+
+                </h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Customers -->
+
+    <div class="col-md-3">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                <h6 class="text-muted">
+
+                    👥 Customers
+
+                </h6>
+
+                <h3 class="fw-bold">
+
+                    {{ total_customers }}
+
+                </h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Products -->
+
+    <div class="col-md-3">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                <h6 class="text-muted">
+
+                    🛍 Products
+
+                </h6>
+
+                <h3 class="fw-bold">
+
+                    {{ total_products }}
+
+                </h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Categories -->
+
+    <div class="col-md-3">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                <h6 class="text-muted">
+
+                    🗂 Categories
+
+                </h6>
+
+                <h3 class="fw-bold">
+
+                    {{ total_categories }}
+
+                </h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Revenue -->
+
+    <div class="col-md-3">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                <h6 class="text-muted">
+
+                    💰 Revenue
+
+                </h6>
+
+                <h3 class="fw-bold text-success">
+
+                    ৳{{ revenue }}
+
+                </h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Low Stock -->
+
+    <div class="col-md-3">
+
+        <div class="card shadow-sm border-warning">
+
+            <div class="card-body">
+
+                <h6 class="text-warning">
+
+                    ⚠ Low Stock
+
+                </h6>
+
+                <h3 class="fw-bold">
+
+                    {{ low_stock_count }}
+
+                </h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Out Of Stock -->
+
+    <div class="col-md-3">
+
+        <div class="card shadow-sm border-danger">
+
+            <div class="card-body">
+
+                <h6 class="text-danger">
+
+                    ❌ Out Of Stock
+
+                </h6>
+
+                <h3 class="fw-bold">
+
+                    {{ out_of_stock_count }}
+
+                </h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+Inventory Monitoring
+========================================== -->
+
+<hr class="my-5">
+
+<div class="row">
+
+    <div class="col-lg-6">
+
+        <div class="card shadow-sm border-warning">
+
+            <div class="card-header bg-warning">
+
+                <strong>
+
+                    ⚠ Low Stock Products
+
+                </strong>
+
+            </div>
+
+            <div class="card-body">
+
+                {% if low_stock_products %}
+
+                    <ul class="list-group list-group-flush">
+
+                        {% for product in low_stock_products %}
+
+                            <li class="list-group-item d-flex justify-content-between">
+
+                                <span>{{ product.name }}</span>
+
+                                <span class="badge bg-warning text-dark">
+
+                                    {{ product.stock }}
+
+                                </span>
+
+                            </li>
+
+                        {% endfor %}
+
+                    </ul>
+
+                {% else %}
+
+                    <p class="mb-0 text-muted">
+
+                        No low stock products.
+
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-6">
+
+        <div class="card shadow-sm border-danger">
+
+            <div class="card-header bg-danger text-white">
+
+                <strong>
+
+                    ❌ Out Of Stock Products
+
+                </strong>
+
+            </div>
+
+            <div class="card-body">
+
+                {% if out_of_stock_products %}
+
+                    <ul class="list-group list-group-flush">
+
+                        {% for product in out_of_stock_products %}
+
+                            <li class="list-group-item">
+
+                                {{ product.name }}
+
+                            </li>
+
+                        {% endfor %}
+
+                    </ul>
+
+                {% else %}
+
+                    <p class="mb-0 text-muted">
+
+                        No out of stock products.
+
+                    </p>
+
+                {% endif %}
+
+            </div>
 
         </div>
 

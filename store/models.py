@@ -63,7 +63,7 @@ class Product(models.Model):
     image = models.ImageField(upload_to="products/", blank=True, null=True)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    stock = models.PositiveIntegerField(default=0)
+    stock = models.PositiveIntegerField(default=0, help_text="Available Stock",)
     available = models.BooleanField(default=True)
     featured = models.BooleanField(default=False)
     views = models.PositiveIntegerField(default=0)
@@ -92,6 +92,56 @@ class Product(models.Model):
         return self.reviews.aggregate(
             average=Avg("rating")
         )["average"] or 0
+
+    @property
+    def in_stock(self):
+
+        return self.stock > 0
+
+
+    @property
+    def low_stock(self):
+
+        return self.stock <= 5
+
+
+    @property
+    def stock_status(self):
+
+        if self.stock <= 0:
+
+            return "Out Of Stock"
+
+        if self.stock <= 5:
+
+            return "Low Stock"
+
+        return "In Stock"
+
+
+    
+# ==========================================
+# Product Images
+# ==========================================
+
+class ProductImage(models.Model):
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="gallery")
+    image = models.ImageField(upload_to="products/gallery/")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+
+        ordering = [
+
+            "id",
+
+        ]
+
+    def __str__(self):
+
+        return self.product.name
+
     
 # ==========================================
 # Wishlist Model

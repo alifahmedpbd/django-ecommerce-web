@@ -1,5 +1,5 @@
 from django import forms
-from store.models import Category, Product, Brand
+from store.models import Category, Product, Brand, ProductImage
 
 
 class CategoryForm(forms.ModelForm):
@@ -77,5 +77,27 @@ class BrandForm(forms.ModelForm):
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Brand Name"}),
             "logo": forms.FileInput(attrs={"class": "form-control" }),
+
+        }
+
+
+# ==========================================
+# Product Image Form
+# ==========================================
+
+class ProductImageForm(forms.ModelForm):
+
+    class Meta:
+
+        model = ProductImage
+
+        fields = [
+
+            "image",
+
+        ]
+
+        widgets = {
+            "image": forms.FileInput(attrs={"class": "form-control"}),
 
         }

@@ -53,10 +53,14 @@ def payment_success(request, order_id):
 
     order.save()
 
+    from orders.services import reduce_order_stock
+
+    reduce_order_stock(order)
+
     clear_user_cart(request)
 
     send_order_confirmation_email(request, order)
-    
+
     return redirect("orders:order_success", order.id)
 
 def payment_cancel(request):

@@ -103,6 +103,7 @@ def product_list(request, category_slug=None):
 
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug, available=True)
+    gallery = product.gallery.all()
     form = None
     related_products = Product.objects.filter(category=product.category, available=True).exclude(id=product.id)[:4]
     product.views += 1
@@ -202,7 +203,8 @@ def product_detail(request, slug):
         "average_rating": average_rating,
         "total_reviews": total_reviews,
         "form": form,
-        "is_wishlisted": is_wishlisted
+        "is_wishlisted": is_wishlisted,
+        "gallery": gallery,
     }
 
     return render(request, "store/product_detail.html", context)

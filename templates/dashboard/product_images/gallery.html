@@ -1,0 +1,105 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}
+
+Gallery
+
+{% endblock %}
+
+{% block dashboard_content %}
+
+<h2 class="mb-4">
+
+{{ product.name }}
+
+Gallery
+
+</h2>
+
+<div class="card shadow-sm mb-4">
+
+<div class="card-body">
+
+<form
+
+method="POST"
+
+action="{% url 'dashboard:product_image_create' product.id %}"
+
+enctype="multipart/form-data"
+
+>
+
+{% csrf_token %}
+
+{{ form.as_p }}
+
+<button
+
+class="btn btn-success"
+
+type="submit"
+
+>
+
+Upload Image
+
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+<div class="row">
+
+{% for image in images %}
+
+<div class="col-md-3 mb-4">
+
+<div class="card">
+
+<img
+
+src="{{ image.image.url }}"
+
+class="card-img-top"
+
+style="height:220px;object-fit:cover;"
+
+>
+
+<div class="card-body text-center">
+
+<a
+
+href="{% url 'dashboard:product_image_delete' image.id %}"
+
+class="btn btn-danger btn-sm"
+
+>
+
+Delete
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+{% empty %}
+
+<p>
+
+No Gallery Image Found.
+
+</p>
+
+{% endfor %}
+
+</div>
+
+{% endblock %}

@@ -21,6 +21,16 @@ urlpatterns = [
     path("products/<int:pk>/update/", views.product_update, name="product_update"),
     path("products/<int:pk>/delete/", views.product_delete, name="product_delete"),
 
+
+    # ==========================================
+    # Product Gallery
+    # ==========================================
+
+    path("products/<int:pk>/gallery/", views.product_gallery, name="product_gallery"),
+    path("products/<int:pk>/gallery/add/", views.product_image_create, name="product_image_create"),
+    path("gallery/<int:pk>/delete/", views.product_image_delete, name="product_image_delete"),
+
+
     # ==========================
     # Brand
     # ==========================

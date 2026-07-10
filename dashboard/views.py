@@ -8,8 +8,8 @@ from orders.models import Order
 from store.models import Product
 from django.contrib import messages
 
-from store.models import Category, Product, Brand
-from .forms import CategoryForm, ProductForm, BrandForm
+from store.models import Category, Product, Brand, ProductImage
+from .forms import CategoryForm, ProductForm, BrandForm, ProductImageForm
 
 from .decorators import owner_required
 from django.core.paginator import Paginator
@@ -57,10 +57,18 @@ def dashboard_home(request):
     )[:5]
 
     low_stock_products = Product.objects.filter(
+
+        stock__gt=0,
+
         stock__lte=5,
-    ).order_by(
-        "stock",
-    )[:5]
+
+    )
+
+    out_of_stock_products = Product.objects.filter(
+
+        stock=0,
+
+    )
 
     context = {
 
@@ -79,6 +87,12 @@ def dashboard_home(request):
         "recent_customers": recent_customers,
 
         "low_stock_products": low_stock_products,
+
+        "out_of_stock_products": out_of_stock_products,
+
+        "low_stock_count": low_stock_products.count(),
+
+        "out_of_stock_count": out_of_stock_products.count(),
 
     }
 
@@ -510,4 +524,130 @@ def product_delete(request, pk):
             "product": product,
 
         },
+    )
+
+
+
+# ==========================================
+# Product Gallery
+# ==========================================
+
+def product_gallery(request, pk):
+
+    product = get_object_or_404(
+        Product,
+        pk=pk,
+    )
+
+    images = product.gallery.all()
+
+    form = ProductImageForm()
+
+    context = {
+
+        "product": product,
+
+        "images": images,
+
+        "form": form,
+
+    }
+
+    return render(
+
+        request,
+
+        "dashboard/product_images/gallery.html",
+
+        context,
+
+    )
+
+
+
+# ==========================================
+# Upload Product Image
+# ==========================================
+
+def product_image_create(request, pk):
+
+    product = get_object_or_404(
+
+        Product,
+
+        pk=pk,
+
+    )
+
+    if request.method == "POST":
+
+        form = ProductImageForm(
+
+            request.POST,
+
+            request.FILES,
+
+        )
+
+        if form.is_valid():
+
+            image = form.save(
+
+                commit=False,
+
+            )
+
+            image.product = product
+
+            image.save()
+
+            messages.success(
+
+                request,
+
+                "Image Uploaded Successfully.",
+
+            )
+
+    return redirect(
+
+        "dashboard:product_gallery",
+
+        pk=pk,
+
+    )
+
+
+# ==========================================
+# Delete Product Image
+# ==========================================
+
+def product_image_delete(request, pk):
+
+    image = get_object_or_404(
+
+        ProductImage,
+
+        pk=pk,
+
+    )
+
+    product_id = image.product.id
+
+    image.delete()
+
+    messages.success(
+
+        request,
+
+        "Image Deleted Successfully.",
+
+    )
+
+    return redirect(
+
+        "dashboard:product_gallery",
+
+        pk=product_id,
+
     )

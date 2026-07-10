@@ -313,6 +313,15 @@ Products
                         </a>
 
                         <a
+                            href="{% url 'dashboard:product_gallery' product.id %}"
+                            class="btn btn-info btn-sm"
+                        >
+
+                            Gallery
+
+                        </a>
+
+                        <a
                             href="{% url 'dashboard:product_delete' product.id %}"
                             class="btn btn-sm btn-danger"
                         >

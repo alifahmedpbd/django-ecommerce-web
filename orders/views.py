@@ -12,6 +12,8 @@ from reportlab.platypus import (
     Spacer,
 )
 from django.contrib import messages
+from .services import restore_order_stock
+
 # Create your views here.
 
 def order_success(request, order_id):
@@ -375,19 +377,52 @@ def invoice_pdf(request, order_id):
 @login_required
 def cancel_order(request, order_id):
 
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(
 
-    if order.status == "pending":
+        Order,
+
+        id=order_id,
+
+        user=request.user,
+
+    )
+
+    if order.status in [
+
+        "pending",
+
+        "processing",
+
+    ]:
+
+        restore_order_stock(order)
 
         order.status = "cancelled"
 
         order.save()
 
         messages.success(
-            request, "Your order has been cancelled successfully."
+
+            request,
+
+            "Your order has been cancelled successfully."
+
         )
 
     else:
-        messages.error(request, "This order can no longer be cancelled.")
 
-    return redirect("orders:order_detail", order.id,)
+        messages.error(
+
+            request,
+
+            "This order can no longer be cancelled."
+
+        )
+
+    return redirect(
+
+        "orders:order_detail",
+
+        order.id,
+
+    )

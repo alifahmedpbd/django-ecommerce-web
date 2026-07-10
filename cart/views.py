@@ -15,7 +15,11 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
+from store.services import can_purchase
 
+from django.contrib import messages
+
+from orders.services import reduce_order_stock
 
 # ===============================
 # Add Product To Cart
@@ -26,6 +30,16 @@ def cart_add(request, product_id):
     cart = Cart(request)
 
     product = get_object_or_404(Product, id=product_id)
+    quantity = int(request.POST.get("quantity", 1))
+
+    if not can_purchase(product, quantity):
+
+        messages.error(
+            request,
+            f"Only {product.stock} item(s) available in stock."
+        )
+
+        return redirect(product.get_absolute_url())
 
     cart.add(product)
 
@@ -113,6 +127,34 @@ def checkout(request):
 
         if form.is_valid():
 
+            # ==========================================
+            # Final Stock Validation
+            # ==========================================
+
+            for item in cart:
+
+                if not can_purchase(
+
+                    item["product"],
+
+                    item["quantity"],
+
+                ):
+
+                    messages.error(
+
+                        request,
+
+                        f"{item['product'].name} has only {item['product'].stock} item(s) available."
+
+                    )
+
+                    return redirect("cart:cart_detail")
+
+            # ==========================================
+            # Create Order
+            # ==========================================
+
             order = form.save(commit=False)
 
             order.user = request.user
@@ -133,16 +175,23 @@ def checkout(request):
 
                 )
 
-# ===============================
-# Payment Method
-# ===============================
+            # ==========================================
+            # Stripe Payment
+            # ==========================================
 
             if order.payment_method == "stripe":
 
                 return redirect(
+
                     "payments:create_checkout_session",
+
                     order.id,
+
                 )
+
+            # ==========================================
+            # Cash On Delivery
+            # ==========================================
 
             elif order.payment_method == "cod":
 
@@ -152,19 +201,30 @@ def checkout(request):
 
                 order.save()
 
+                reduce_order_stock(order)
+
                 cart.clear()
 
                 return redirect(
+
                     "orders:order_success",
+
                     order.id,
+
                 )
 
-# Future SSLCommerz
+            # ==========================================
+            # SSLCommerz
+            # ==========================================
+
             elif order.payment_method == "sslcommerz":
 
                 return redirect(
+
                     "cart:create_checkout_session",
+
                     order.id,
+
                 )
 
     else:
@@ -186,3 +246,5 @@ def checkout(request):
         }
 
     )
+
+            
