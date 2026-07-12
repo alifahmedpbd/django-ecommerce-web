@@ -1,4 +1,5 @@
 from decimal import Decimal
+import copy
 from store.models import Product
 
 class Cart:
@@ -61,18 +62,31 @@ class Cart:
 
         product_ids = self.cart.keys()
 
-        products = Product.objects.filter(id__in=product_ids)
+        products = Product.objects.filter(
 
-        cart = self.cart.copy()
+            id__in=product_ids
+
+        )
+
+    # Deep copy যাতে session modify না হয়
+        cart = copy.deepcopy(self.cart)
 
         for product in products:
 
-            cart[str(product.id)]["product"] = product
+            item = cart[str(product.id)]
 
-            cart[str(product.id)]["price"] = product.price
+            item["product"] = product
 
-            cart[str(product.id)]["total_price"] = (product.price * cart[str(product.id)]["quantity"])
-        
+            item["price"] = product.price
+
+            item["total_price"] = (
+
+                product.price *
+
+                item["quantity"]
+
+            )
+
         for item in cart.values():
 
             yield item

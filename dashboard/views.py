@@ -4,12 +4,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from accounts.decorators import owner_or_staff_required
 
 from accounts.models import User
-from orders.models import Order
-from store.models import Product
+from orders.models import Order, Coupon
 from django.contrib import messages
 
 from store.models import Category, Product, Brand, ProductImage
-from .forms import CategoryForm, ProductForm, BrandForm, ProductImageForm
+from .forms import CategoryForm, ProductForm, BrandForm, ProductImageForm, CouponForm
 
 from .decorators import owner_required
 from django.core.paginator import Paginator
@@ -649,5 +648,147 @@ def product_image_delete(request, pk):
         "dashboard:product_gallery",
 
         pk=product_id,
+
+    )
+
+
+# ==========================================
+# Coupon List
+# ==========================================
+
+def coupon_list(request):
+
+    coupons = Coupon.objects.all().order_by("-id")
+
+    return render(
+
+        request,
+
+        "dashboard/coupon/list.html",
+
+        {
+
+            "coupons": coupons,
+
+        },
+
+    )
+
+
+# ==========================================
+# Coupon Add
+# ==========================================
+
+def coupon_add(request):
+
+    if request.method == "POST":
+
+        form = CouponForm(request.POST)
+
+        if form.is_valid():
+
+            form.save()
+
+            return redirect("dashboard:coupon_list")
+
+    else:
+
+        form = CouponForm()
+
+    return render(
+
+        request,
+
+        "dashboard/coupon/form.html",
+
+        {
+
+            "form": form,
+
+            "title": "Add Coupon",
+
+        },
+
+    )
+
+
+# ==========================================
+# Coupon Edit
+# ==========================================
+
+def coupon_edit(request, pk):
+
+    coupon = get_object_or_404(
+
+        Coupon,
+
+        pk=pk,
+
+    )
+
+    if request.method == "POST":
+
+        form = CouponForm(
+
+            request.POST,
+
+            instance=coupon,
+
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            return redirect(
+
+                "dashboard:coupon_list"
+
+            )
+
+    else:
+
+        form = CouponForm(
+
+            instance=coupon,
+
+        )
+
+    return render(
+
+        request,
+
+        "dashboard/coupon/form.html",
+
+        {
+
+            "form": form,
+
+            "title": "Edit Coupon",
+
+        },
+
+    )
+
+
+# ==========================================
+# Coupon Delete
+# ==========================================
+
+def coupon_delete(request, pk):
+
+    coupon = get_object_or_404(
+
+        Coupon,
+
+        pk=pk,
+
+    )
+
+    coupon.delete()
+
+    return redirect(
+
+        "dashboard:coupon_list"
 
     )

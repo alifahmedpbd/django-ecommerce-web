@@ -34,9 +34,21 @@ def order_list(request):
 @login_required
 def order_detail(request, order_id):
 
-    order = get_object_or_404( Order, id=order_id, user=request.user )
+    order = get_object_or_404(Order, id=order_id, user=request.user)
 
-    return render(request, "orders/order_detail.html", {"order": order })
+    can_pay_now = (order.payment_method == "stripe"
+
+        and
+
+        not order.paid
+
+        and
+
+        order.status == "pending"
+
+    )
+
+    return render(request, "orders/order_detail.html", {"order": order, "can_pay_now": can_pay_now})
 
 @login_required
 def invoice_pdf(request, order_id):

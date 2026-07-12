@@ -1,0 +1,146 @@
+{% extends "dashboard/base.html" %}
+
+{% block dashboard_content %}
+
+<div class="d-flex justify-content-between mb-4">
+
+    <h2>Coupons</h2>
+
+    <a href="{% url 'dashboard:coupon_add' %}"
+       class="btn btn-primary">
+
+        + Add Coupon
+
+    </a>
+
+</div>
+
+<table class="table table-bordered align-middle">
+
+    <thead>
+
+        <tr>
+
+            <th>Code</th>
+
+            <th>Type</th>
+
+            <th>Discount</th>
+
+            <th>Min Purchase</th>
+
+            <th>Limit</th>
+
+            <th>Used</th>
+
+            <th>Status</th>
+
+            <th>Action</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+    {% for coupon in coupons %}
+
+        <tr>
+
+            <td>
+
+                {{ coupon.code }}
+
+            </td>
+
+            <td>
+
+                {{ coupon.get_discount_type_display }}
+
+            </td>
+
+            <td>
+
+                {{ coupon.discount }}
+
+            </td>
+
+            <td>
+
+                {{ coupon.minimum_purchase }}
+
+            </td>
+
+            <td>
+
+                {{ coupon.usage_limit }}
+
+            </td>
+
+            <td>
+
+                {{ coupon.used_count }}
+
+            </td>
+
+            <td>
+
+                {% if coupon.active %}
+
+                    <span class="badge bg-success">
+
+                        Active
+
+                    </span>
+
+                {% else %}
+
+                    <span class="badge bg-danger">
+
+                        Inactive
+
+                    </span>
+
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                <a href="{% url 'dashboard:coupon_edit' coupon.id %}"
+                   class="btn btn-warning btn-sm">
+
+                    Edit
+
+                </a>
+
+                <a href="{% url 'dashboard:coupon_delete' coupon.id %}"
+                   class="btn btn-danger btn-sm">
+
+                    Delete
+
+                </a>
+
+            </td>
+
+        </tr>
+
+    {% empty %}
+
+        <tr>
+
+            <td colspan="8">
+
+                No Coupon Found.
+
+            </td>
+
+        </tr>
+
+    {% endfor %}
+
+    </tbody>
+
+</table>
+
+{% endblock %}

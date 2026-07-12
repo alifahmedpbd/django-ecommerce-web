@@ -31,21 +31,47 @@ def create_checkout_session(request, order_id):
 
 def payment_success(request, order_id):
 
-    order = get_object_or_404(Order, id=order_id)
+    order = get_object_or_404(
+
+        Order,
+
+        id=order_id,
+
+    )
 
     session_id = request.GET.get("session_id")
 
     if not session_id:
 
-        return redirect("payments:payment_cancel")
+        return redirect(
 
-    session = validate_stripe_payment(session_id)
+            "payments:payment_cancel"
+
+        )
+
+    session = validate_stripe_payment(
+
+        session_id
+
+    )
 
     if session is None:
 
-        return redirect("payments:payment_cancel")
+        return redirect(
 
-    order.payment_id = session.payment_intent or session.id
+            "payments:payment_cancel"
+
+        )
+
+    order.payment_id = (
+
+        session.payment_intent
+
+        or
+
+        session.id
+
+    )
 
     order.paid = True
 
@@ -57,11 +83,53 @@ def payment_success(request, order_id):
 
     reduce_order_stock(order)
 
+    # ==========================================
+    # Coupon consume only after payment success
+    # ==========================================
+
+    if order.coupon:
+
+        from orders.models import CouponUsage
+
+        CouponUsage.objects.create(
+
+            coupon=order.coupon,
+
+            user=order.user,
+
+            order=order,
+
+        )
+
+        order.coupon.used_count += 1
+
+        order.coupon.save()
+
+    request.session.pop(
+
+        "coupon_code",
+
+        None,
+
+    )
+
     clear_user_cart(request)
 
-    send_order_confirmation_email(request, order)
+    send_order_confirmation_email(
 
-    return redirect("orders:order_success", order.id)
+        request,
+
+        order,
+
+    )
+
+    return redirect(
+
+        "orders:order_success",
+
+        order.id,
+
+    )
 
 def payment_cancel(request):
     

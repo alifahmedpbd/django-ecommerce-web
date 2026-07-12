@@ -10,7 +10,9 @@ Checkout
 
     <div class="row">
 
+        <!-- ========================= -->
         <!-- Shipping Form -->
+        <!-- ========================= -->
 
         <div class="col-lg-7">
 
@@ -18,11 +20,11 @@ Checkout
 
                 <div class="card-header">
 
-                    <h3>
+                    <h4>
 
-                        Shipping Information
+                        🚚 Shipping Information
 
-                    </h3>
+                    </h4>
 
                 </div>
 
@@ -37,10 +39,188 @@ Checkout
                         <button
                             class="btn btn-success w-100 mt-3"
                         >
+
                             Place Order
+
                         </button>
 
                     </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ========================= -->
+        <!-- Order Summary -->
+        <!-- ========================= -->
+
+        <div class="col-lg-5">
+
+            <div class="card shadow-sm">
+
+                <div class="card-header">
+
+                    <h4>
+
+                        🧾 Order Summary
+
+                    </h4>
+
+                </div>
+
+                <div class="card-body">
+
+                    {% for item in cart %}
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <div>
+
+                            {{ item.product.name }}
+
+                            ×
+
+                            {{ item.quantity }}
+
+                        </div>
+
+                        <div>
+
+                            ${{ item.total_price }}
+
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+                    <hr>
+
+                    <!-- ========================= -->
+                    <!-- Coupon -->
+                    <!-- ========================= -->
+
+                    {% if coupon %}
+
+                    <div class="alert alert-success">
+
+                        <strong>
+
+                            Coupon:
+
+                        </strong>
+
+                        {{ coupon.code }}
+
+                        <br>
+
+                        Discount:
+
+                        ${{ discount }}
+
+                        <br><br>
+
+                        <a
+                            href="{% url 'cart:remove_coupon' %}"
+                            class="btn btn-danger btn-sm"
+                        >
+
+                            Remove Coupon
+
+                        </a>
+
+                    </div>
+
+                    {% else %}
+
+                    <form
+                        method="POST"
+                        action="{% url 'cart:apply_coupon' %}"
+                        class="mb-3"
+                    >
+
+                        {% csrf_token %}
+
+                        <div class="input-group">
+
+                            <input
+                                type="text"
+                                name="coupon_code"
+                                class="form-control"
+                                placeholder="Coupon Code"
+                            >
+
+                            <button
+                                class="btn btn-primary"
+                            >
+
+                                Apply
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                    {% endif %}
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+
+                        <strong>
+
+                            Subtotal
+
+                        </strong>
+
+                        <strong>
+
+                            ${{ subtotal }}
+
+                        </strong>
+
+                    </div>
+
+                    {% if coupon %}
+
+                    <div class="d-flex justify-content-between text-success mt-2">
+
+                        <strong>
+
+                            Discount
+
+                        </strong>
+
+                        <strong>
+
+                            - ${{ discount }}
+
+                        </strong>
+
+                    </div>
+
+                    {% endif %}
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+
+                        <h4>
+
+                            Total
+
+                        </h4>
+
+                        <h4 class="text-success">
+
+                            ${{ final_total }}
+
+                        </h4>
+
+                    </div>
 
                 </div>
 

@@ -26,6 +26,7 @@ class Coupon(models.Model):
     usage_limit = models.PositiveIntegerField(default=1)
     used_count = models.PositiveIntegerField(default=0)
     active = models.BooleanField(default=True)
+    one_time_per_user = models.BooleanField(default=False)
     valid_from = models.DateTimeField(default=timezone.now)
     valid_to = models.DateTimeField()
 
@@ -91,7 +92,7 @@ class Order(models.Model):
     payment_method = models.CharField(max_length=200, choices=PAYMENT_METHODS, default="cod")
     payment_id = models.CharField(max_length=200, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
-    coupo = models.ForeignKey(Coupon, on_delete=models.CASCADE, null=True, blank=True)
+    coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     final_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
@@ -123,3 +124,18 @@ class OrderItem(models.Model):
     
     def __str__(self):
         return self.product.name
+    
+# ==========================================
+# Coupon Usage
+# ==========================================
+
+class CouponUsage(models.Model):
+
+    coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE, related_name="usages")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    used_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+
+        return f"{self.user.username} - {self.coupon.code}"

@@ -352,6 +352,17 @@ Order Details
 
 <div class="mt-3">
 
+    {% if can_pay_now %}
+
+    <a
+        href="{% url 'payments:create_checkout_session' order.id %}"
+        class="btn btn-success rounded-pill"
+    >
+        💳 Pay Now
+    </a>
+
+{% endif %}
+
     <a
         href="{% url 'orders:cancel_order' order.id %}"
         class="btn btn-outline-danger rounded-pill px-4"

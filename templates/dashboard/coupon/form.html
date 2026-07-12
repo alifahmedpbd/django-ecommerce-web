@@ -1,0 +1,32 @@
+{% extends "dashboard/base.html" %}
+
+{% block dashboard_content %}
+
+<h2 class="mb-4">
+
+    {{ title }}
+
+</h2>
+
+<form method="post">
+
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <button class="btn btn-primary">
+
+        Save
+
+    </button>
+
+    <a href="{% url 'dashboard:coupon_list' %}"
+       class="btn btn-secondary">
+
+        Cancel
+
+    </a>
+
+</form>
+
+{% endblock %}

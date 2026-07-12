@@ -1,6 +1,7 @@
 from django import forms
 from store.models import Category, Product, Brand, ProductImage
-
+from orders.models import Coupon
+ 
 
 class CategoryForm(forms.ModelForm):
 
@@ -99,5 +100,67 @@ class ProductImageForm(forms.ModelForm):
 
         widgets = {
             "image": forms.FileInput(attrs={"class": "form-control"}),
+
+        }
+
+
+
+# ==========================================
+# Coupon Form
+# ==========================================
+
+class CouponForm(forms.ModelForm):
+
+    class Meta:
+
+        model = Coupon
+
+        fields = [
+
+            "code",
+
+            "discount_type",
+
+            "discount",
+
+            "minimum_purchase",
+
+            "usage_limit",
+
+            "active",
+
+            "one_time_per_user",
+
+            "valid_from",
+
+            "valid_to",
+
+        ]
+
+        widgets = {
+
+            "valid_from": forms.DateTimeInput(
+
+                attrs={
+
+                    "type": "datetime-local",
+
+                    "class": "form-control",
+
+                }
+
+            ),
+
+            "valid_to": forms.DateTimeInput(
+
+                attrs={
+
+                    "type": "datetime-local",
+
+                    "class": "form-control",
+
+                }
+
+            ),
 
         }

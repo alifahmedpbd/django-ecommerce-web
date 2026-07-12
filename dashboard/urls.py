@@ -40,4 +40,12 @@ urlpatterns = [
     path("brands/<int:pk>/delete/", views.brand_delete, name="brand_delete"),
 
 
+    # ==========================
+    # Coupon
+    # ==========================
+    path("coupons/", views.coupon_list, name="coupon_list"),
+    path("coupons/add/", views.coupon_add, name="coupon_add"),
+    path("coupons/<int:pk>/edit/", views.coupon_edit, name="coupon_edit"),
+    path("coupons/<int:pk>/delete/", views.coupon_delete, name="coupon_delete"),
+
 ]
