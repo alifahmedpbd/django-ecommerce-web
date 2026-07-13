@@ -269,6 +269,8 @@ def checkout(request):
 
                 order.paid = False
 
+                order.payment_status = "pending"
+
                 order.save()
 
                 reduce_order_stock(order)

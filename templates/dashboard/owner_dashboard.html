@@ -120,6 +120,285 @@
 
 </div>
 
+
+<div class="card shadow-sm border-0 mt-5">
+
+    <div class="card-header d-flex justify-content-between align-items-center">
+
+        <h5 class="mb-0">
+            Recent Orders
+        </h5>
+
+        <a href="{% url 'dashboard:dashboard_orders' %}" class="btn btn-sm btn-primary">
+            View All
+        </a>
+
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="table table-hover align-middle mb-0">
+
+            <thead class="table-light">
+
+                <tr>
+
+                    <th>#ID</th>
+
+                    <th>Customer</th>
+
+                    <th>Total</th>
+
+                    <th>Payment</th>
+
+                    <th>Status</th>
+
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for order in recent_orders %}
+
+                <tr>
+
+                    <td>
+
+                        #{{ order.id }}
+
+                    </td>
+
+                    <td>
+
+                        {{ order.user.username }}
+
+                    </td>
+
+                    <td>
+
+                        ${{ order.final_total }}
+
+                    </td>
+
+                    <td>
+
+                        {% if order.paid %}
+
+                        <span class="badge bg-success">
+
+                            Paid
+
+                        </span>
+
+                        {% else %}
+
+                        <span class="badge bg-danger">
+
+                            Unpaid
+
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {% if order.status == "pending" %}
+
+                        <span class="badge bg-warning text-dark">
+
+                            Pending
+
+                        </span>
+
+                        {% elif order.status == "processing" %}
+
+                        <span class="badge bg-info">
+
+                            Processing
+
+                        </span>
+
+                        {% elif order.status == "shipped" %}
+
+                        <span class="badge bg-primary">
+
+                            Shipped
+
+                        </span>
+
+                        {% elif order.status == "delivered" %}
+
+                        <span class="badge bg-success">
+
+                            Delivered
+
+                        </span>
+
+                        {% elif order.status == "cancelled" %}
+
+                        <span class="badge bg-danger">
+
+                            Cancelled
+
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        <a href="{% url 'dashboard:dashboard_order_detail' order.id %}"
+
+                           class="btn btn-dark btn-sm">
+
+                            View
+
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="6" class="text-center py-4">
+
+                        No Orders Found
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+
+<div class="row mt-5">
+
+    <div class="col-lg-6 mb-4">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-header">
+
+                <strong>Monthly Revenue</strong>
+
+            </div>
+
+            <div class="card-body">
+
+                <canvas id="monthlyRevenueChart"></canvas>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-6 mb-4">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-header">
+
+                <strong>Monthly Orders</strong>
+
+            </div>
+
+            <div class="card-body">
+
+                <canvas id="monthlyOrdersChart"></canvas>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="row">
+
+    <div class="col-lg-6 mb-4">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-header">
+
+                <strong>Top Products</strong>
+
+            </div>
+
+            <div class="card-body">
+
+                <canvas id="topProductsChart"></canvas>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-6 mb-4">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-header">
+
+                <strong>Top Categories</strong>
+
+            </div>
+
+            <div class="card-body">
+
+                <canvas id="topCategoriesChart"></canvas>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="col-lg-6 mb-4">
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header">
+
+            <strong>Revenue by Payment Method</strong>
+
+        </div>
+
+        <div class="card-body">
+
+            <canvas id="paymentMethodChart"></canvas>
+
+        </div>
+
+    </div>
+
+</div>
+
+<hr class="my-5">
+
 <!-- Recent Orders + Recent Customers -->
 
 <hr class="my-5">
@@ -363,5 +642,355 @@
     </div>
 
 </div>
+
+<div class="card shadow-sm border-0 mt-5">
+
+    <div class="card-header">
+
+        <strong>Best Customers</strong>
+
+    </div>
+
+    <div class="card-body">
+
+        <table class="table table-hover align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>Customer</th>
+
+                    <th>Orders</th>
+
+                    <th>Total Spent</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for customer in best_customers %}
+
+                <tr>
+
+                    <td>{{ customer.username }}</td>
+
+                    <td>{{ customer.total_orders }}</td>
+
+                    <td>
+
+                        <strong>
+
+                            ${{ customer.total_spent }}
+
+                        </strong>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="3" class="text-center">
+
+                        No customer found
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block dashboard_scripts %}
+
+<script>
+
+const monthlyLabels = {{ monthly_labels|safe }};
+
+const monthlyRevenue = {{ monthly_revenue_data|safe }};
+
+const monthlyOrders = {{ monthly_order_data|safe }};
+
+const topProductLabels = {{ top_product_labels|safe }};
+
+const topProductData = {{ top_product_data|safe }};
+
+const topCategoryLabels = {{ top_category_labels|safe }};
+
+const topCategoryData = {{ top_category_data|safe }};
+
+const paymentLabels = {{ payment_labels|safe }};
+
+const paymentData = {{ payment_data|safe }};
+
+const paymentMethodLabels = {{ payment_method_labels|safe }};
+const paymentMethodData = {{ payment_method_data|safe }};
+
+// ===========================
+// Monthly Revenue
+// ===========================
+
+new Chart(
+
+document.getElementById("monthlyRevenueChart"),
+
+{
+
+type: "line",
+
+data:{
+
+labels:monthlyLabels,
+
+datasets:[{
+
+label:"Revenue ($)",
+
+data:monthlyRevenue,
+
+borderWidth:3,
+
+fill:true,
+
+tension:0.4,
+
+}]
+
+},
+
+options:{
+
+responsive:true,
+
+plugins:{
+
+legend:{
+
+display:false
+
+}
+
+}
+
+}
+
+}
+
+);
+
+// ===========================
+// Monthly Orders
+// ===========================
+
+new Chart(
+
+document.getElementById("monthlyOrdersChart"),
+
+{
+
+type:"bar",
+
+data:{
+
+labels:monthlyLabels,
+
+datasets:[{
+
+label:"Orders",
+
+data:monthlyOrders,
+
+borderWidth:1,
+
+}]
+
+},
+
+options:{
+
+responsive:true,
+
+plugins:{
+
+legend:{
+
+display:false
+
+}
+
+}
+
+}
+
+}
+
+);
+
+// ===========================
+// Top Products
+// ===========================
+
+new Chart(
+
+document.getElementById("topProductsChart"),
+
+{
+
+type:"bar",
+
+data:{
+
+labels:topProductLabels,
+
+datasets:[{
+
+label:"Sold",
+
+data:topProductData,
+
+borderWidth:1,
+
+}]
+
+},
+
+options:{
+
+responsive:true,
+
+indexAxis:"y",
+
+plugins:{
+
+legend:{
+
+display:false
+
+}
+
+}
+
+}
+
+}
+
+);
+
+// ===========================
+// Top Categories
+// ===========================
+
+new Chart(
+
+document.getElementById("topCategoriesChart"),
+
+{
+
+type:"bar",
+
+data:{
+
+labels:topCategoryLabels,
+
+datasets:[{
+
+label:"Sold",
+
+data:topCategoryData,
+
+borderWidth:1,
+
+}]
+
+},
+
+options:{
+
+responsive:true,
+
+plugins:{
+
+legend:{
+
+display:false
+
+}
+
+}
+
+}
+
+}
+
+);
+
+new Chart(
+
+document.getElementById("paymentChart"),
+
+{
+
+type:"doughnut",
+
+data:{
+
+labels:paymentLabels,
+
+datasets:[{
+
+data:paymentData,
+
+}]
+
+},
+
+options:{
+
+responsive:true,
+
+plugins:{
+
+legend:{
+
+position:"bottom",
+
+}
+
+}
+
+}
+
+}
+
+);
+
+
+new Chart(
+document.getElementById("paymentMethodChart"),
+{
+    type:"pie",
+    data:{
+        labels:paymentMethodLabels,
+        datasets:[{
+            data:paymentMethodData,
+        }]
+    }
+});
+
+</script>
 
 {% endblock %}

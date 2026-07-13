@@ -1,0 +1,203 @@
+{% extends "dashboard/base.html" %}
+
+{% block dashboard_content %}
+
+<h2 class="mb-4">
+Reports
+</h2>
+
+<div class="mb-4">
+
+    <a href="{% url 'dashboard:sales_report_pdf' %}"
+       class="btn btn-danger">
+
+        Download PDF
+
+    </a>
+
+    <a href="{% url 'dashboard:sales_report_excel' %}"
+       class="btn btn-success">
+
+        Download Excel
+
+    </a>
+
+</div>
+
+<div class="row">
+
+    <div class="col-lg-6">
+
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-header">
+
+                Revenue by Payment Method
+
+            </div>
+
+            <div class="card-body">
+
+                <table class="table">
+
+                    <thead>
+
+                    <tr>
+
+                        <th>Method</th>
+
+                        <th>Orders</th>
+
+                        <th>Revenue</th>
+
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for item in revenue_by_payment %}
+
+                    <tr>
+
+                        <td>{{ item.payment_method|upper }}</td>
+
+                        <td>{{ item.orders }}</td>
+
+                        <td>${{ item.total }}</td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-6">
+
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-header">
+
+                Low Stock Products
+
+            </div>
+
+            <div class="card-body">
+
+                <table class="table">
+
+                    <thead>
+
+                    <tr>
+
+                        <th>Product</th>
+
+                        <th>Stock</th>
+
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for product in low_stock %}
+
+                    <tr>
+
+                        <td>{{ product.name }}</td>
+
+                        <td>
+
+                            <span class="badge bg-danger">
+
+                                {{ product.stock }}
+
+                            </span>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="card shadow-sm">
+
+    <div class="card-header">
+
+        Best Customers
+
+    </div>
+
+    <div class="card-body">
+
+        <table class="table">
+
+            <thead>
+
+            <tr>
+
+                <th>Customer</th>
+
+                <th>Orders</th>
+
+                <th>Total Spent</th>
+
+            </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% for customer in best_customers %}
+
+            <tr>
+
+                <td>{{ customer.username }}</td>
+
+                <td>{{ customer.total_orders }}</td>
+
+                <td>${{ customer.total_spent }}</td>
+
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<a href="{% url 'dashboard:low_stock_report_pdf' %}"
+   class="btn btn-warning">
+    Low Stock PDF
+</a>
+
+<a href="{% url 'dashboard:low_stock_report_excel' %}"
+   class="btn btn-dark">
+    Low Stock Excel
+</a>
+
+{% endblock %}

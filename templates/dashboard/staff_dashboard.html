@@ -1,29 +1,279 @@
 {% extends "dashboard/base.html" %}
 
-{% block sidebar %}
-
-<h4 class="text-white mt-4 text-center">
-
-    Staff Panel
-
-</h4>
-
-<hr class="text-white">
-
-{% endblock %}
-
 {% block dashboard_content %}
 
-<h2>
-
-    Welcome Staff
-
+<h2 class="mb-4">
+    Staff Dashboard
 </h2>
 
-<p>
+<div class="row g-4">
 
-    Dashboard is ready.
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="text-muted">Today's Orders</h6>
+                <h3>{{ today_orders }}</h3>
+            </div>
+        </div>
+    </div>
 
-</p>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="text-muted">Total Orders</h6>
+                <h3>{{ total_orders }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="text-muted">Low Stock</h6>
+                <h3>{{ low_stock_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="text-muted">Out of Stock</h6>
+                <h3>{{ out_of_stock_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<hr class="my-5">
+
+<div class="card shadow-sm border-0">
+
+    <div class="card-header d-flex justify-content-between">
+
+        <h5 class="mb-0">
+            Recent Orders
+        </h5>
+
+        <a href="{% url 'dashboard:dashboard_orders' %}"
+           class="btn btn-primary btn-sm">
+            View All
+        </a>
+
+    </div>
+
+    <div class="card-body">
+
+        <table class="table table-hover align-middle">
+
+            <thead class="table-light">
+
+            <tr>
+
+                <th>#</th>
+
+                <th>Customer</th>
+
+                <th>Total</th>
+
+                <th>Status</th>
+
+                <th></th>
+
+            </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% for order in recent_orders %}
+
+            <tr>
+
+                <td>#{{ order.id }}</td>
+
+                <td>{{ order.user.username }}</td>
+
+                <td>${{ order.final_total }}</td>
+
+                <td>
+
+                    <span class="badge bg-primary">
+
+                        {{ order.get_status_display }}
+
+                    </span>
+
+                </td>
+
+                <td>
+
+                    <a href="{% url 'dashboard:dashboard_order_detail' order.id %}"
+                       class="btn btn-dark btn-sm">
+
+                        View
+
+                    </a>
+
+                </td>
+
+            </tr>
+
+            {% empty %}
+
+            <tr>
+
+                <td colspan="5" class="text-center">
+
+                    No Orders Found
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<hr class="my-5">
+
+<div class="row">
+
+    <div class="col-lg-6">
+
+        <div class="card shadow-sm">
+
+            <div class="card-header">
+
+                Low Stock Products
+
+            </div>
+
+            <div class="card-body">
+
+                <table class="table">
+
+                    <thead>
+
+                    <tr>
+
+                        <th>Product</th>
+
+                        <th>Stock</th>
+
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for product in low_stock_products %}
+
+                    <tr>
+
+                        <td>{{ product.name }}</td>
+
+                        <td>
+
+                            <span class="badge bg-warning">
+
+                                {{ product.stock }}
+
+                            </span>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="2">
+
+                            No Low Stock Products
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-6">
+
+        <div class="card shadow-sm">
+
+            <div class="card-header">
+
+                Out of Stock
+
+            </div>
+
+            <div class="card-body">
+
+                <table class="table">
+
+                    <thead>
+
+                    <tr>
+
+                        <th>Product</th>
+
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for product in out_of_stock_products %}
+
+                    <tr>
+
+                        <td>{{ product.name }}</td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td>
+
+                            No Out of Stock Products
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 {% endblock %}

@@ -9,9 +9,7 @@
     <div class="row">
 
         <aside class="col-lg-2 bg-dark text-white min-vh-100 p-0">
-
             {% include "dashboard/includes/sidebar.html" %}
-
         </aside>
 
         <main class="col-lg-10 p-0">
@@ -21,7 +19,6 @@
             <div class="container-fluid p-4">
 
                 {% block dashboard_content %}
-
                 {% endblock %}
 
             </div>
@@ -31,5 +28,10 @@
     </div>
 
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% block dashboard_scripts %}
+{% endblock %}
 
 {% endblock %}

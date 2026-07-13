@@ -6,12 +6,15 @@
 
     <h2>Coupons</h2>
 
+    {% if request.user.role == "owner" %}
+
     <a href="{% url 'dashboard:coupon_add' %}"
        class="btn btn-primary">
 
         + Add Coupon
 
     </a>
+    {% endif %}
 
 </div>
 
@@ -29,13 +32,21 @@
 
             <th>Min Purchase</th>
 
+            {% if request.user.role == "owner" %}
+
             <th>Limit</th>
 
             <th>Used</th>
 
+            {% endif %}
+
             <th>Status</th>
 
+            {% if request.user.role == "owner" %}
+
             <th>Action</th>
+
+            {% endif %}
 
         </tr>
 
@@ -71,6 +82,8 @@
 
             </td>
 
+            {% if request.user.role == "owner" %}
+
             <td>
 
                 {{ coupon.usage_limit }}
@@ -82,6 +95,8 @@
                 {{ coupon.used_count }}
 
             </td>
+
+            {% endif %}
 
             <td>
 
@@ -105,6 +120,7 @@
 
             </td>
 
+            {% if request.user.role == "owner" %}
             <td>
 
                 <a href="{% url 'dashboard:coupon_edit' coupon.id %}"
@@ -122,6 +138,7 @@
                 </a>
 
             </td>
+            {% endif %}
 
         </tr>
 

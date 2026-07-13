@@ -19,7 +19,7 @@
 
     <!-- Orders -->
 
-    <a href="#"
+    <a href="{% url 'dashboard:dashboard_orders' %}"
        class="btn btn-dark w-100 text-start mb-2">
 
         📦 Orders
@@ -55,10 +55,18 @@
 
     <!-- Customers -->
 
-    <a href="#"
+    <a href="{% url 'dashboard:dashboard_customers' %}"
        class="btn btn-dark w-100 text-start mb-2">
 
         👥 Customers
+
+    </a>
+
+
+    <a href="{% url 'dashboard:coupon_list' %}"
+        class="btn btn-dark w-100 text-start mb-2">
+
+        🎁 Coupons
 
     </a>
 
@@ -73,27 +81,22 @@
 
         </a>
 
-        <a href="{% url 'dashboard:coupon_list' %}"
-            class="btn btn-dark w-100 text-start mb-2">
+        
 
-            🎁 Coupons
-
-        </a>
-
-        <a href="#"
+        <a href="{% url 'dashboard:reports' %}"
            class="btn btn-dark w-100 text-start mb-2">
 
             📈 Analytics
 
         </a>
 
-        <a href="#"
-           class="btn btn-dark w-100 text-start mb-2">
+        
+        <a href="{% url 'dashboard:reports' %}" class="btn btn-dark w-100 text-start mb-2">
 
             📑 Reports
 
         </a>
-
+        
     {% endif %}
 
     <hr class="text-secondary">

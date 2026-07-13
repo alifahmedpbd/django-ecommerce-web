@@ -82,6 +82,22 @@ class Order(models.Model):
         ("cancelled", "Cancelled"),
     )
 
+    PAYMENT_STATUS_CHOICES = (
+
+    ("pending", "Pending"),
+
+    ("paid", "Paid"),
+
+    ("partial", "Partial Paid"),
+
+    ("failed", "Failed"),
+
+    ("refunded", "Refunded"),
+
+    ("cancelled", "Cancelled"),
+
+    )
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
     full_name = models.CharField(max_length=200)
     email = models.EmailField()
@@ -95,6 +111,7 @@ class Order(models.Model):
     coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     final_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending")
 
     def __str__(self):
         return f"Order #{self.id}"
@@ -139,3 +156,31 @@ class CouponUsage(models.Model):
     def __str__(self):
 
         return f"{self.user.username} - {self.coupon.code}"
+
+
+class OrderTimeline(models.Model):
+
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="timeline",
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+    )
+
+    note = models.TextField()
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+
+        ordering = ["-created_at"]
+
+    def __str__(self):
+
+        return f"Order #{self.order.id}"

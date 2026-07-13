@@ -7,6 +7,12 @@ urlpatterns = [
 
     path("", views.dashboard_home, name="home"),
 
+    path("reports/", views.reports, name="reports"),
+
+    path("reports/pdf/", views.sales_report_pdf, name="sales_report_pdf"),
+
+    path("reports/excel/", views.sales_report_excel, name="sales_report_excel"),
+
     # Categories
     path("categories/", views.category_list, name="category_list"),
     path("categories/add/", views.category_create, name="category_add"),
@@ -47,5 +53,17 @@ urlpatterns = [
     path("coupons/add/", views.coupon_add, name="coupon_add"),
     path("coupons/<int:pk>/edit/", views.coupon_edit, name="coupon_edit"),
     path("coupons/<int:pk>/delete/", views.coupon_delete, name="coupon_delete"),
+
+    path("orders/<int:order_id>/", views.dashboard_order_detail, name="dashboard_order_detail"),
+    path("orders/", views.dashboard_orders, name="dashboard_orders"),
+
+    path("reports/low-stock/", views.low_stock_report, name="low_stock_report"),
+
+    path("reports/low-stock/pdf/", views.low_stock_report_pdf, name="low_stock_report_pdf"),
+
+    path("reports/low-stock/excel/", views.low_stock_report_excel, name="low_stock_report_excel"),
+
+    path("customers/", views.dashboard_customers, name="dashboard_customers"),
+    path("customers/<int:user_id>/", views.dashboard_customer_detail, name="dashboard_customer_detail"),
 
 ]
