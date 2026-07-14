@@ -13,6 +13,7 @@ from reportlab.platypus import (
 )
 from django.contrib import messages
 from .services import restore_order_stock
+from orders.models import OrderTimeline
 
 # Create your views here.
 
@@ -412,6 +413,9 @@ def cancel_order(request, order_id):
         order.status = "cancelled"
 
         order.save()
+
+        OrderTimeline.objects.create(
+            order=order, user=request.user, note="Customer cancelled this order.")
 
         messages.success(
 

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load currency %}
 
 {% block title %}
 Checkout
@@ -86,9 +87,21 @@ Checkout
 
                         </div>
 
-                        <div>
+                        <div class="text-end">
 
-                            ${{ item.total_price }}
+                            <strong>
+
+                                ${{ item.total_price }}
+
+                            </strong>
+
+                            <br>
+
+                            <small class="text-success">
+
+                                ≈ ৳{{ item.total_price|bdt }}
+
+                            </small>
 
                         </div>
 
@@ -118,7 +131,19 @@ Checkout
 
                         Discount:
 
-                        ${{ discount }}
+                        <strong>
+
+                            ${{ discount }}
+
+                        </strong>
+
+                        <br>
+
+                        <small class="text-success">
+
+                            ≈ ৳{{ discount|bdt }}
+
+                        </small>
 
                         <br><br>
 
@@ -176,11 +201,23 @@ Checkout
 
                         </strong>
 
-                        <strong>
+                        <div class="text-end">
 
-                            ${{ subtotal }}
+                            <strong>
 
-                        </strong>
+                                ${{ subtotal }}
+
+                            </strong>
+
+                            <br>
+
+                            <small class="text-success">
+
+                                ≈ ৳{{ subtotal|bdt }}
+
+                            </small>
+
+                        </div>
 
                     </div>
 
@@ -194,11 +231,23 @@ Checkout
 
                         </strong>
 
-                        <strong>
+                        <div class="text-end">
 
-                            - ${{ discount }}
+                            <strong>
 
-                        </strong>
+                                - ${{ discount }}
+
+                            </strong>
+
+                            <br>
+
+                            <small>
+
+                                - ৳{{ discount|bdt }}
+
+                            </small>
+
+                        </div>
 
                     </div>
 
@@ -214,11 +263,21 @@ Checkout
 
                         </h4>
 
-                        <h4 class="text-success">
+                        <div class="text-end">
 
-                            ${{ final_total }}
+                            <h4 class="text-success">
 
-                        </h4>
+                                ${{ final_total }}
+
+                            </h4>
+
+                            <h5 class="text-primary">
+
+                                ≈ ৳{{ final_total|bdt }}
+
+                            </h5>
+
+                        </div>
 
                     </div>
 

@@ -1455,7 +1455,15 @@ def dashboard_order_detail(request, order_id):
 
     if request.method == "POST":
 
+        # ==========================
+        # Previous Status
+        # ==========================
+
+        old_status = order.status
+
+        # ==========================
         # Payment Status
+        # ==========================
 
         payment_status = request.POST.get(
             "payment_status"
@@ -1470,7 +1478,9 @@ def dashboard_order_detail(request, order_id):
                 "partial",
             ]
 
+        # ==========================
         # Order Status
+        # ==========================
 
         status = request.POST.get(
             "status"
@@ -1480,9 +1490,15 @@ def dashboard_order_detail(request, order_id):
 
             order.status = status
 
+        # ==========================
+        # Save Order
+        # ==========================
+
         order.save()
 
+        # ==========================
         # Timeline
+        # ==========================
 
         note = request.POST.get(
             "note"
@@ -1499,6 +1515,26 @@ def dashboard_order_detail(request, order_id):
                 note=note,
 
             )
+
+        # ==========================
+        # Send Email ONLY if status changed
+        # ==========================
+
+        if old_status != order.status:
+
+            from payments.utils import send_order_status_email
+
+            send_order_status_email(
+
+                request,
+
+                order,
+
+            )
+
+        # ==========================
+        # Success Message
+        # ==========================
 
         messages.success(
 
@@ -1517,11 +1553,17 @@ def dashboard_order_detail(request, order_id):
         )
 
     return render(
+
         request,
+
         "dashboard/order_detail.html",
+
         {
+
             "order": order,
+
         },
+
     )
 
 @owner_or_staff_required

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="UTF-8">
+</head>
+
+<body style="background:#f5f5f5;padding:40px;font-family:Arial,sans-serif;">
+
+<div style="max-width:650px;background:#fff;margin:auto;padding:40px;border-radius:8px;">
+
+    <h2 style="color:#198754;">
+        🎉 Cash on Delivery Order Placed
+    </h2>
+
+    <p>
+        Hello <strong>{{ order.full_name }}</strong>,
+    </p>
+
+    <p>
+        Thank you for shopping with <strong>Shopora</strong>.
+    </p>
+
+    <p>
+        Your <strong>Cash on Delivery</strong> order has been placed successfully.
+    </p>
+
+    <hr>
+
+    <h3>Order Information</h3>
+
+    <p>
+        <strong>Order ID:</strong>
+        #{{ order.id }}
+    </p>
+
+    <p>
+        <strong>Total:</strong>
+        ${{ order.final_total }}
+    </p>
+
+    <p>
+        <strong>Payment Method:</strong>
+        Cash on Delivery
+    </p>
+
+    <hr>
+
+    <p>
+        You don't need to pay online.
+    </p>
+
+    <p>
+        Please pay the delivery agent when your order arrives.
+    </p>
+
+    <p>
+        You can track your order anytime from our website.
+    </p>
+
+    <br>
+
+    <a href="{{ site_url }}"
+       style="background:#198754;color:white;text-decoration:none;padding:12px 25px;border-radius:5px;">
+        Visit Shopora
+    </a>
+
+    <br><br>
+
+    <p>
+        Thank you ❤️
+    </p>
+
+</div>
+
+</body>
+
+</html>

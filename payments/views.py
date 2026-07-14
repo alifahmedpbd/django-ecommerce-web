@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from orders.models import Order
-from .utils import clear_user_cart, send_order_confirmation_email
+from .utils import clear_user_cart, send_order_confirmation_email, send_owner_new_order_email
 
 from django.conf import settings
 
@@ -12,6 +12,9 @@ from .services import (
     create_stripe_checkout_session,
     validate_stripe_payment,
 )
+
+from orders.models import OrderTimeline
+
 
 
 def create_checkout_session(request, order_id):
@@ -82,6 +85,11 @@ def payment_success(request, order_id):
     order.status = "processing"
 
     order.save()
+    
+
+    OrderTimeline.objects.create(
+        order=order, user=order.user, note="Stripe payment completed successfully."
+    )
 
     # ==========================================
     # Reduce Stock
@@ -133,6 +141,11 @@ def payment_success(request, order_id):
     # ==========================================
 
     send_order_confirmation_email(
+        request,
+        order,
+    )
+
+    send_owner_new_order_email(
         request,
         order,
     )

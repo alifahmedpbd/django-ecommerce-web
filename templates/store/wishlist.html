@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load currency %}
 
 {% block title %}
 My Wishlist
@@ -34,9 +35,21 @@ My Wishlist
                                 {{ item.product.name }}
                             </h5>
 
-                            <p class="text-success fw-bold">
-                                ${{ item.product.price }}
-                            </p>
+                            <div>
+
+                                <h5 class="text-success fw-bold mb-1">
+
+                                    ${{ item.product.price }}
+
+                                </h5>
+
+                                <small class="text-primary">
+
+                                    ≈ ৳{{ item.product.price|bdt }}
+
+                                </small>
+
+                            </div>
 
                             <div class="d-flex justify-content-between mt-3">
 

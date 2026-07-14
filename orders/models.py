@@ -160,22 +160,10 @@ class CouponUsage(models.Model):
 
 class OrderTimeline(models.Model):
 
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="timeline",
-    )
-
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-    )
-
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="timeline")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     note = models.TextField()
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
 
@@ -184,3 +172,20 @@ class OrderTimeline(models.Model):
     def __str__(self):
 
         return f"Order #{self.order.id}"
+
+
+class ExchangeRate(models.Model):
+
+    currency = models.CharField(max_length=10, unique=True, default="USD")
+    rate = models.DecimalField(max_digits=10, decimal_places=2, default=122.50,)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+
+        verbose_name = "Exchange Rate"
+
+        verbose_name_plural = "Exchange Rates"
+
+    def __str__(self):
+
+        return f"1 {self.currency} = ৳{self.rate}"

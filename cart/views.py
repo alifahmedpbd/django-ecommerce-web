@@ -20,6 +20,10 @@ from store.services import can_purchase
 from django.contrib import messages
 
 from orders.services import reduce_order_stock, validate_coupon, calculate_discount
+from payments.utils import send_order_confirmation_email, send_owner_new_order_email
+from orders.models import OrderTimeline
+
+
 
 # ===============================
 # Add Product To Cart
@@ -273,6 +277,12 @@ def checkout(request):
 
                 order.save()
 
+                send_owner_new_order_email(
+                    request, order)
+
+                OrderTimeline.objects.create(
+                    order=order, user=request.user, note="Cash On Delivery order placed.")
+
                 reduce_order_stock(order)
 
                 # Coupon finally consumed
@@ -293,6 +303,23 @@ def checkout(request):
                     coupon.used_count += 1
 
                     coupon.save()
+
+                    # ==========================================
+                    # Send COD Confirmation Email
+                    # ==========================================
+
+                send_order_confirmation_email(
+
+                    request,
+
+                    order,
+
+                    )
+                
+                send_owner_new_order_email(
+                    request,
+                    order,
+                )
 
                 cart.clear()
 

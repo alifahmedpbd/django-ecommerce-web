@@ -1,4 +1,6 @@
+
 {% extends "base.html" %}
+{% load currency %}
 
 {% block title %}
 
@@ -148,11 +150,17 @@
 
             </div>
 
-            <h2 class="text-success fw-bold my-4">
+            <h3 class="fw-bold">
 
-                $ {{ product.price }}
+                ${{ product.price }}
 
             </h3>
+
+            <p class="text-success">
+
+                ≈ ৳{{ product.price|bdt }}
+
+            </p>
 
             {% if product.in_stock %}
 

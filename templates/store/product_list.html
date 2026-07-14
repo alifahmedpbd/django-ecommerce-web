@@ -1,4 +1,6 @@
+
 {% extends "base.html" %}
+{% load currency %}
 
 {% block title %}Products{% endblock %}
 
@@ -384,11 +386,21 @@
 
                             {% endif %}
 
-                            <h4 class="text-success fw-bold">
+                            <div>
 
-                                $ {{ product.price }}
+                                <h5 class="fw-bold mb-1">
 
-                            </h4>
+                                    ${{ product.price }}
+
+                                </h5>
+
+                                <small class="text-success">
+
+                                    ≈ ৳{{ product.price|bdt }}
+
+                                </small>
+
+                            </div>
 
                             {% if user.is_authenticated %}
 

@@ -307,11 +307,43 @@ Order Details
 
                         </td>
 
-                        <td>${{ item.price }}</td>
+                        <td>
+
+                            <strong>
+
+                                ${{ item.price }}
+
+                            </strong>
+
+                            <br>
+
+                            <small class="text-primary">
+
+                                ≈ ৳{{ item.price|bdt }}
+
+                            </small>
+
+                        </td>
 
                         <td>{{ item.quantity }}</td>
 
-                        <td>${{ item.get_total_price }}</td>
+                        <td>
+
+                            <strong>
+
+                                ${{ item.get_total_price }}
+
+                            </strong>
+
+                            <br>
+
+                            <small class="text-primary">
+
+                                ≈ ৳{{ item.get_total_price|bdt }}
+
+                            </small>
+
+                        </td>
 
                     </tr>
 
@@ -323,11 +355,21 @@ Order Details
 
             <hr>
 
-            <h4 class="text-end text-success fw-bold">
+            <div class="text-end">
 
-                Total: ${{ order.get_total_cost }}
+                <h4 class="text-success fw-bold">
 
-            </h4>
+                    Total: ${{ order.get_total_cost }}
+
+                </h4>
+
+                <h5 class="text-primary fw-bold">
+
+                    ≈ ৳{{ order.get_total_cost|bdt }}
+
+                </h5>
+
+            </div>
 
             <div class="mt-4">
 

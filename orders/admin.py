@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Order, OrderItem, Coupon
+from .models import Order, OrderItem, Coupon, ExchangeRate
 # Register your models here.
 
 class OrderItemInline(admin.TabularInline):
@@ -35,3 +35,16 @@ class OrderAdmin(admin.ModelAdmin):
 
 admin.site.register(OrderItem)
 admin.site.register(Coupon)
+
+@admin.register(ExchangeRate)
+class ExchangeRateAdmin(admin.ModelAdmin):
+
+    list_display = (
+
+        "currency",
+
+        "rate",
+
+        "updated_at",
+
+    )
