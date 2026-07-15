@@ -1,0 +1,31 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+
+<h2 style="color:#dc3545;">
+    ⚠ Low Stock Alert
+</h2>
+
+<p>
+The following product is running low on stock.
+</p>
+
+<table style="width:100%;border-collapse:collapse;">
+
+<tr>
+<td><strong>Product</strong></td>
+<td>{{ product.name }}</td>
+</tr>
+
+<tr>
+<td><strong>Current Stock</strong></td>
+<td>{{ product.stock }}</td>
+</tr>
+
+</table>
+
+<p style="margin-top:25px;">
+Please restock as soon as possible.
+</p>
+
+{% endblock %}

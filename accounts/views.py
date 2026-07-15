@@ -12,6 +12,8 @@ from django.conf import settings
 from .utils import (send_otp_email, create_and_send_otp,)
 from django.utils import timezone
 from .forms import ForgotPasswordForm, OTPVerificationForm, ResetPasswordForm, EmailOTPLoginForm
+from payments.utils import send_owner_new_customer_email
+
 
 # Create your views here.
 
@@ -26,6 +28,13 @@ def register_view(request):
             user = form.save(commit=False)
             user.is_active = False
             user.save()
+
+
+            # ==========================================
+            # Notify Owner About New Customer
+            # ==========================================
+
+            send_owner_new_customer_email(request, user)
 
             create_and_send_otp(
                 user=user,

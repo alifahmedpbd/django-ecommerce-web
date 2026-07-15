@@ -1,47 +1,32 @@
-<!DOCTYPE html>
+{% extends "emails/base_email.html" %}
 
-<html>
+{% block content %}
 
-<body style="font-family:Arial;background:#f5f5f5;padding:40px;">
+<h2>❌ Order Cancelled</h2>
 
-<div style="max-width:650px;margin:auto;background:white;padding:40px;border-radius:8px;">
-
-<h2 style="color:red;">
-
-❌ Order Cancelled
-
-</h2>
+<p>Hello {{ order.full_name }},</p>
 
 <p>
-
-Hello {{ order.full_name }},
-
+Your order has been cancelled successfully.
 </p>
 
 <p>
-
-Unfortunately your order
-
-<strong>
-
-#{{ order.id }}
-
-</strong>
-
-has been cancelled.
-
+Order ID:
+<strong>#{{ order.id }}</strong>
 </p>
 
 <p>
-
-If this was unexpected,
-
-please contact our support team.
-
+If this wasn't expected, please contact our support team.
 </p>
 
-</div>
+<a href="{{ site_url }}"
+style="display:inline-block;
+padding:12px 24px;
+background:#dc3545;
+color:white;
+text-decoration:none;
+border-radius:8px;">
+Visit Shopora
+</a>
 
-</body>
-
-</html>
+{% endblock %}

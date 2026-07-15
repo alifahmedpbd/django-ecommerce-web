@@ -1522,15 +1522,20 @@ def dashboard_order_detail(request, order_id):
 
         if old_status != order.status:
 
-            from payments.utils import send_order_status_email
-
-            send_order_status_email(
-
-                request,
-
-                order,
-
+            from payments.utils import (
+                send_shipping_email,
+                send_delivered_email,
+                send_cancelled_email,
             )
+
+            if order.status == "shipped":
+                send_shipping_email(request, order)
+
+            elif order.status == "delivered":
+                send_delivered_email(request, order)
+
+            elif order.status == "cancelled":
+                send_cancelled_email(request, order)
 
         # ==========================
         # Success Message

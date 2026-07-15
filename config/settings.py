@@ -178,6 +178,8 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 
+OWNER_EMAIL = os.getenv("OWNER_EMAIL")
+
 
 import cloudinary
 

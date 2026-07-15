@@ -1,43 +1,32 @@
-<!DOCTYPE html>
+{% extends "emails/base_email.html" %}
 
-<html>
+{% block content %}
 
-<body style="font-family:Arial;background:#f5f5f5;padding:40px;">
+<h2>🎉 Your Order has been Delivered</h2>
 
-<div style="max-width:650px;margin:auto;background:white;padding:40px;border-radius:8px;">
-
-<h2 style="color:#198754;">
-
-✅ Order Delivered
-
-</h2>
+<p>Hello {{ order.full_name }},</p>
 
 <p>
-
-Hi <strong>{{ order.full_name }}</strong>,
-
+Your order has been successfully delivered.
 </p>
 
 <p>
-
-Your order has been delivered successfully.
-
+Order ID:
+<strong>#{{ order.id }}</strong>
 </p>
 
 <p>
-
-We hope you enjoy your purchase.
-
+Thank you for shopping with Shopora ❤️
 </p>
 
-<p>
+<a href="{{ site_url }}"
+style="display:inline-block;
+padding:12px 24px;
+background:#198754;
+color:white;
+text-decoration:none;
+border-radius:8px;">
+Continue Shopping
+</a>
 
-Thank you for choosing Shopora ❤️
-
-</p>
-
-</div>
-
-</body>
-
-</html>
+{% endblock %}

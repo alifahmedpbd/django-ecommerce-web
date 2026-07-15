@@ -1,91 +1,55 @@
-<!DOCTYPE html>
+{% extends "emails/base_email.html" %}
+{% load currency %}
 
-<html>
+{% block content %}
 
-<head>
-
-<meta charset="utf-8">
-
-</head>
-
-<body style="font-family:Arial;background:#f5f5f5;padding:40px;">
-
-<div style="max-width:650px;margin:auto;background:white;padding:40px;border-radius:12px;">
-
-<h2 style="color:#0d6efd;">
-🛒 New Order Received
+<h2 style="color:#0d6efd;margin-top:0;">
+    🛒 New Order Received
 </h2>
-
-<hr>
 
 <p>
 A new customer has placed an order.
 </p>
+
+<hr>
 
 <h3>
 Order #{{ order.id }}
 </h3>
 
 <p>
-
-<b>Customer:</b>
-
+<strong>Customer:</strong>
 {{ order.full_name }}
-
 </p>
 
 <p>
-
-<b>Email:</b>
-
+<strong>Email:</strong>
 {{ order.email }}
-
 </p>
 
 <p>
-
-<b>Phone:</b>
-
+<strong>Phone:</strong>
 {{ order.phone }}
-
 </p>
 
 <p>
-
-<b>Payment:</b>
-
+<strong>Payment Method:</strong>
 {{ order.payment_method|title }}
-
 </p>
 
 <p>
-
-<b>Total:</b>
-
-${{ order.final_total }}
-
-</p>
-
-<p>
-
-<b>Status:</b>
-
+<strong>Order Status:</strong>
 {{ order.status|title }}
-
 </p>
 
-<hr>
+<p>
+<strong>Total:</strong>
+${{ order.final_total }}
+(≈ ৳{{ order.final_total|bdt }})
+</p>
 
-<a href="{{ site_url }}/dashboard/orders/"
-
-style="background:#0d6efd;color:white;padding:12px 25px;text-decoration:none;border-radius:8px;">
-
-Open Dashboard
-
+<a href="{{ site_url }}/dashboard/orders/" class="btn">
+    Open Dashboard
 </a>
 
-</div>
-
-</body>
-
-</html>
+{% endblock %}

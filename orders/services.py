@@ -2,6 +2,7 @@ from store.services import reduce_stock, restore_stock
 from decimal import Decimal
 from django.utils import timezone
 from .models import Coupon, CouponUsage
+from payments.utils import send_low_stock_email
 
 # ==========================================
 # Reduce Order Stock
@@ -11,13 +12,21 @@ def reduce_order_stock(order):
 
     for item in order.items.select_related("product"):
 
-        reduce_stock(
+        success = reduce_stock(
 
             product=item.product,
-
             quantity=item.quantity,
 
         )
+
+        if success:
+
+            # fresh value from DB
+            item.product.refresh_from_db()
+
+            if item.product.stock <= 5:
+
+                send_low_stock_email(item.product)
 
 
 # ==========================================

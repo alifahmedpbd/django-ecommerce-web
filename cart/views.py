@@ -277,9 +277,6 @@ def checkout(request):
 
                 order.save()
 
-                send_owner_new_order_email(
-                    request, order)
-
                 OrderTimeline.objects.create(
                     order=order, user=request.user, note="Cash On Delivery order placed.")
 

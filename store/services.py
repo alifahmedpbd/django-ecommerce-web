@@ -9,19 +9,15 @@ from django.db import transaction
 def reduce_stock(product, quantity):
 
     if quantity <= 0:
-
         return False
 
     if product.stock < quantity:
-
         return False
 
     product.stock -= quantity
 
     product.save(
-        update_fields=[
-            "stock",
-        ]
+        update_fields=["stock"]
     )
 
     return True

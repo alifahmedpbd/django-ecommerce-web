@@ -1,0 +1,23 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+
+<h2>🎉 New Customer Registered</h2>
+
+<p>A new customer has created an account.</p>
+
+<hr>
+
+<p><strong>Name:</strong> {{ user.get_full_name|default:user.username }}</p>
+
+<p><strong>Username:</strong> {{ user.username }}</p>
+
+<p><strong>Email:</strong> {{ user.email }}</p>
+
+<p><strong>Date Joined:</strong> {{ user.date_joined }}</p>
+
+<p>
+    Visit the dashboard to view customer details.
+</p>
+
+{% endblock %}

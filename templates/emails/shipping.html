@@ -1,0 +1,52 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+
+<h2>🚚 Your Order Has Been Shipped</h2>
+
+<p>
+
+Hi {{ order.full_name }},
+
+</p>
+
+<p>
+
+Good news!
+
+Your order has been shipped successfully.
+
+</p>
+
+<p>
+
+<b>Order ID:</b>
+
+#{{ order.id }}
+
+</p>
+
+<p>
+
+Your package is now on the way.
+
+You can check your order status anytime from your account.
+
+</p>
+
+<a
+href="{{ site_url }}{% url 'orders:order_detail' order.id %}"
+class="btn"
+>
+
+Track Order
+
+</a>
+
+<p style="margin-top:40px">
+
+Thank you for shopping with Shopora ❤️
+
+</p>
+
+{% endblock %}
