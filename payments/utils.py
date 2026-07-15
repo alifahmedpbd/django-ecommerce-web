@@ -141,7 +141,7 @@ def send_shipping_email(request, order):
 
     html_message = render_to_string(
 
-        "emails/shipped.html",
+        "emails/shipping.html",
 
         {
 
