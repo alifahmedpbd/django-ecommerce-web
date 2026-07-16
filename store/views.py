@@ -4,22 +4,37 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from .forms import ReviewForm
-from django.db.models import Count
 from django.contrib import messages
+from django.db.models import F
 # Create your views here.
 
 def product_list(request, category_slug=None):
 
     category = None
 
-    categories = Category.objects.all()
+    categories = Category.objects.only(
+        "id",
+        "name",
+        "slug",
+    )
 
-    products = Product.objects.filter(available=True)
+    products = Product.objects.filter(
+        available=True
+    ).select_related(
+        "category",
+    )
 
     #Category Filter
     if category_slug:
 
-        category = get_object_or_404(Category, slug=category_slug)
+        category = get_object_or_404(
+            Category.objects.only(
+                "id",
+                "name",
+                "slug",
+            ),
+            slug=category_slug,
+        )
 
         products = products.filter(category=category)
 
@@ -62,13 +77,30 @@ def product_list(request, category_slug=None):
         products = products.filter(stock=0)
 
     # Latest Products
-    latest_products = Product.objects.filter(available=True).order_by("-created_at")[:5]
+    latest_products = Product.objects.filter(
+        available=True
+    ).select_related(
+        "category",
+    ).order_by(
+        "-created_at"
+    )[:5]
 
     # Popular Products
-    popular_products = Product.objects.filter(available=True).order_by("-views")[:5]
+    popular_products = Product.objects.filter(
+        available=True
+    ).select_related(
+        "category",
+    ).order_by(
+        "-views"
+    )[:5]
 
     #Featured Products
-    featured_products = Product.objects.filter(featured=True, available=True)[:4]
+    featured_products = Product.objects.filter(
+        featured=True,
+        available=True,
+    ).select_related(
+        "category",
+    )[:4]
 
     #Pagination
     paginator = Paginator(products, 6) # Show 6 products per page
@@ -102,14 +134,40 @@ def product_list(request, category_slug=None):
     return render(request, "store/product_list.html", context)
 
 def product_detail(request, slug):
-    product = get_object_or_404(Product, slug=slug, available=True)
+    product = get_object_or_404(
+        Product.objects.select_related(
+            "category",
+        ).prefetch_related(
+            "gallery",
+            "reviews__user",
+        ),
+        slug=slug,
+        available=True,
+    )
+
     gallery = product.gallery.all()
     form = None
-    related_products = Product.objects.filter(category=product.category, available=True).exclude(id=product.id)[:4]
-    product.views += 1
-    product.save()
 
-    reviews = product.reviews.all()
+    related_products = Product.objects.filter(
+        category=product.category,
+        available=True,
+    ).exclude(
+        id=product.id,
+    ).select_related(
+        "category",
+    )[:4]
+
+    Product.objects.filter(
+        id=product.id
+    ).update(
+        views=F("views") + 1
+    )
+
+    product.refresh_from_db()
+
+    reviews = product.reviews.select_related(
+        "user",
+    )
 
     average_rating = product.average_rating()
 
@@ -151,7 +209,10 @@ def product_detail(request, slug):
     # Review Form
     if request.user.is_authenticated:
 
-        review = Review.objects.filter(
+        review = Review.objects.select_related(
+            "user",
+            "product",
+        ).filter(
             product=product,
             user=request.user,
         ).first()
@@ -280,8 +341,10 @@ def remove_from_wishlist(request, product_id):
 @login_required
 def wishlist(request):
 
-    wishlist_items = Wishlist.objects.filter(
-        user=request.user
-    ).select_related("product")
+    wishlist_items = Wishlist.objects.select_related(
+        "product",
+    ).filter(
+        user=request.user,
+    )
 
     return render(request, "store/wishlist.html", {"wishlist_items": wishlist_items},)

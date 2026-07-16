@@ -5,15 +5,31 @@ from store.models import Product, Category
 
 def home(request):
 
-    featured_products = Product.objects.filter(
-
-        available= True).order_by("-id")[:8]
+    featured_products = (
+        Product.objects
+        .filter(available=True)
+        .only(
+            "id",
+            "slug",
+            "name",
+            "price",
+            "discount_price",
+            "image",
+            "average_rating",
+        )
+        .order_by("-created_at")[:8]
+    )
     
-    if not featured_products.exists():
 
-        featured_products = Product.objects.filter(available=True).order_by("-created_at")[:8]
-
-    featured_categories = Category.objects.all()[:4]
+    featured_categories = (
+        Category.objects
+        .only(
+            "id",
+            "name",
+            "slug",
+            "image",
+        )[:4]
+    )
     
     context = {
 

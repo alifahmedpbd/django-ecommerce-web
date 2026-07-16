@@ -14,13 +14,21 @@ from reportlab.platypus import (
 from django.contrib import messages
 from .services import restore_order_stock
 from orders.models import OrderTimeline
+from django.db import transaction
 
 # Create your views here.
 
 def order_success(request, order_id):
 
     order = get_object_or_404(
-        Order, id=order_id
+        Order.objects.only(
+            "id",
+            "full_name",
+            "payment_method",
+            "final_total",
+            "status",
+        ),
+        id=order_id,
     )
 
     return render(request, "orders/order_success.html", {"order": order })
@@ -28,14 +36,33 @@ def order_success(request, order_id):
 @login_required
 def order_list(request):
 
-    orders = Order.objects.filter(user=request.user).order_by("-created_at")
+    orders = (
+        Order.objects
+        .filter(user=request.user)
+        .only(
+            "id",
+            "status",
+            "payment_method",
+            "paid",
+            "final_total",
+            "created_at",
+        )
+        .order_by("-created_at")
+    )
 
     return render(request, "orders/order_list.html", {"orders": orders })
 
 @login_required
 def order_detail(request, order_id):
 
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(
+        Order.objects.prefetch_related(
+            "items__product",
+            "timeline",
+        ),
+        id=order_id,
+        user=request.user,
+    )
 
     can_pay_now = (order.payment_method == "stripe"
 
@@ -59,7 +86,9 @@ def invoice_pdf(request, order_id):
     # ==========================================
 
     order = get_object_or_404(
-        Order,
+        Order.objects.prefetch_related(
+            "items__product",
+        ),
         id=order_id,
         user=request.user,
     )
@@ -231,7 +260,9 @@ def invoice_pdf(request, order_id):
 
     ]
 
-    for item in order.items.all():
+    items = order.items.select_related("product")
+
+    for item in items:
 
         data.append(
 
@@ -263,7 +294,7 @@ def invoice_pdf(request, order_id):
 
             "Grand Total",
 
-            f"${order.get_total_cost()}",
+            f"${order.final_total}"
 
         ]
 
@@ -391,13 +422,11 @@ def invoice_pdf(request, order_id):
 def cancel_order(request, order_id):
 
     order = get_object_or_404(
-
-        Order,
-
+        Order.objects.prefetch_related(
+            "items__product",
+        ),
         id=order_id,
-
         user=request.user,
-
     )
 
     if order.status in [
@@ -407,15 +436,16 @@ def cancel_order(request, order_id):
         "processing",
 
     ]:
+        with transaction.atomic():
 
-        restore_order_stock(order)
+            restore_order_stock(order)
 
-        order.status = "cancelled"
+            order.status = "cancelled"
 
-        order.save()
+            order.save(update_fields=["status"])
 
-        OrderTimeline.objects.create(
-            order=order, user=request.user, note="Customer cancelled this order.")
+            OrderTimeline.objects.create(
+                order=order, user=request.user, note="Customer cancelled this order.")
 
         messages.success(
 

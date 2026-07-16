@@ -1,4 +1,3 @@
-from urllib import request
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -7,10 +6,7 @@ from django.contrib.auth.decorators import login_required
 from orders.models import Order
 from store.models import Wishlist, Review
 from .models import EmailOTP, User
-from django.core.mail import send_mail
-from django.conf import settings
-from .utils import (send_otp_email, create_and_send_otp,)
-from django.utils import timezone
+from .utils import  create_and_send_otp
 from .forms import ForgotPasswordForm, OTPVerificationForm, ResetPasswordForm, EmailOTPLoginForm
 from payments.utils import send_owner_new_customer_email
 
@@ -70,7 +66,11 @@ def verify_email_view(request):
         return redirect("accounts:register")
 
     user = get_object_or_404(
-        User,
+        User.objects.only(
+            "id",
+            "email",
+            "is_active",
+        ),
         email=email,
     )
 
@@ -106,10 +106,10 @@ def verify_email_view(request):
             return redirect("accounts:verify_email")
 
         otp.is_verified = True
-        otp.save()
+        otp.save(update_fields=["is_verified"])
 
         user.is_active = True
-        user.save()
+        user.save(update_fields=["is_active"])
 
         request.session.pop("verify_email", None)
 
@@ -164,7 +164,11 @@ def email_login_view(request):
 
             try:
 
-                user = User.objects.get(email=email)
+                user = User.objects.only(
+                        "id",
+                        "email",
+                        "is_active",
+                    ).get(email=email)
 
             except User.DoesNotExist:
 
@@ -217,7 +221,12 @@ def verify_login_otp_view(request):
         return redirect("accounts:email_login")
 
     user = get_object_or_404(
-        User,
+        User.objects.only(
+            "id",
+            "email",
+            "password",
+            "is_active",
+        ),
         id=user_id,
     )
 
@@ -311,7 +320,10 @@ def forgot_password_view(request):
 
             try:
 
-                user = User.objects.get(email=email)
+                user = User.objects.only(
+                    "id",
+                    "email",
+                ).get(email=email)
 
             except User.DoesNotExist:
 
@@ -358,7 +370,10 @@ def verify_reset_otp_view(request):
         return redirect("accounts:forgot_password")
 
     user = get_object_or_404(
-        User,
+        User.objects.only(
+            "id",
+            "email",
+        ),
         id=user_id,
     )
 
@@ -408,7 +423,7 @@ def verify_reset_otp_view(request):
                 return redirect("accounts:verify_reset_otp")
 
             otp.is_verified = True
-            otp.save()
+            otp.save(update_fields=["is_verified"])
 
             request.session["reset_verified"] = True
 
@@ -439,7 +454,10 @@ def reset_password_view(request):
         return redirect("accounts:forgot_password")
 
     user = get_object_or_404(
-        User,
+        User.objects.only(
+            "id",
+            "password",
+        ),
         id=user_id,
     )
 
@@ -491,14 +509,35 @@ def profile_view(request):
 
     review_count = Review.objects.filter(user=request.user,).count()
 
-    recent_orders = Order.objects.filter(user=request.user,).order_by("-created_at")[:5]
+    recent_orders = (
+        Order.objects
+        .filter(user=request.user)
+        .only(
+            "id",
+            "status",
+            "final_total",
+            "created_at",
+            "payment_method",
+        )
+        .order_by("-created_at")[:5]
+    )
 
-    recent_reviews = Review.objects.filter(user=request.user,).select_related(
-        "product",
+    recent_reviews = Review.objects.filter(user=request.user,).select_related("product").only(
+        "rating",
+        "comment",
+        "created_at",
+        "product__id",
+        "product__name",
+        "product__slug",
     ).order_by("-created_at")[:3]
 
-    wishlist_items = Wishlist.objects.filter(user=request.user,).select_related(
-        "product",
+    wishlist_items = Wishlist.objects.filter(user=request.user,).select_related("product").only(
+        "created_at",
+        "product__id",
+        "product__name",
+        "product__price",
+        "product__slug",
+        "product__image",
     ).order_by("-created_at")[:3]
 
 

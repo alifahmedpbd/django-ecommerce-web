@@ -38,40 +38,19 @@ def dashboard_home(request):
 
     total_categories = Category.objects.count()
 
-    payment_methods = (
-
-        Order.objects.filter(
-            paid=True,
-        )
-
-        .values(
-            "payment_method",
-        )
-
-        .annotate(
-            revenue=Sum("final_total"),
-        )
-
-    )
-
     total_customers = User.objects.filter(
         role="customer",
     ).count()
 
     total_products = Product.objects.count()
 
-    revenue = sum(
-
-        order.get_total_cost()
-
-        for order in Order.objects.filter(
-
+    revenue = (
+        Order.objects.filter(
             status="delivered",
-
             paid=True,
-
-        )
-
+        ).aggregate(
+            total=Sum("final_total")
+        )["total"] or 0
     )
 
     today = timezone.now().date()
@@ -159,43 +138,25 @@ def dashboard_home(request):
     )
 
     top_products = (
-
-        Product.objects.annotate(
-
-            total_sold=Sum(
-
-                "orderitem__quantity",
-
-            )
-
+        Product.objects.only(
+            "id",
+            "name",
         )
-
-        .order_by(
-
-            "-total_sold",
-
-        )[:5]
-
+        .annotate(
+            total_sold=Sum("orderitem__quantity")
+        )
+        .order_by("-total_sold")[:5]
     )
 
     top_categories = (
-
-        Category.objects.annotate(
-
-            total_sold=Sum(
-
-                "products__orderitem__quantity",
-
-            )
-
+        Category.objects.only(
+            "id",
+            "name",
         )
-
-        .order_by(
-
-            "-total_sold",
-
-        )[:5]
-
+        .annotate(
+            total_sold=Sum("products__orderitem__quantity")
+        )
+        .order_by("-total_sold")[:5]
     )
 
 
@@ -207,22 +168,28 @@ def dashboard_home(request):
 
     recent_customers = User.objects.filter(
         role="customer",
-    ).order_by(
-        "-date_joined",
-    )[:5]
+    ).only(
+        "id",
+        "username",
+        "email",
+        "date_joined",
+    ).order_by("-date_joined")[:5]
 
     low_stock_products = Product.objects.filter(
-
         stock__gt=0,
-
         stock__lte=5,
-
+    ).only(
+        "id",
+        "name",
+        "stock",
     )
 
     out_of_stock_products = Product.objects.filter(
-
         stock=0,
-
+    ).only(
+        "id",
+        "name",
+        "stock",
     )
 
 
@@ -457,9 +424,9 @@ def reports(request):
     )
 
     low_stock = Product.objects.filter(
-
         stock__lte=5,
-
+    ).select_related(
+        "category",
     )
 
     return render(
@@ -484,9 +451,14 @@ def reports(request):
 @owner_or_staff_required
 def sales_report_pdf(request):
 
-    orders = Order.objects.select_related(
-        "user"
-    ).order_by("-created_at")
+    orders = (
+        Order.objects
+        .select_related(
+            "user",
+            "coupon",
+        )
+        .order_by("-created_at")
+    )
 
     response = HttpResponse(
         content_type="application/pdf"
@@ -580,9 +552,14 @@ def sales_report_excel(request):
 
     ])
 
-    orders = Order.objects.select_related(
-        "user"
-    ).order_by("-created_at")
+    orders = (
+        Order.objects
+        .select_related(
+            "user",
+            "coupon",
+        )
+        .order_by("-created_at")
+    )
 
     for order in orders:
 
@@ -769,7 +746,11 @@ def low_stock_report_excel(request):
 @owner_required
 def category_list(request):
 
-    categories = Category.objects.all().order_by("name")
+    categories = Category.objects.only(
+        "id",
+        "name",
+        "image",
+    ).order_by("name")
 
     return render(
         request,
@@ -1008,9 +989,14 @@ def product_list(request):
 
     query = request.GET.get("q")
 
-    products = Product.objects.select_related(
-        "category"
-    ).order_by("-created_at")
+    products = (
+        Product.objects
+        .select_related(
+            "category",
+            "brand",
+        )
+        .order_by("-created_at")
+    )
 
     if query:
 
@@ -1190,7 +1176,10 @@ def product_gallery(request, pk):
         pk=pk,
     )
 
-    images = product.gallery.all()
+    images = product.gallery.only(
+        "id",
+        "image",
+    )
 
     form = ProductImageForm()
 
@@ -1310,7 +1299,14 @@ def product_image_delete(request, pk):
 
 def coupon_list(request):
 
-    coupons = Coupon.objects.all().order_by("-id")
+    coupons = Coupon.objects.only(
+        "id",
+        "code",
+        "discount",
+        "active",
+        "valid_from",
+        "valid_to",
+    ).order_by("-id")
 
     return render(
 
@@ -1449,7 +1445,13 @@ def coupon_delete(request, pk):
 def dashboard_order_detail(request, order_id):
 
     order = get_object_or_404(
-        Order,
+        Order.objects.select_related(
+            "user",
+            "coupon",
+        ).prefetch_related(
+            "items__product",
+            "timeline__user",
+        ),
         id=order_id,
     )
 
@@ -1608,6 +1610,11 @@ def dashboard_customers(request):
     customers = (
         User.objects.filter(
             role="customer",
+        ).only(
+            "id",
+            "username",
+            "email",
+            "date_joined",
         )
         .annotate(
             total_orders=Count("orders"),
@@ -1634,7 +1641,9 @@ def dashboard_customer_detail(request, user_id):
         role="customer",
     )
 
-    orders = customer.orders.order_by(
+    orders = customer.orders.select_related(
+        "coupon",
+    ).order_by(
         "-created_at",
     )
 

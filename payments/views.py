@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from orders.models import Order
+from orders.models import Order, OrderTimeline, CouponUsage
 from .utils import clear_user_cart, send_order_confirmation_email, send_owner_new_order_email
 
 from django.conf import settings
@@ -13,14 +13,20 @@ from .services import (
     validate_stripe_payment,
 )
 
-from orders.models import OrderTimeline
-
+from orders.services import reduce_order_stock
+from django.db.models import F
+from django.db import transaction
 
 
 def create_checkout_session(request, order_id):
 
     order = get_object_or_404(
-        Order,
+        Order.objects.select_related(
+            "user",
+            "coupon",
+        ).prefetch_related(
+            "items__product",
+        ),
         id=order_id,
     )
 
@@ -35,7 +41,12 @@ def create_checkout_session(request, order_id):
 def payment_success(request, order_id):
 
     order = get_object_or_404(
-        Order,
+        Order.objects.select_related(
+            "user",
+            "coupon",
+        ).prefetch_related(
+            "items__product",
+        ),
         id=order_id,
     )
 
@@ -72,54 +83,60 @@ def payment_success(request, order_id):
     # Save payment info
     # ==========================================
 
-    order.payment_id = (
-        session.payment_intent
-        or
-        session.id
-    )
+    with transaction.atomic():
+        order.payment_id = (
+            session.payment_intent
+            or
+            session.id
+        )
 
-    order.paid = True
+        order.paid = True
 
-    order.payment_status = "paid"
+        order.payment_status = "paid"
 
-    order.status = "processing"
+        order.status = "processing"
 
-    order.save()
+        order.save(
+            update_fields=[
+                "payment_id",
+                "paid",
+                "payment_status",
+                "status",
+            ]
+        )
     
 
-    OrderTimeline.objects.create(
-        order=order, user=order.user, note="Stripe payment completed successfully."
-    )
+        OrderTimeline.objects.create(
+            order=order, user=order.user, note="Stripe payment completed successfully."
+        )
 
     # ==========================================
     # Reduce Stock
     # ==========================================
 
-    from orders.services import reduce_order_stock
 
-    reduce_order_stock(order)
+        reduce_order_stock(order)
 
     # ==========================================
     # Coupon Consume
     # ==========================================
 
-    if order.coupon:
+        if order.coupon:
 
-        from orders.models import CouponUsage
+        
 
-        CouponUsage.objects.create(
+            CouponUsage.objects.create(
 
-            coupon=order.coupon,
+                coupon=order.coupon,
 
-            user=order.user,
+                user=order.user,
 
-            order=order,
+                order=order,
 
-        )
+            )
 
-        order.coupon.used_count += 1
-
-        order.coupon.save()
+            order.coupon.used_count = F("used_count") + 1
+            order.coupon.save(update_fields=["used_count"])
 
     # ==========================================
     # Clear Coupon Session

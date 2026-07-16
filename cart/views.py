@@ -1,5 +1,4 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse
 from django.conf import settings
 
 import stripe
@@ -7,12 +6,7 @@ import stripe
 from store.models import Product
 from .cart import Cart
 from orders.forms import OrderCreateForm
-from orders.models import Order, OrderItem, Coupon
-
-from django.core.mail import send_mail
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
+from orders.models import OrderItem, OrderTimeline, CouponUsage
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 from store.services import can_purchase
@@ -21,9 +15,9 @@ from django.contrib import messages
 
 from orders.services import reduce_order_stock, validate_coupon, calculate_discount
 from payments.utils import send_order_confirmation_email, send_owner_new_order_email
-from orders.models import OrderTimeline
 
-
+from django.db.models import F
+from django.db import transaction
 
 # ===============================
 # Add Product To Cart
@@ -33,7 +27,16 @@ def cart_add(request, product_id):
 
     cart = Cart(request)
 
-    product = get_object_or_404(Product, id=product_id)
+    product = get_object_or_404(
+        Product.objects.only(
+            "id",
+            "name",
+            "price",
+            "stock",
+            "slug",
+        ),
+        id=product_id,
+    )
     quantity = int(request.POST.get("quantity", 1))
 
     if not can_purchase(product, quantity):
@@ -75,7 +78,12 @@ def cart_remove(request, product_id):
 
     cart = Cart(request)
 
-    product = get_object_or_404(Product, id=product_id)
+    product = get_object_or_404(
+        Product.objects.only(
+            "id",
+        ),
+        id=product_id,
+    )
 
     cart.remove(product)
 
@@ -90,7 +98,13 @@ def cart_update(request, product_id, action):
 
     cart = Cart(request)
 
-    product = get_object_or_404(Product, id=product_id)
+    product = get_object_or_404(
+        Product.objects.only(
+            "id",
+            "stock",
+        ),
+        id=product_id,
+    )
 
     quantity = cart.cart[str(product.id)]["quantity"]
 
@@ -122,15 +136,12 @@ def checkout(request):
     cart = Cart(request)
 
     if len(cart) == 0:
-
         return redirect("store:product_list")
 
     subtotal = cart.get_total_price()
 
     coupon = None
-
     discount = 0
-
     final_total = subtotal
 
     # ==========================================
@@ -142,44 +153,25 @@ def checkout(request):
     if coupon_code:
 
         coupon, error = validate_coupon(
-
             coupon_code,
-
             subtotal,
-
             request.user,
-
         )
 
         if coupon:
 
             discount = calculate_discount(
-
                 coupon,
-
                 subtotal,
-
             )
 
             final_total = subtotal - discount
 
         else:
 
-            request.session.pop(
+            request.session.pop("coupon_code", None)
 
-                "coupon_code",
-
-                None,
-
-            )
-
-            messages.error(
-
-                request,
-
-                error,
-
-            )
+            messages.error(request, error)
 
     # ==========================================
     # Checkout Submit
@@ -198,55 +190,79 @@ def checkout(request):
             for item in cart:
 
                 if not can_purchase(
-
                     item["product"],
-
                     item["quantity"],
-
                 ):
 
                     messages.error(
-
                         request,
-
                         f"{item['product'].name} only has {item['product'].stock} item(s)."
-
                     )
 
                     return redirect("cart:cart_detail")
 
             # ==========================================
-            # Create Order
+            # Database Transaction
             # ==========================================
 
-            order = form.save(commit=False)
+            with transaction.atomic():
 
-            order.user = request.user
+                # Create Order
 
-            order.coupon = coupon
+                order = form.save(commit=False)
 
-            order.discount = discount
+                order.user = request.user
+                order.coupon = coupon
+                order.discount = discount
+                order.final_total = final_total
 
-            order.final_total = final_total
+                order.save()
 
-            order.save()
-            # ==========================================
-            # Order Items
-            # ==========================================
+                # Order Items
 
-            for item in cart:
+                for item in cart:
 
-                OrderItem.objects.create(
+                    OrderItem.objects.create(
+                        order=order,
+                        product=item["product"],
+                        price=item["price"],
+                        quantity=item["quantity"],
+                    )
 
-                    order=order,
+                # Cash On Delivery
 
-                    product=item["product"],
+                if order.payment_method == "cod":
 
-                    price=item["price"],
+                    order.status = "pending"
+                    order.paid = False
+                    order.payment_status = "pending"
 
-                    quantity=item["quantity"],
+                    order.save(
+                        update_fields=[
+                            "status",
+                            "paid",
+                            "payment_status",
+                        ]
+                    )
 
-                )
+                    OrderTimeline.objects.create(
+                        order=order,
+                        user=request.user,
+                        note="Cash On Delivery order placed.",
+                    )
+
+                    reduce_order_stock(order)
+
+                    if coupon:
+
+                        CouponUsage.objects.create(
+                            coupon=coupon,
+                            user=request.user,
+                            order=order,
+                        )
+
+                        coupon.used_count = F("used_count") + 1
+                        coupon.save(update_fields=["used_count"])
 
             # ==========================================
             # Stripe
@@ -255,64 +271,21 @@ def checkout(request):
             if order.payment_method == "stripe":
 
                 return redirect(
-
                     "payments:create_checkout_session",
-
                     order.id,
-
                 )
 
             # ==========================================
-            # COD
+            # COD (Outside Transaction)
             # ==========================================
 
-
-            elif order.payment_method == "cod":
-
-                order.status = "pending"
-
-                order.paid = False
-
-                order.payment_status = "pending"
-
-                order.save()
-
-                OrderTimeline.objects.create(
-                    order=order, user=request.user, note="Cash On Delivery order placed.")
-
-                reduce_order_stock(order)
-
-                # Coupon finally consumed
-                if coupon:
-
-                    from orders.models import CouponUsage
-
-                    CouponUsage.objects.create(
-
-                        coupon=coupon,
-
-                        user=request.user,
-
-                        order=order,
-
-                    )
-
-                    coupon.used_count += 1
-
-                    coupon.save()
-
-                    # ==========================================
-                    # Send COD Confirmation Email
-                    # ==========================================
+            if order.payment_method == "cod":
 
                 send_order_confirmation_email(
-
                     request,
-
                     order,
+                )
 
-                    )
-                
                 send_owner_new_order_email(
                     request,
                     order,
@@ -321,35 +294,24 @@ def checkout(request):
                 cart.clear()
 
                 request.session.pop(
-
                     "coupon_code",
-
                     None,
-
                 )
 
                 return redirect(
-
                     "orders:order_success",
-
                     order.id,
-
                 )
-
-
 
             # ==========================================
             # SSL
             # ==========================================
 
-            elif order.payment_method == "sslcommerz":
+            if order.payment_method == "sslcommerz":
 
                 return redirect(
-
                     "cart:create_checkout_session",
-
                     order.id,
-
                 )
 
     else:
@@ -357,29 +319,17 @@ def checkout(request):
         form = OrderCreateForm()
 
     return render(
-
         request,
-
         "cart/checkout.html",
-
         {
-
             "cart": cart,
-
             "form": form,
-
             "coupon": coupon,
-
             "discount": discount,
-
             "subtotal": subtotal,
-
             "final_total": final_total,
-
         },
-
     )
-
 # ==========================================
 # Apply Coupon
 # ==========================================
