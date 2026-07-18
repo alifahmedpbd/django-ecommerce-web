@@ -151,17 +151,14 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # FIXED: django-cloudinary-storage reads STATICFILES_STORAGE during collectstatic.
-STATICFILES_STORAGE = os.getenv(
-    "STATICFILES_STORAGE",
-    "whitenoise.storage.CompressedStaticFilesStorage",
-)
+
 
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        "BACKEND": STATICFILES_STORAGE,
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
 
@@ -245,6 +242,5 @@ cloudinary.config(
     secure=True,
 )
 
-print("=" * 50)
-print("SETTINGS FILE LOADED")
-print("=" * 50)
+print("SETTINGS FILE:", __file__)
+print("INSTALLED_APPS:", INSTALLED_APPS)
