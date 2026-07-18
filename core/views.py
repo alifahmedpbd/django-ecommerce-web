@@ -13,9 +13,8 @@ def home(request):
             "slug",
             "name",
             "price",
-            "discount_price",
             "image",
-            "average_rating",
+            
         )
         .order_by("-created_at")[:8]
     )
@@ -27,7 +26,6 @@ def home(request):
             "id",
             "name",
             "slug",
-            "image",
         )[:4]
     )
     
