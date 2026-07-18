@@ -145,8 +145,6 @@ STATICFILES_DIRS = [
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# FIXED: cloudinary_storage collectstatic still reads STATICFILES_STORAGE.
-# Using WhiteNoise's non-manifest storage avoids the admin CSS file error on Render.
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 STORAGES = {
@@ -160,7 +158,6 @@ STORAGES = {
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
