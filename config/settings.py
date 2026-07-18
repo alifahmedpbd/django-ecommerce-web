@@ -137,6 +137,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
+# ...existing code...
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.2/howto/static-files/
+
 STATIC_URL = "/static/"
 
 STATICFILES_DIRS = [
@@ -145,7 +150,11 @@ STATICFILES_DIRS = [
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+# FIXED: django-cloudinary-storage reads STATICFILES_STORAGE during collectstatic.
+STATICFILES_STORAGE = os.getenv(
+    "STATICFILES_STORAGE",
+    "whitenoise.storage.CompressedStaticFilesStorage",
+)
 
 STORAGES = {
     "default": {
@@ -209,17 +218,12 @@ X_FRAME_OPTIONS = "DENY"
 
 
 if not DEBUG:
-
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = True
-
     SESSION_COOKIE_SECURE = True
-
     CSRF_COOKIE_SECURE = True
-
     SECURE_HSTS_SECONDS = 31536000
-
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-
     SECURE_HSTS_PRELOAD = True
     
 
@@ -240,3 +244,7 @@ cloudinary.config(
     api_secret=os.getenv("CLOUDINARY_API_SECRET"),
     secure=True,
 )
+
+print("=" * 50)
+print("SETTINGS FILE LOADED")
+print("=" * 50)
