@@ -3,6 +3,9 @@ from django.urls import reverse
 from accounts.models import User
 from django.db.models import Avg
 from django.utils.text import slugify
+from cloudinary.models import CloudinaryField
+
+
 # Create your models here.
 
 
@@ -60,7 +63,7 @@ class Product(models.Model):
     brand = models.ForeignKey(Brand,on_delete=models.SET_NULL, null=True, blank=True, related_name="products")
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True, blank=True)
-    image = models.ImageField(upload_to="products/", blank=True, null=True)
+    image = CloudinaryField("image", blank=True, null=True,)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField(default=0, help_text="Available Stock",)
