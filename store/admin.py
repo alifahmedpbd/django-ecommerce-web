@@ -1,6 +1,22 @@
 from django.contrib import admin
-from .models import Category, Product, Wishlist, Review
-# Register your models here.
+from .models import Brand, Category, Product, Wishlist, Review
+
+
+@admin.register(Brand)
+class BrandAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "name",
+        "slug",
+        "created_at",
+    )
+    search_fields = (
+        "name",
+    )
+    prepopulated_fields = {
+        "slug": ("name",)
+    }
+
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -9,31 +25,47 @@ class CategoryAdmin(admin.ModelAdmin):
         "name",
         "slug",
     )
-    prepopulated_fields = {"slug": ("name",)}
+    search_fields = (
+        "name",
+    )
+    prepopulated_fields = {
+        "slug": ("name",)
+    }
+
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "name",
+        "category",
+        "brand",
         "price",
         "stock",
         "available",
+        "featured",
         "created_at",
     )
+
     list_filter = (
         "available",
+        "featured",
         "category",
+        "brand",
     )
+
     search_fields = (
         "name",
         "description",
     )
-    prepopulated_fields = {"slug": ("name",)}
+
+    prepopulated_fields = {
+        "slug": ("name",)
+    }
+
 
 @admin.register(Wishlist)
 class WishlistAdmin(admin.ModelAdmin):
-
     list_display = (
         "user",
         "product",
@@ -45,9 +77,9 @@ class WishlistAdmin(admin.ModelAdmin):
         "product__name",
     )
 
+
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
-
     list_display = (
         "product",
         "user",
