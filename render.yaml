@@ -4,19 +4,23 @@ services:
     env: python
     plan: free
     autoDeploy: true
+
     buildCommand: "bash build.sh"
     startCommand: "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
     releaseCommand: "python manage.py migrate"
+
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.12.0
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings
+
       - key: DEBUG
         value: "False"
+
       - key: SECRET_KEY
         generateValue: true
+
       - key: ALLOWED_HOSTS
-        value: shopora-1t0k.onrender.com,localhost,127.0.0.1
+        value: shopora-bd.onrender.com,localhost,127.0.0.1
+
       - key: CSRF_TRUSTED_ORIGINS
-        value: https://shopora-1t0k.onrender.com
+        value: https://shopora-bd.onrender.com
