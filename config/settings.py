@@ -16,6 +16,8 @@ import cloudinary
 import dj_database_url
 from dotenv import load_dotenv
 
+from .email_config import get_email_backend_config
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -181,21 +183,17 @@ LOGOUT_REDIRECT_URL = "home"
 # Email Configuration
 # ==========================================
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+backend, host, port, use_tls, use_ssl, username, password, default_from, owner_email = get_email_backend_config()
 
-EMAIL_HOST = "smtp.gmail.com"
-
-EMAIL_PORT = 587
-
-EMAIL_USE_TLS = True
-
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
-
-OWNER_EMAIL = os.getenv("OWNER_EMAIL")
+EMAIL_BACKEND = backend
+EMAIL_HOST = host
+EMAIL_PORT = port
+EMAIL_USE_TLS = use_tls
+EMAIL_USE_SSL = use_ssl
+EMAIL_HOST_USER = username
+EMAIL_HOST_PASSWORD = password
+DEFAULT_FROM_EMAIL = default_from
+OWNER_EMAIL = owner_email
 
 EMAIL_TIMEOUT = 10
 
