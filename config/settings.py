@@ -41,6 +41,7 @@ ALLOWED_HOSTS = allowed_hosts
 # Application definition
 
 INSTALLED_APPS = [
+    'django.contrib.staticfiles',
     "cloudinary",
     "cloudinary_storage",
     'django.contrib.admin',
@@ -48,7 +49,6 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
     'accounts',
     'core',
     'store',
@@ -158,7 +158,7 @@ STORAGES = {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
 
