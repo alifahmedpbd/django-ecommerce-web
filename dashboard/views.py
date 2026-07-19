@@ -229,17 +229,6 @@ def dashboard_home(request):
     ]
 
 
-    payment_labels = [
-        item["payment_method"].upper()
-        for item in payment_methods
-    ]
-
-    payment_data = [
-        float(item["revenue"] or 0)
-        for item in payment_methods
-    ]
-
-
     payment_methods = (
         Order.objects.filter(
             paid=True,
@@ -250,6 +239,16 @@ def dashboard_home(request):
             total=Sum("final_total"),
         )
     )
+
+    payment_labels = [
+        item["payment_method"].upper()
+        for item in payment_methods
+    ]
+
+    payment_data = [
+        float(item["total"] or 0)
+        for item in payment_methods
+    ]
 
     payment_method_labels = [
         item["payment_method"].upper()
