@@ -32,17 +32,23 @@ def register_view(request):
 
             send_owner_new_customer_email(request, user)
 
-            create_and_send_otp(
+            _, email_sent = create_and_send_otp(
                 user=user,
                 purpose="verify",
             )
 
             request.session["verify_email"] = user.email
 
-            messages.success(
-                request,
-                "Verification code has been sent to your email.",
-            )
+            if email_sent:
+                messages.success(
+                    request,
+                    "Verification code has been sent to your email.",
+                )
+            else:
+                messages.warning(
+                    request,
+                    "We couldn't send the verification code right now. Your account is ready, and you can still try again later.",
+                )
 
             return redirect("accounts:verify_email")
 
@@ -139,15 +145,21 @@ def resend_otp_view(request):
         email=email,
     )
 
-    create_and_send_otp(
+    _, email_sent = create_and_send_otp(
         user=user,
         purpose="verify",
     )
 
-    messages.success(
-        request,
-        "New OTP sent successfully.",
-    )
+    if email_sent:
+        messages.success(
+            request,
+            "New OTP sent successfully.",
+        )
+    else:
+        messages.warning(
+            request,
+            "We couldn't send the new OTP right now. Please try again later.",
+        )
 
     return redirect("accounts:verify_email")
 
@@ -185,17 +197,23 @@ def email_login_view(request):
 
                 return redirect("accounts:login")
 
-            create_and_send_otp(
+            _, email_sent = create_and_send_otp(
                 user=user,
                 purpose="login",
             )
 
             request.session["login_user_id"] = user.id
 
-            messages.success(
-                request,
-                "OTP sent to your email.",
-            )
+            if email_sent:
+                messages.success(
+                    request,
+                    "OTP sent to your email.",
+                )
+            else:
+                messages.warning(
+                    request,
+                    "We couldn't send the login OTP right now. Please try again later.",
+                )
 
             return redirect("accounts:verify_login_otp")
 
@@ -334,17 +352,23 @@ def forgot_password_view(request):
 
                 return redirect("accounts:forgot_password")
 
-            create_and_send_otp(
+            _, email_sent = create_and_send_otp(
                 user=user,
                 purpose="reset",
             )
 
             request.session["reset_user_id"] = user.id
 
-            messages.success(
-                request,
-                "OTP has been sent to your email.",
-            )
+            if email_sent:
+                messages.success(
+                    request,
+                    "OTP has been sent to your email.",
+                )
+            else:
+                messages.warning(
+                    request,
+                    "We couldn't send the reset OTP right now. Please try again later.",
+                )
 
             return redirect("accounts:verify_reset_otp")
 
