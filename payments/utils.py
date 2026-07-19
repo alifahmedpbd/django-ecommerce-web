@@ -6,7 +6,9 @@ from django.db.models import F
 from cart.cart import Cart
 from django.contrib.auth import get_user_model
 User = get_user_model()
+import logging
 
+logger = logging.getLogger(__name__)
 
 
 def clear_user_cart(request):
@@ -60,7 +62,10 @@ def send_order_confirmation_email(request, order):
 
     )
 
-    email.send()
+    try:
+        email.send()
+    except Exception as e:
+        logger.exception("Failed to send owner email: %s", e)
 
 
 def send_order_status_email(request, order):
@@ -135,7 +140,10 @@ def send_order_status_email(request, order):
 
     )
 
-    email.send()       
+    try:
+        email.send()
+    except Exception as e:
+        logger.exception("Failed to send owner email: %s", e)      
 
 def send_shipping_email(request, order):
 
@@ -175,7 +183,10 @@ def send_shipping_email(request, order):
 
     )
 
-    email.send()
+    try:
+        email.send()
+    except Exception as e:
+        logger.exception("Failed to send owner email: %s", e)
 
 def send_delivered_email(request, order):
 
@@ -215,7 +226,10 @@ def send_delivered_email(request, order):
 
     )
 
-    email.send()
+    try:
+        email.send()
+    except Exception as e:
+        logger.exception("Failed to send owner email: %s", e)
 
 
 def send_cancelled_email(request, order):
@@ -256,7 +270,10 @@ def send_cancelled_email(request, order):
 
     )
 
-    email.send()
+    try:
+        email.send()
+    except Exception as e:
+        logger.exception("Failed to send owner email: %s", e)
 
 
 def send_owner_new_order_email(request, order):
@@ -291,7 +308,10 @@ def send_owner_new_order_email(request, order):
 
     )
 
-    email.send()
+    try:
+        email.send()
+    except Exception as e:
+        logger.exception("Failed to send owner email: %s", e)
 
 
 def send_low_stock_email(product):
@@ -323,7 +343,10 @@ def send_low_stock_email(product):
     )
 
 
-    email.send(fail_silently=False)
+    try:
+        email.send()
+    except Exception as e:
+        logger.exception("Failed to send owner email: %s", e)
 
  
 def send_owner_new_customer_email(request, user):
@@ -350,5 +373,8 @@ def send_owner_new_customer_email(request, user):
         "text/html",
     )
 
-    email.send() 
+    try:
+        email.send()
+    except Exception as e:
+        logger.exception("Failed to send owner email: %s", e)
 
