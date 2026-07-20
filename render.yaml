@@ -24,3 +24,30 @@ services:
 
       - key: CSRF_TRUSTED_ORIGINS
         value: https://shopora-bd.onrender.com
+
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.smtp.EmailBackend
+
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+
+      - key: EMAIL_PORT
+        value: "587"
+
+      - key: EMAIL_USE_TLS
+        value: "True"
+
+      - key: EMAIL_USE_SSL
+        value: "False"
+
+      - key: EMAIL_HOST_USER
+        value: shoporaweb@gmail.com
+
+      - key: EMAIL_HOST_PASSWORD
+        value: "YOUR_GMAIL_APP_PASSWORD"
+
+      - key: DEFAULT_FROM_EMAIL
+        value: "Shopora <shoporaweb@gmail.com>"
+
+      - key: OWNER_EMAIL
+        value: alifahmedpbd@gmail.com

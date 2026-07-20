@@ -1,5 +1,7 @@
 ﻿import os
 
+from django.core.exceptions import ImproperlyConfigured
+
 
 def str_to_bool(value):
     return str(value).strip().lower() in ("1", "true", "yes", "y")
@@ -31,16 +33,22 @@ def get_email_backend_config():
     if backend == "django.core.mail.backends.smtp.EmailBackend" and not (
         smtp_user and smtp_password
     ):
-        return (
-            "django.core.mail.backends.console.EmailBackend",
-            "",
-            25,
-            False,
-            False,
-            "",
-            "",
-            default_from,
-            owner_email,
+        debug = str_to_bool(os.getenv("DEBUG", "False"))
+        if debug:
+            return (
+                "django.core.mail.backends.console.EmailBackend",
+                "",
+                25,
+                False,
+                False,
+                "",
+                "",
+                default_from,
+                owner_email,
+            )
+        raise ImproperlyConfigured(
+            "SMTP email backend is configured but EMAIL_HOST_USER and EMAIL_HOST_PASSWORD are not set. "
+            "Set these environment variables in Render or switch to a console/email service for development."
         )
 
     return (
