@@ -30,7 +30,7 @@ def register_view(request):
             # Notify Owner About New Customer
             # ==========================================
 
-            send_owner_new_customer_email(request, user)
+            # send_owner_new_customer_email(request, user)
 
             _, email_sent = create_and_send_otp(
                 user=user,

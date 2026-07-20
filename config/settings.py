@@ -197,6 +197,13 @@ OWNER_EMAIL = owner_email
 
 EMAIL_TIMEOUT = 10
 
+print("EMAIL_BACKEND =", EMAIL_BACKEND)
+print("EMAIL_HOST =", EMAIL_HOST)
+print("EMAIL_PORT =", EMAIL_PORT)
+print("EMAIL_HOST_USER =", EMAIL_HOST_USER)
+print("DEFAULT_FROM_EMAIL =", DEFAULT_FROM_EMAIL)
+print("OWNER_EMAIL =", OWNER_EMAIL)
+
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 CACHES = {
@@ -239,6 +246,3 @@ cloudinary.config(
     api_secret=os.getenv("CLOUDINARY_API_SECRET"),
     secure=True,
 )
-
-print("SETTINGS FILE:", __file__)
-print("INSTALLED_APPS:", INSTALLED_APPS)
