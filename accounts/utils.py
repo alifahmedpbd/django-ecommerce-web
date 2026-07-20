@@ -26,12 +26,18 @@ def send_brevo_email(to_email, subject, html):
         },
         "to": [
             {
-                "email": to_email
+                "email": to_email,
             }
         ],
         "subject": subject,
         "htmlContent": html,
     }
+
+    print("=" * 60)
+    print("BREVO REQUEST")
+    print("Sender:", sender_email)
+    print("Receiver:", to_email)
+    print("Subject:", subject)
 
     response = requests.post(
         "https://api.brevo.com/v3/smtp/email",
@@ -39,6 +45,10 @@ def send_brevo_email(to_email, subject, html):
         headers=headers,
         timeout=20,
     )
+
+    print("STATUS:", response.status_code)
+    print("BODY:", response.text)
+    print("=" * 60)
 
     response.raise_for_status()
 
