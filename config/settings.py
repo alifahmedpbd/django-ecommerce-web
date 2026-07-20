@@ -197,6 +197,8 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 OWNER_EMAIL = os.getenv("OWNER_EMAIL")
 
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")
+
 EMAIL_TIMEOUT = 10
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
