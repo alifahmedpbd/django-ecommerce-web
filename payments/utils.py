@@ -1,14 +1,32 @@
 from django.conf import settings
 from django.template.loader import render_to_string
-from django.utils.html import strip_tags
 from cart.cart import Cart
-from django.contrib.auth import get_user_model
-from django.core.mail import EmailMultiAlternatives
 import requests
-
-User = get_user_model()
+from django.core.mail import EmailMultiAlternatives
+from django.utils.html import strip_tags
 
 def send_brevo_email(subject, html_content, recipients):
+    """
+    Local = Gmail SMTP
+    Production(Render) = Brevo API
+    """
+
+    if settings.DEBUG:
+        from django.core.mail import EmailMultiAlternatives
+        from django.utils.html import strip_tags
+
+        plain = strip_tags(html_content)
+
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=plain,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=recipients,
+        )
+
+        email.attach_alternative(html_content, "text/html")
+        email.send()
+        return
 
     url = "https://api.brevo.com/v3/smtp/email"
 
@@ -30,10 +48,7 @@ def send_brevo_email(subject, html_content, recipients):
             "name": "Shopora",
             "email": sender_email,
         },
-        "to": [
-            {"email": email}
-            for email in recipients
-        ],
+        "to": [{"email": email} for email in recipients],
         "subject": subject,
         "htmlContent": html_content,
     }
@@ -48,13 +63,9 @@ def send_brevo_email(subject, html_content, recipients):
     response.raise_for_status()
 
 
-
 def clear_user_cart(request):
     cart = Cart(request)
     cart.clear()
-
-
-
 
 
 def send_order_confirmation_email(request, order):
@@ -82,6 +93,7 @@ def send_order_confirmation_email(request, order):
 
 
 def send_shipping_email(request, order):
+
     html_message = render_to_string(
         "emails/shipping.html",
         {
@@ -90,20 +102,15 @@ def send_shipping_email(request, order):
         },
     )
 
-    plain_message = strip_tags(html_message)
-
-    email = EmailMultiAlternatives(
+    send_brevo_email(
         subject=f"Your Order #{order.id} Has Been Shipped 🚚",
-        body=plain_message,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[order.email],
+        html_content=html_message,
+        recipients=[order.email],
     )
-
-    email.attach_alternative(html_message, "text/html")
-    email.send()
 
 
 def send_delivered_email(request, order):
+
     html_message = render_to_string(
         "emails/delivered.html",
         {
@@ -112,20 +119,15 @@ def send_delivered_email(request, order):
         },
     )
 
-    plain_message = strip_tags(html_message)
-
-    email = EmailMultiAlternatives(
+    send_brevo_email(
         subject=f"Order #{order.id} Delivered 🎉",
-        body=plain_message,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[order.email],
+        html_content=html_message,
+        recipients=[order.email],
     )
-
-    email.attach_alternative(html_message, "text/html")
-    email.send()
 
 
 def send_cancelled_email(request, order):
+
     html_message = render_to_string(
         "emails/cancelled.html",
         {
@@ -134,20 +136,15 @@ def send_cancelled_email(request, order):
         },
     )
 
-    plain_message = strip_tags(html_message)
-
-    email = EmailMultiAlternatives(
+    send_brevo_email(
         subject=f"Order #{order.id} Cancelled",
-        body=plain_message,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[order.email],
+        html_content=html_message,
+        recipients=[order.email],
     )
-
-    email.attach_alternative(html_message, "text/html")
-    email.send()
 
 
 def send_owner_new_order_email(request, order):
+
     html_message = render_to_string(
         "emails/new_order_owner.html",
         {
@@ -156,18 +153,11 @@ def send_owner_new_order_email(request, order):
         },
     )
 
-    plain_message = strip_tags(html_message)
-
-    email = EmailMultiAlternatives(
+    send_brevo_email(
         subject=f"🛒 New Order Received #{order.id}",
-        body=plain_message,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[settings.OWNER_EMAIL],
+        html_content=html_message,
+        recipients=[settings.OWNER_EMAIL],
     )
-
-    email.attach_alternative(html_message, "text/html")
-    email.send()
-
 
 def send_order_status_email(request, order):
 
@@ -199,29 +189,27 @@ def send_order_status_email(request, order):
         },
     )
 
-    plain_message = strip_tags(html_message)
-
-    # Local development → Gmail SMTP
     if settings.DEBUG:
+        plain_message = strip_tags(html_message)
+
         email = EmailMultiAlternatives(
             subject=subject,
             body=plain_message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[order.email],
         )
-
         email.attach_alternative(html_message, "text/html")
         email.send()
-        return
+    else:
+        send_brevo_email(
+            subject=subject,
+            html_content=html_message,
+            recipients=[order.email],
+        )
 
-    # Production (Render) → Brevo API
-    send_brevo_email(
-        to_email=order.email,
-        subject=subject,
-        html_content=html_message,
-    )
 
 def send_low_stock_email(product):
+
     if product.stock > 5:
         return
 
@@ -232,41 +220,26 @@ def send_low_stock_email(product):
         },
     )
 
-    plain_message = strip_tags(html_message)
+    if settings.DEBUG:
+        plain_message = strip_tags(html_message)
 
-    email = EmailMultiAlternatives(
-        subject=f"⚠ Low Stock Alert - {product.name}",
-        body=plain_message,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[settings.OWNER_EMAIL],
-    )
-
-    email.attach_alternative(html_message, "text/html")
-
-    email.send(fail_silently=False)
+        email = EmailMultiAlternatives(
+            subject=f"⚠ Low Stock Alert - {product.name}",
+            body=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[settings.OWNER_EMAIL],
+        )
+        email.attach_alternative(html_message, "text/html")
+        email.send(fail_silently=False)
+    else:
+        send_brevo_email(
+            subject=f"⚠ Low Stock Alert - {product.name}",
+            html_content=html_message,
+            recipients=[settings.OWNER_EMAIL],
+        )
 
 
 def send_owner_new_customer_email(request, user):
-    html_message = render_to_string(
-        "emails/new_customer.html",
-        {
-            "user": user,
-            "site_url": request.build_absolute_uri("/")[:-1],
-        },
-    )
-
-    plain_message = strip_tags(html_message)
-
-    email = EmailMultiAlternatives(
-        subject=f"🎉 New Customer Registered - {user.get_full_name() or user.username}",
-        body=plain_message,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[settings.OWNER_EMAIL],
-    )
-
-    email.attach_alternative(html_message, "text/html")
-
-    email.send()
 
     html_message = render_to_string(
         "emails/new_customer.html",
@@ -276,19 +249,21 @@ def send_owner_new_customer_email(request, user):
         },
     )
 
-    plain_message = strip_tags(html_message)
+    if settings.DEBUG:
+        plain_message = strip_tags(html_message)
 
-    email = EmailMultiAlternatives(
-        subject=f"🎉 New Customer Registered - {user.get_full_name() or user.username}",
-        body=plain_message,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[settings.OWNER_EMAIL],
-    )
+        email = EmailMultiAlternatives(
+            subject=f"🎉 New Customer Registered - {user.get_full_name() or user.username}",
+            body=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[settings.OWNER_EMAIL],
+        )
 
-    email.attach_alternative(
-        html_message,
-        "text/html",
-    )
-
-    email.send() 
-
+        email.attach_alternative(html_message, "text/html")
+        email.send()
+    else:
+        send_brevo_email(
+            subject=f"🎉 New Customer Registered - {user.get_full_name() or user.username}",
+            html_content=html_message,
+            recipients=[settings.OWNER_EMAIL],
+        )
