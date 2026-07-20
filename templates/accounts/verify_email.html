@@ -57,6 +57,12 @@
 
                     </div>
 
+                    {% if otp_send_failed_message %}
+                        <div class="alert alert-warning mt-3">
+                            {{ otp_send_failed_message }}
+                        </div>
+                    {% endif %}
+
                 </div>
 
             </div>

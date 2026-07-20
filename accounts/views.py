@@ -44,11 +44,13 @@ def register_view(request):
                     request,
                     "Verification code has been sent to your email.",
                 )
+                request.session.pop("otp_send_failed", None)
             else:
-                messages.warning(
-                    request,
-                    "We couldn't send the verification code right now. Your account is ready, and you can still try again later.",
+                failure_message = (
+                    "We couldn't send the verification code right now. Your account is ready, and you can still try again later."
                 )
+                messages.warning(request, failure_message)
+                request.session["otp_send_failed"] = failure_message
 
             return redirect("accounts:verify_email")
 
@@ -79,6 +81,8 @@ def verify_email_view(request):
         ),
         email=email,
     )
+
+    otp_send_failed_message = request.session.get("otp_send_failed")
 
     if request.method == "POST":
 
@@ -129,6 +133,9 @@ def verify_email_view(request):
     return render(
         request,
         "accounts/verify_email.html",
+        {
+            "otp_send_failed_message": otp_send_failed_message,
+        },
     )
 def resend_otp_view(request):
 
@@ -155,11 +162,13 @@ def resend_otp_view(request):
             request,
             "New OTP sent successfully.",
         )
+        request.session.pop("otp_send_failed", None)
     else:
-        messages.warning(
-            request,
-            "We couldn't send the new OTP right now. Please try again later.",
+        failure_message = (
+            "We couldn't send the new OTP right now. Please try again later."
         )
+        messages.warning(request, failure_message)
+        request.session["otp_send_failed"] = failure_message
 
     return redirect("accounts:verify_email")
 
