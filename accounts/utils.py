@@ -1,16 +1,13 @@
 from .models import EmailOTP
 from django.core.mail import send_mail
 from django.conf import settings
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 def send_otp_email(user, otp):
-    try:
-        send_mail(
-            subject="Shopora Verification Code",
-            message=f"""
+
+    send_mail(
+        subject="Shopora Verification Code",
+        message=f"""
 Hello {user.username},
 
 Your OTP is:
@@ -22,15 +19,10 @@ It expires in 5 minutes.
 Shopora
 Smart Shopping, Simplified.
 """,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
-        )
-        return True
-
-    except Exception as e:
-        logger.exception(e)
-        return False
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        fail_silently=False,
+    )
 
 
 def create_and_send_otp(user, purpose):
@@ -48,6 +40,6 @@ def create_and_send_otp(user, purpose):
 
     otp.generate_otp()
 
-    email_sent = send_otp_email(user, otp.otp)
+    send_otp_email(user, otp.otp)
 
-    return otp, email_sent
+    return otp

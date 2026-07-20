@@ -183,26 +183,23 @@ LOGOUT_REDIRECT_URL = "home"
 # Email Configuration
 # ==========================================
 
-backend, host, port, use_tls, use_ssl, username, password, default_from, owner_email = get_email_backend_config()
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
-EMAIL_BACKEND = backend
-EMAIL_HOST = host
-EMAIL_PORT = port
-EMAIL_USE_TLS = use_tls
-EMAIL_USE_SSL = use_ssl
-EMAIL_HOST_USER = username
-EMAIL_HOST_PASSWORD = password
-DEFAULT_FROM_EMAIL = default_from
-OWNER_EMAIL = owner_email
+EMAIL_HOST = "smtp.gmail.com"
+
+EMAIL_PORT = 587
+
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+
+OWNER_EMAIL = os.getenv("OWNER_EMAIL")
 
 EMAIL_TIMEOUT = 10
-
-print("EMAIL_BACKEND =", EMAIL_BACKEND)
-print("EMAIL_HOST =", EMAIL_HOST)
-print("EMAIL_PORT =", EMAIL_PORT)
-print("EMAIL_HOST_USER =", EMAIL_HOST_USER)
-print("DEFAULT_FROM_EMAIL =", DEFAULT_FROM_EMAIL)
-print("OWNER_EMAIL =", OWNER_EMAIL)
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
@@ -220,12 +217,17 @@ X_FRAME_OPTIONS = "DENY"
 
 
 if not DEBUG:
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
     SECURE_SSL_REDIRECT = True
+
     SESSION_COOKIE_SECURE = True
+
     CSRF_COOKIE_SECURE = True
+
     SECURE_HSTS_SECONDS = 31536000
+
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
     SECURE_HSTS_PRELOAD = True
     
 
