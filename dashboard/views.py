@@ -27,6 +27,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph
+from orders.models import ExchangeRate
 
 # Create your views here.
 
@@ -1669,4 +1670,34 @@ def dashboard_customer_detail(request, user_id):
         request,
         "dashboard/customer_detail.html",
         context,
+    )
+
+@owner_or_staff_required
+def currency_exchange(request):
+
+    exchange_rate, created = ExchangeRate.objects.get_or_create(
+        currency="USD",
+        defaults={
+            "rate": 122.50,
+        },
+    )
+
+    if request.method == "POST":
+
+        exchange_rate.rate = request.POST.get("rate")
+        exchange_rate.save()
+
+        messages.success(
+            request,
+            "USD exchange rate updated successfully.",
+        )
+
+        return redirect("dashboard:currency_exchange")
+
+    return render(
+        request,
+        "dashboard/currency_exchange.html",
+        {
+            "exchange_rate": exchange_rate,
+        },
     )

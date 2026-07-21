@@ -66,4 +66,6 @@ urlpatterns = [
     path("customers/", views.dashboard_customers, name="dashboard_customers"),
     path("customers/<int:user_id>/", views.dashboard_customer_detail, name="dashboard_customer_detail"),
 
+    path("currency/", views.currency_exchange, name="currency_exchange"),
+
 ]
