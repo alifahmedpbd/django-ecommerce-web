@@ -749,7 +749,6 @@ def category_list(request):
     categories = Category.objects.only(
         "id",
         "name",
-        "image",
     ).order_by("name")
 
     return render(

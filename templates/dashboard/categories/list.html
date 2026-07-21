@@ -33,8 +33,6 @@
 
                     <th>ID</th>
 
-                    <th>Image</th>
-
                     <th>Name</th>
 
                     <th>Slug</th>
@@ -58,24 +56,6 @@
                     <td>
 
                         {{ category.id }}
-
-                    </td>
-
-                    <td>
-
-                        {% if category.image %}
-
-                        <img
-                            src="{{ category.image.url }}"
-                            width="60"
-                            class="rounded"
-                        >
-
-                        {% else %}
-
-                        —
-
-                        {% endif %}
 
                     </td>
 
