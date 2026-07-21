@@ -9,7 +9,7 @@ from .models import EmailOTP, User
 from .utils import  create_and_send_otp
 from .forms import ForgotPasswordForm, OTPVerificationForm, ResetPasswordForm, EmailOTPLoginForm
 from payments.utils import send_owner_new_customer_email
-
+from django.conf import settings
 
 # Create your views here.
 
@@ -22,35 +22,50 @@ def register_view(request):
         if form.is_valid():
 
             user = form.save(commit=False)
-            user.is_active = False
+
+            # Localhost -> OTP required
+            if settings.DEBUG:
+                user.is_active = False
+            else:
+                # Render demo
+                user.is_active = True
+
             user.save()
 
-            # Localhost -> OTP যাবে
-            # Render -> accounts/utils.py থেকে skip হবে
-            try:
-                create_and_send_otp(
-                    user=user,
-                    purpose="verify",
+            if settings.DEBUG:
+
+                try:
+                    create_and_send_otp(
+                        user=user,
+                        purpose="verify",
+                    )
+                except Exception as e:
+                    print("OTP Error:", e)
+
+                try:
+                    send_owner_new_customer_email(request, user)
+                except Exception as e:
+                    print("Owner Mail Error:", e)
+
+                request.session["verify_email"] = user.email
+
+                messages.success(
+                    request,
+                    "Verification code has been sent to your email.",
                 )
-            except Exception as e:
-                print("OTP Error:", e)
 
-            # Owner mail
-            try:
-                send_owner_new_customer_email(request, user)
-            except Exception as e:
-                print("Owner Mail Error:", e)
+                return redirect("accounts:verify_email")
 
-            request.session["verify_email"] = user.email
-
+            # Render
             messages.success(
                 request,
-                "Verification code has been sent to your email.",
+                "Registration completed successfully. Please login.",
             )
 
-            return redirect("accounts:verify_email")
+            return redirect("accounts:login")
 
     else:
+
         form = UserRegisterForm()
 
     return render(
@@ -338,19 +353,34 @@ def forgot_password_view(request):
 
                 return redirect("accounts:forgot_password")
 
-            create_and_send_otp(
-                user=user,
-                purpose="reset",
-            )
+            if settings.DEBUG:
 
+                try:
+                    create_and_send_otp(
+                        user=user,
+                        purpose="reset",
+                    )
+                except Exception as e:
+                    print("OTP Error:", e)
+
+                request.session["reset_user_id"] = user.id
+
+                messages.success(
+                    request,
+                    "OTP has been sent to your email.",
+                )
+
+                return redirect("accounts:verify_reset_otp")
+
+            # Render (OTP skip)
             request.session["reset_user_id"] = user.id
 
-            messages.success(
+            messages.info(
                 request,
-                "OTP has been sent to your email.",
+                "OTP verification is disabled on demo server. Please set a new password.",
             )
 
-            return redirect("accounts:verify_reset_otp")
+            return redirect("accounts:reset_password")
 
     else:
 
@@ -363,7 +393,6 @@ def forgot_password_view(request):
             "form": form,
         },
     )
-
 
 
 def verify_reset_otp_view(request):
