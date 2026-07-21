@@ -47,13 +47,15 @@
     </a>
 
     <!-- Currency -->
+     {% if request.user.role == "owner" %}
 
-    <a href="{% url 'dashboard:currency_settings' %}"
+    <a href="{% url 'dashboard:currency_exchange' %}"
         class="btn btn-dark w-100 text-start mb-2">
 
         💱 Currency Exchange
 
     </a>
+    {% endif %}
 
     <a href="{% url 'dashboard:brand_list' %}"
         class="btn btn-dark w-100 text-start mb-2">

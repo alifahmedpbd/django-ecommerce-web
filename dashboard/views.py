@@ -1692,7 +1692,7 @@ def currency_exchange(request):
             "USD exchange rate updated successfully.",
         )
 
-        return redirect("dashboard:currency_exchange")
+        return redirect("dashboard:home")
 
     return render(
         request,
