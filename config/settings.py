@@ -179,27 +179,39 @@ LOGIN_REDIRECT_URL = "home"
 
 LOGOUT_REDIRECT_URL = "home"
 
-# ==========================================
-# Email Configuration
-# ==========================================
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# ==========================
+# Email (Local Only)
+# ==========================
 
-EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
-EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
+DEFAULT_FROM_EMAIL = os.getenv(
+    "DEFAULT_FROM_EMAIL",
+    "shoporaweb@gmail.com",
+)
 
-EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
-EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False") == "True"
+OWNER_EMAIL = os.getenv(
+    "OWNER_EMAIL",
+    "shoporaweb@gmail.com",
+)
 
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+if DEBUG:
 
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
-OWNER_EMAIL = os.getenv("OWNER_EMAIL")
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
-BREVO_API_KEY = os.getenv("BREVO_API_KEY")
+    EMAIL_HOST = "smtp.gmail.com"
 
-EMAIL_TIMEOUT = 10
+    EMAIL_PORT = 587
+
+    EMAIL_USE_TLS = True
+
+    EMAIL_USE_SSL = False
+
+    EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+
+    EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+
+    EMAIL_TIMEOUT = 20
+
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 

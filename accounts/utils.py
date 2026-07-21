@@ -1,74 +1,40 @@
-import requests
 from django.conf import settings
+from django.core.mail import send_mail
 from .models import EmailOTP
 
 
-def send_brevo_email(to_email, subject, html):
-
-    sender_email = settings.DEFAULT_FROM_EMAIL
-
-    if "<" in sender_email:
-        sender_name = sender_email.split("<")[0].strip()
-        sender_email = sender_email.split("<")[1].replace(">", "").strip()
-    else:
-        sender_name = "Shopora"
-
-    headers = {
-        "accept": "application/json",
-        "api-key": settings.BREVO_API_KEY,
-        "content-type": "application/json",
-    }
-
-    payload = {
-        "sender": {
-            "name": sender_name,
-            "email": sender_email,
-        },
-        "to": [
-            {
-                "email": to_email,
-            }
-        ],
-        "subject": subject,
-        "htmlContent": html,
-    }
-
-    print("=" * 60)
-    print("BREVO REQUEST")
-    print("Sender:", sender_email)
-    print("Receiver:", to_email)
-    print("Subject:", subject)
-
-    response = requests.post(
-        "https://api.brevo.com/v3/smtp/email",
-        json=payload,
-        headers=headers,
-        timeout=20,
-    )
-
-    print("STATUS:", response.status_code)
-    print("BODY:", response.text)
-    print("=" * 60)
-
-    response.raise_for_status()
-
-
 def send_otp_email(user, otp):
-
-    html = f"""
-    <h2>Verify Your Email</h2>
-
-    <p>Your OTP:</p>
-
-    <h1>{otp}</h1>
-
-    <p>Expires in 10 minutes.</p>
+    """
+    Localhost (DEBUG=True) -> Gmail SMTP
+    Render (DEBUG=False) -> Skip email
     """
 
-    send_brevo_email(
-        user.email,
-        "Shopora Email Verification",
-        html,
+    # Production (Render) এ কোনো email পাঠাবে না
+    if not settings.DEBUG:
+        print("Email sending skipped (Production).")
+        return
+
+    subject = "Shopora Email Verification"
+
+    message = f"""
+Hello {user.get_full_name() or user.username},
+
+Your verification code is:
+
+{otp}
+
+This OTP will expire in 10 minutes.
+
+Thanks,
+Shopora
+"""
+
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        fail_silently=False,
     )
 
 
@@ -87,6 +53,12 @@ def create_and_send_otp(user, purpose):
 
     otp.generate_otp()
 
-    send_otp_email(user, otp.otp)
+    try:
+        send_otp_email(
+            user=user,
+            otp=otp.otp,
+        )
+    except Exception as e:
+        print("OTP Email Error:", e)
 
     return otp

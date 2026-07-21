@@ -25,17 +25,21 @@ def register_view(request):
             user.is_active = False
             user.save()
 
-# OTP আগে
-            create_and_send_otp(
-                user=user,
-                purpose="verify",
-            )
+            # Localhost -> OTP যাবে
+            # Render -> accounts/utils.py থেকে skip হবে
+            try:
+                create_and_send_otp(
+                    user=user,
+                    purpose="verify",
+                )
+            except Exception as e:
+                print("OTP Error:", e)
 
-# Owner notification optional
+            # Owner mail
             try:
                 send_owner_new_customer_email(request, user)
             except Exception as e:
-                print(e)
+                print("Owner Mail Error:", e)
 
             request.session["verify_email"] = user.email
 
