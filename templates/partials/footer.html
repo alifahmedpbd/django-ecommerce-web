@@ -1,196 +1,106 @@
-<!-- ==========================================
-     Footer
-========================================== -->
-
-<footer class="bg-dark text-light mt-5 pt-5">
-
-    <div class="container">
-
-        <div class="row gy-4">
-
-            <!-- Brand -->
-
-            <div class="col-lg-4">
-
-                <h3 class="fw-bold">
-
-                    🛍️ {{ SHOP_NAME }}
-
-                </h3>
-
-                <p class="text-light-emphasis">
-
-                    {{ SHOP_TAGLINE }}
-
-                </p>
-
-                <p class="small text-secondary">
-
-                    Shopora is your trusted online destination for premium
-                    electronics with secure payments, fast delivery and
-                    excellent customer service.
-
-                </p>
-
-            </div>
-
-            <!-- Quick Links -->
-
-            <div class="col-lg-2">
-
-                <h5 class="fw-bold mb-3">
-
-                    Quick Links
-
-                </h5>
-
-                <ul class="list-unstyled">
-
-                    <li class="mb-2">
-
-                        <a
-                            href="{% url 'home' %}"
-                            class="text-decoration-none text-light"
-                        >
-                            Home
-                        </a>
-
-                    </li>
-
-                    <li class="mb-2">
-
-                        <a
-                            href="{% url 'store:product_list' %}"
-                            class="text-decoration-none text-light"
-                        >
-                            Products
-                        </a>
-
-                    </li>
-
-                    <li class="mb-2">
-
-                        <a
-                            href="{% url 'about' %}"
-                            class="text-decoration-none text-light"
-                        >
-                            About
-                        </a>
-
-                    </li>
-
-                    <li>
-
-                        <a
-                            href="{% url 'contact' %}"
-                            class="text-decoration-none text-light"
-                        >
-                            Contact
-                        </a>
-
-                    </li>
-
-                </ul>
-
-            </div>
-
-            <!-- Support -->
-
-            <div class="col-lg-3">
-
-                <h5 class="fw-bold mb-3">
-
-                    Support
-
-                </h5>
-
-                <ul class="list-unstyled">
-
-                    <li class="mb-2">
-
-                        <a
-                            href="{% url 'faq' %}"
-                            class="text-decoration-none text-light"
-                        >
-                            FAQ
-                        </a>
-
-                    </li>
-
-                    <li class="mb-2">
-
-                        <a
-                            href="{% url 'privacy' %}"
-                            class="text-decoration-none text-light"
-                        >
-                            Privacy Policy
-                        </a>
-
-                    </li>
-
-                    <li>
-
-                        <a
-                            href="{% url 'terms' %}"
-                            class="text-decoration-none text-light"
-                        >
-                            Terms & Conditions
-                        </a>
-
-                    </li>
-
-                </ul>
-
-            </div>
-
-            <!-- Social -->
-
-            <div class="col-lg-3">
-
-                <h5 class="fw-bold mb-3">
-
-                    Follow Us
-
-                </h5>
-
-                <p>
-
-                    <a href="#" class="text-decoration-none text-light d-block mb-2">
-
-                        📘 Facebook
-
-                    </a>
-
-                    <a href="#" class="text-decoration-none text-light d-block mb-2">
-
-                        📷 Instagram
-
-                    </a>
-
-                    <a href="#" class="text-decoration-none text-light">
-
-                        💼 LinkedIn
-
-                    </a>
-
-                </p>
-
-            </div>
-
+<footer class="bg-ink text-slate-300 mt-16 pt-16">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+
+      <div class="lg:col-span-4">
+        <h3 class="font-display font-bold text-2xl text-white mb-3">
+          🛍️ {{ SHOP_NAME }}
+        </h3>
+
+        <p class="text-slate-300 mb-2">{{ SHOP_TAGLINE }}</p>
+
+        <p class="text-sm text-slate-400">
+          Shopora is your trusted online destination for premium electronics
+          with secure payments, fast delivery and excellent customer service.
+        </p>
+      </div>
+
+      <div class="lg:col-span-2">
+        <h5 class="font-display font-bold text-white mb-4">Quick Links</h5>
+
+        <ul class="space-y-2.5">
+          <li>
+            <a
+              href="{% url 'home' %}"
+              class="hover:text-white hover:pl-1.5 transition-all"
+              >Home</a
+            >
+          </li>
+          <li>
+            <a
+              href="{% url 'store:product_list' %}"
+              class="hover:text-white hover:pl-1.5 transition-all"
+              >Products</a
+            >
+          </li>
+          <li>
+            <a
+              href="{% url 'about' %}"
+              class="hover:text-white hover:pl-1.5 transition-all"
+              >About</a
+            >
+          </li>
+          <li>
+            <a
+              href="{% url 'contact' %}"
+              class="hover:text-white hover:pl-1.5 transition-all"
+              >Contact</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <div class="lg:col-span-3">
+        <h5 class="font-display font-bold text-white mb-4">Support</h5>
+
+        <ul class="space-y-2.5">
+          <li>
+            <a
+              href="{% url 'faq' %}"
+              class="hover:text-white hover:pl-1.5 transition-all"
+              >FAQ</a
+            >
+          </li>
+          <li>
+            <a
+              href="{% url 'privacy' %}"
+              class="hover:text-white hover:pl-1.5 transition-all"
+              >Privacy Policy</a
+            >
+          </li>
+          <li>
+            <a
+              href="{% url 'terms' %}"
+              class="hover:text-white hover:pl-1.5 transition-all"
+              >Terms & Conditions</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <div class="lg:col-span-3">
+        <h5 class="font-display font-bold text-white mb-4">Follow Us</h5>
+
+        <div class="flex flex-col gap-2.5">
+          <a href="#" class="hover:text-white hover:pl-1.5 transition-all w-fit"
+            >📘 Facebook</a
+          >
+          <a href="#" class="hover:text-white hover:pl-1.5 transition-all w-fit"
+            >📷 Instagram</a
+          >
+          <a href="#" class="hover:text-white hover:pl-1.5 transition-all w-fit"
+            >💼 LinkedIn</a
+          >
         </div>
-
-        <hr class="border-secondary my-4">
-
-        <div class="text-center pb-4">
-
-            <small class="text-secondary">
-
-                © 2026 {{ SHOP_NAME }} • {{ SHOP_TAGLINE }}
-
-            </small>
-
-        </div>
-
+      </div>
     </div>
 
+    <hr class="border-white/10 my-8" />
+
+    <div class="text-center pb-8">
+      <small class="text-slate-400">
+        © 2026 {{ SHOP_NAME }} • {{ SHOP_TAGLINE }}
+      </small>
+    </div>
+  </div>
 </footer>

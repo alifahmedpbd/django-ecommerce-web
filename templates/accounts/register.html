@@ -1,192 +1,150 @@
-{% extends "base.html" %}
-
-{% block title %}
-
-Register
-
-{% endblock %}
+{% extends "base.html" %} {% block title %} Register {% endblock %}
 
 {% block content %}
+<div class="max-w-lg mx-auto py-4 md:py-16">
+  <div
+    class="bg-surface border border-line rounded-card shadow-xl p-5 sm:p-8 md:p-10"
+  >
+    <h2 class="font-display font-bold text-xl md:text-2xl text-center mb-1">
+      Create Your Account
+    </h2>
 
-<div class="container py-5">
+    <p class="text-inksoft text-center mb-5 md:mb-8 text-xs md:text-sm">
+      Join Shopora and start shopping today.
+    </p>
 
-    <div class="row justify-content-center">
+    <form method="POST" class="space-y-3.5 md:space-y-5">
+      {% csrf_token %}
 
-        <div class="col-md-7 col-lg-6">
-
-            <div class="card shadow border-0">
-
-                <div class="card-body p-4 p-lg-5">
-
-                    <h2 class="text-center fw-bold mb-2">
-
-                        Create Your Account
-
-                    </h2>
-
-                    <p class="text-center text-muted mb-4">
-
-                        Join Shopora and start shopping today.
-
-                    </p>
-
-                    <form method="POST">
-
-                        {% csrf_token %}
-
-                        <div class="mb-3">
-
-                            <label class="form-label">
-
-                                Username
-
-                            </label>
-
-                            {{ form.username }}
-
-                            {% for error in form.username.errors %}
-
-                                <small class="text-danger">
-
-                                    {{ error }}
-
-                                </small>
-
-                            {% endfor %}
-
-                        </div>
-
-                        <div class="mb-3">
-
-                            <label class="form-label">
-
-                                Email Address
-
-                            </label>
-
-                            {{ form.email }}
-
-                            {% for error in form.email.errors %}
-
-                                <small class="text-danger">
-
-                                    {{ error }}
-
-                                </small>
-
-                            {% endfor %}
-
-                        </div>
-
-                        <div class="mb-3">
-
-                            <label class="form-label">
-
-                                Phone Number
-
-                            </label>
-
-                            {{ form.phone }}
-
-                            {% for error in form.phone.errors %}
-
-                                <small class="text-danger">
-
-                                    {{ error }}
-
-                                </small>
-
-                            {% endfor %}
-
-                        </div>
-
-                        <div class="mb-3">
-
-                            <label class="form-label">
-
-                                Password
-
-                            </label>
-
-                            {{ form.password1 }}
-
-                            <small class="text-muted">
-
-                                Use at least 8 characters including letters and numbers.
-
-                            </small>
-
-                            {% for error in form.password1.errors %}
-
-                                <br>
-
-                                <small class="text-danger">
-
-                                    {{ error }}
-
-                                </small>
-
-                            {% endfor %}
-
-                        </div>
-
-                        <div class="mb-4">
-
-                            <label class="form-label">
-
-                                Confirm Password
-
-                            </label>
-
-                            {{ form.password2 }}
-
-                            {% for error in form.password2.errors %}
-
-                                <br>
-
-                                <small class="text-danger">
-
-                                    {{ error }}
-
-                                </small>
-
-                            {% endfor %}
-
-                        </div>
-
-                        <button
-                            type="submit"
-                            class="btn btn-success w-100"
-                        >
-
-                            Create Account
-
-                        </button>
-
-                    </form>
-
-                    <hr class="my-4">
-
-                    <p class="text-center mb-0">
-
-                        Already have an account?
-
-                        <a href="{% url 'accounts:login' %}">
-
-                            Login
-
-                        </a>
-
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
+      <div>
+        <label class="block text-xs md:text-sm font-medium text-ink mb-1">
+          Full Name
+        </label>
+
+        <input
+          type="text"
+          name="full_name"
+          placeholder="Your full name"
+          class="w-full rounded-xl border border-line bg-bg px-4 py-2.5 text-sm text-ink placeholder:text-inksoft focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent"
+        />
+
+        {% for error in form.full_name.errors %}
+
+        <small class="block mt-1 text-xs text-red-500">{{ error }}</small>
+
+        {% endfor %}
+      </div>
+
+      <div>
+        <label class="block text-xs md:text-sm font-medium text-ink mb-1">
+          Username
+        </label>
+
+        {{ form.username }} {% for error in form.username.errors %}
+
+        <small class="block mt-1 text-xs text-red-500">{{ error }}</small>
+
+        {% endfor %}
+      </div>
+
+      <div>
+        <label class="block text-xs md:text-sm font-medium text-ink mb-1">
+          Email or Phone Number
+        </label>
+
+        <input
+          type="text"
+          name="contact"
+          placeholder="you@example.com or 01XXXXXXXXX"
+          class="w-full rounded-xl border border-line bg-bg px-4 py-2.5 text-sm text-ink placeholder:text-inksoft focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent"
+        />
+
+        <small class="block mt-1 text-[0.7rem] md:text-xs text-inksoft">
+          Enter either an email address or a phone number.
+        </small>
+
+        {% for error in form.contact.errors %}
+
+        <small class="block mt-1 text-xs text-red-500">{{ error }}</small>
+
+        {% endfor %}
+      </div>
+
+      <div>
+        <label class="block text-xs md:text-sm font-medium text-ink mb-1">
+          Password
+        </label>
+
+        {{ form.password1 }}
+
+        <small class="block mt-1 text-[0.7rem] md:text-xs text-inksoft">
+          Use at least 8 characters including letters and numbers.
+        </small>
+
+        {% for error in form.password1.errors %}
+
+        <small class="block mt-1 text-xs text-red-500">{{ error }}</small>
+
+        {% endfor %}
+      </div>
+
+      <div>
+        <label class="block text-xs md:text-sm font-medium text-ink mb-1">
+          Confirm Password
+        </label>
+
+        {{ form.password2 }} {% for error in form.password2.errors %}
+
+        <small class="block mt-1 text-xs text-red-500">{{ error }}</small>
+
+        {% endfor %}
+      </div>
+
+      <button
+        type="submit"
+        class="w-full bg-accent hover:bg-accentink text-white font-semibold rounded-xl py-2.5 md:py-3 text-sm md:text-base transition hover:-translate-y-0.5"
+      >
+        Create Account
+      </button>
+    </form>
+
+    <script>
+      document
+        .querySelectorAll(
+          'form input[type="text"], form input[type="email"], form input[type="password"], form input[type="tel"]',
+        )
+        .forEach(function (el) {
+          el.classList.add(
+            "w-full",
+            "rounded-xl",
+            "border",
+            "border-line",
+            "bg-bg",
+            "px-4",
+            "py-2.5",
+            "text-sm",
+            "text-ink",
+            "focus:outline-none",
+            "focus:ring-2",
+            "focus:ring-accent/40",
+            "focus:border-accent",
+          );
+        });
+    </script>
+
+    <hr class="border-line my-4 md:my-6" />
+
+    <p class="text-center text-xs md:text-sm text-inksoft">
+      Already have an account?
+
+      <a
+        href="{% url 'accounts:login' %}"
+        class="text-accent hover:text-accentink font-semibold"
+      >
+        Login
+      </a>
+    </p>
+  </div>
 </div>
 
 {% endblock %}

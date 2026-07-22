@@ -1,306 +1,277 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+<nav class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-line">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="flex items-center justify-between h-20 gap-4">
 
-    <div class="container">
+      <a
+        href="{% url 'home' %}"
+        class="flex items-center gap-2 font-display font-bold text-2xl text-ink shrink-0"
+      >
+        <span class="text-accent">🛍️</span>
 
-        <!-- Brand -->
+        <span>{{ SHOP_NAME }}</span>
+      </a>
 
+      <ul class="hidden lg:flex items-center gap-7 font-medium text-ink">
+        <li>
+          <a href="{% url 'home' %}" class="hover:text-accent transition"
+            >Home</a
+          >
+        </li>
+        <li>
+          <a
+            href="{% url 'store:product_list' %}"
+            class="hover:text-accent transition"
+            >Products</a
+          >
+        </li>
+        <li>
+          <a href="{% url 'about' %}" class="hover:text-accent transition"
+            >About</a
+          >
+        </li>
+        <li>
+          <a href="{% url 'contact' %}" class="hover:text-accent transition"
+            >Contact</a
+          >
+        </li>
+      </ul>
+
+      <form
+        class="hidden lg:block flex-1 max-w-xs"
+        method="GET"
+        action="{% url 'store:product_list' %}"
+      >
+        <input
+          class="w-full rounded-full border border-line bg-bg px-4 py-2 text-sm text-ink placeholder:text-inksoft focus:outline-none focus:ring-2 focus:ring-accent/40"
+          type="search"
+          name="q"
+          placeholder="Search products..."
+        />
+      </form>
+
+      <div class="hidden lg:flex items-center gap-4 shrink-0">
         <a
-            class="navbar-brand fw-bold fs-3"
-            href="{% url 'home' %}"
+          href="{% url 'cart:cart_detail' %}"
+          class="relative font-medium text-ink hover:text-accent transition"
         >
+          🛒 Cart
 
-            <span class="text-primary">🛍️</span>
-
-            <span class="text-dark">
-
-                {{ SHOP_NAME }}
-
-            </span>
-
+          <span
+            class="absolute -top-2 -right-3 bg-accent text-white text-[0.65rem] font-mono rounded-full w-5 h-5 flex items-center justify-center"
+          >
+            {{ cart|length }}
+          </span>
         </a>
 
-        <!-- Mobile Button -->
+        {% if user.is_authenticated %}
 
-        <button
-            class="navbar-toggler"
+        <a
+          href="{% url 'store:wishlist' %}"
+          class="relative font-medium text-ink hover:text-accent transition"
+        >
+          ❤️ Wishlist
+
+          <span
+            class="absolute -top-2 -right-3 bg-red-500 text-white text-[0.65rem] font-mono rounded-full w-5 h-5 flex items-center justify-center"
+          >
+            {{ wishlist_count }}
+          </span>
+        </a>
+
+        <div class="relative">
+          <button
             type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-        >
+            onclick="
+              document.getElementById('profileMenu').classList.toggle('hidden')
+            "
+            class="flex items-center gap-2 font-medium text-ink"
+          >
+            {% if user.profile_image %}
 
-            <span class="navbar-toggler-icon"></span>
+            <img
+              src="{{ user.profile_image.url }}"
+              class="w-9 h-9 rounded-full object-cover"
+            />
 
-        </button>
+            {% else %}
 
-        <!-- Navbar -->
+            <span
+              class="w-9 h-9 rounded-full bg-accent text-white flex items-center justify-center text-sm font-bold"
+            >
+              {{ user.username|first|upper }}
+            </span>
 
-        <div
-            class="collapse navbar-collapse"
-            id="navbarNav"
-        >
+            {% endif %}
 
-            <!-- Left Menu -->
-
-            <ul class="navbar-nav me-auto">
-
-                <li class="nav-item">
-
-                    <a
-                        class="nav-link fw-medium"
-                        href="{% url 'home' %}"
-                    >
-
-                        Home
-
-                    </a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a
-                        class="nav-link fw-medium"
-                        href="{% url 'store:product_list' %}"
-                    >
-
-                        Products
-
-                    </a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a
-                        class="nav-link fw-medium"
-                        href="{% url 'about' %}"
-                    >
-
-                        About
-
-                    </a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a
-                        class="nav-link fw-medium"
-                        href="{% url 'contact' %}"
-                    >
-
-                        Contact
-
-                    </a>
-
-                </li>
-
-            </ul>
-
-            <!-- Search -->
-
-            <form
-                class="d-flex mx-lg-4 my-3 my-lg-0"
-                method="GET"
-                action="{% url 'store:product_list' %}"
+            <span class="hidden xl:inline"
+              >{{ user.get_full_name|default:user.username }}</span
             >
 
-                <input
-                    class="form-control rounded-pill"
-                    type="search"
-                    name="q"
-                    placeholder="Search products..."
-                >
-
-            </form>
-
-            <!-- Right -->
-
-            <ul class="navbar-nav align-items-lg-center">
-
-                <!-- Cart -->
-
-                <li class="nav-item me-lg-2">
-
-                    <a
-                        class="nav-link"
-                        href="{% url 'cart:cart_detail' %}"
-                    >
-
-                        🛒 Cart
-
-                        <span class="badge bg-primary rounded-pill">
-
-                            {{ cart|length }}
-
-                        </span>
-
-                    </a>
-
-                </li>
-
-                {% if user.is_authenticated %}
-
-                <!-- Wishlist -->
-
-                <li class="nav-item me-lg-2">
-
-                    <a
-                        class="nav-link"
-                        href="{% url 'store:wishlist' %}"
-                    >
-
-                        ❤️ Wishlist
-
-                        <span class="badge bg-danger rounded-pill">
-
-                            {{ wishlist_count }}
-
-                        </span>
-
-                    </a>
-
-                </li>
-
-                <!-- Profile -->
-
-                <li class="nav-item dropdown">
-
-                    <a
-                        class="nav-link dropdown-toggle d-flex align-items-center"
-                        href="#"
-                        data-bs-toggle="dropdown"
-                    >
-
-                        {% if user.profile_image %}
-
-                        <img
-                            src="{{ user.profile_image.url }}"
-                            class="rounded-circle me-2"
-                            width="38"
-                            height="38"
-                            style="object-fit:cover;"
-                        >
-
-                        {% else %}
-
-                        <div
-                            class="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center me-2"
-                            style="width:38px;height:38px;font-size:15px;font-weight:bold;"
-                        >
-
-                            {{ user.username|first|upper }}
-
-                        </div>
-
-                        {% endif %}
-
-                        {{ user.get_full_name|default:user.username }}
-
-                    </a>
-
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-
-                        <li>
-
-                            <a
-                                class="dropdown-item"
-                                href="{% url 'accounts:profile' %}"
-                            >
-
-                                👤 My Profile
-
-                            </a>
-
-                        </li>
-
-                        <li>
-
-                            <a
-                                class="dropdown-item"
-                                href="{% url 'orders:order_list' %}"
-                            >
-
-                                📦 My Orders
-
-                            </a>
-
-                        </li>
-
-                        {% if user.role == "owner" or user.role == "staff" %}
-
-                        <li>
-
-                            <a
-                                class="dropdown-item"
-                                href="{% url 'dashboard:home' %}"
-                            >
-
-                                📊 Dashboard
-
-                            </a>
-
-                        </li>
-
-                        {% endif %}
-
-                        <li>
-
-                            <hr class="dropdown-divider">
-
-                        </li>
-
-                        <li>
-
-                            <a
-                                class="dropdown-item text-danger"
-                                href="{% url 'accounts:logout' %}"
-                            >
-
-                                🚪 Logout
-
-                            </a>
-
-                        </li>
-
-                    </ul>
-
-                </li>
-
-                {% else %}
-
-                <li class="nav-item me-2">
-
-                    <a
-                        class="btn btn-outline-primary rounded-pill"
-                        href="{% url 'accounts:login' %}"
-                    >
-
-                        Login
-
-                    </a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a
-                        class="btn btn-primary rounded-pill"
-                        href="{% url 'accounts:register' %}"
-                    >
-
-                        Register
-
-                    </a>
-
-                </li>
-
-                {% endif %}
-
-            </ul>
-
+            <span class="text-inksoft text-xs">▾</span>
+          </button>
+
+          <div
+            id="profileMenu"
+            class="hidden absolute right-0 mt-3 w-52 bg-white border border-line rounded-xl shadow-xl overflow-hidden"
+          >
+            <a
+              href="{% url 'accounts:profile' %}"
+              class="block px-4 py-2.5 text-sm text-ink hover:bg-bg"
+              >👤 My Profile</a
+            >
+            <a
+              href="{% url 'orders:order_list' %}"
+              class="block px-4 py-2.5 text-sm text-ink hover:bg-bg"
+              >📦 My Orders</a
+            >
+
+            {% if user.role == "owner" or user.role == "staff" %}
+
+            <a
+              href="{% url 'dashboard:home' %}"
+              class="block px-4 py-2.5 text-sm text-ink hover:bg-bg"
+              >📊 Dashboard</a
+            >
+
+            {% endif %}
+
+            <hr class="border-line" />
+
+            <a
+              href="{% url 'accounts:logout' %}"
+              class="block px-4 py-2.5 text-sm text-red-600 hover:bg-bg"
+              >🚪 Logout</a
+            >
+          </div>
         </div>
 
+        {% else %}
+
+        <a
+          href="{% url 'accounts:login' %}"
+          class="rounded-full border border-accent text-accent font-semibold px-5 py-2 text-sm hover:bg-accent hover:text-white transition"
+        >
+          Login
+        </a>
+
+        <a
+          href="{% url 'accounts:register' %}"
+          class="rounded-full bg-accent text-white font-semibold px-5 py-2 text-sm hover:bg-accentink transition"
+        >
+          Register
+        </a>
+
+        {% endif %}
+      </div>
+
+      <button
+        type="button"
+        onclick="
+          document.getElementById('mobileMenu').classList.toggle('hidden')
+        "
+        class="lg:hidden text-2xl text-ink"
+        aria-label="Toggle menu"
+      >
+        ☰
+      </button>
     </div>
 
+    <div
+      id="mobileMenu"
+      class="hidden lg:hidden pb-6 border-t border-line pt-4"
+    >
+      <form method="GET" action="{% url 'store:product_list' %}" class="mb-4">
+        <input
+          class="w-full rounded-full border border-line bg-bg px-4 py-2 text-sm text-ink placeholder:text-inksoft focus:outline-none focus:ring-2 focus:ring-accent/40"
+          type="search"
+          name="q"
+          placeholder="Search products..."
+        />
+      </form>
+
+      <ul class="flex flex-col gap-3 font-medium text-ink mb-4">
+        <li>
+          <a href="{% url 'home' %}" class="block hover:text-accent">Home</a>
+        </li>
+        <li>
+          <a
+            href="{% url 'store:product_list' %}"
+            class="block hover:text-accent"
+            >Products</a
+          >
+        </li>
+        <li>
+          <a href="{% url 'about' %}" class="block hover:text-accent">About</a>
+        </li>
+        <li>
+          <a href="{% url 'contact' %}" class="block hover:text-accent"
+            >Contact</a
+          >
+        </li>
+        <li>
+          <a href="{% url 'cart:cart_detail' %}" class="block hover:text-accent"
+            >🛒 Cart ({{ cart|length }})</a
+          >
+        </li>
+
+        {% if user.is_authenticated %}
+
+        <li>
+          <a href="{% url 'store:wishlist' %}" class="block hover:text-accent"
+            >❤️ Wishlist ({{ wishlist_count }})</a
+          >
+        </li>
+        <li>
+          <a href="{% url 'accounts:profile' %}" class="block hover:text-accent"
+            >👤 My Profile</a
+          >
+        </li>
+        <li>
+          <a
+            href="{% url 'orders:order_list' %}"
+            class="block hover:text-accent"
+            >📦 My Orders</a
+          >
+        </li>
+
+        {% if user.role == "owner" or user.role == "staff" %}
+
+        <li>
+          <a href="{% url 'dashboard:home' %}" class="block hover:text-accent"
+            >📊 Dashboard</a
+          >
+        </li>
+
+        {% endif %}
+
+        <li>
+          <a href="{% url 'accounts:logout' %}" class="block text-red-600"
+            >🚪 Logout</a
+          >
+        </li>
+
+        {% endif %}
+      </ul>
+
+      {% if not user.is_authenticated %}
+
+      <div class="flex gap-3">
+        <a
+          href="{% url 'accounts:login' %}"
+          class="flex-1 text-center rounded-full border border-accent text-accent font-semibold px-4 py-2 text-sm"
+        >
+          Login
+        </a>
+
+        <a
+          href="{% url 'accounts:register' %}"
+          class="flex-1 text-center rounded-full bg-accent text-white font-semibold px-4 py-2 text-sm"
+        >
+          Register
+        </a>
+      </div>
+
+      {% endif %}
+    </div>
+  </div>
 </nav>
