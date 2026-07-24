@@ -44,12 +44,12 @@ class FeatureToggle(models.Model):
     )
 
     category = models.CharField(
-        max_length=30,
+        max_length=50,
         choices=CATEGORY_CHOICES, default="website",
     )
 
     icon = models.CharField(
-        max_length=20,
+        max_length=50,
         default="⚙️",
     )
 
