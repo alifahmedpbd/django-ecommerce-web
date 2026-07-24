@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}
+Return Request
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-6">
+
+            <div class="card shadow border-0 rounded-4">
+
+                <div class="card-body p-5">
+
+                    <h2 class="fw-bold mb-4">
+
+                        ↩ Return Request
+
+                    </h2>
+
+                    <div class="alert alert-info">
+
+                        <strong>Order #{{ order.id }}</strong>
+
+                        <br>
+
+                        Total :
+
+                        <strong>
+
+                            ${{ order.final_total }}
+
+                        </strong>
+
+                    </div>
+
+                    <form method="POST">
+
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+
+                            <label class="form-label fw-semibold">
+
+                                Reason For Return
+
+                            </label>
+
+                            <textarea
+                                name="reason"
+                                rows="5"
+                                class="form-control"
+                                placeholder="Please explain why you want to return this order."
+                                required
+                            ></textarea>
+
+                        </div>
+
+                        <div class="d-grid gap-2">
+
+                            <button
+                                class="btn btn-danger rounded-pill">
+
+                                Submit Return Request
+
+                            </button>
+
+                            <a
+                                href="{% url 'orders:order_detail' order.id %}"
+                                class="btn btn-outline-secondary rounded-pill">
+
+                                Cancel
+
+                            </a>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -72,6 +72,7 @@ class Order(models.Model):
         ("cod", "Cash On Delivery"),
         ("sslcommerz", "SSSCommerz"),
         ("stripe", "Stripe"),
+        ("emi", "EMI"),
     )
 
     STATUS_CHOICES = (
@@ -98,7 +99,14 @@ class Order(models.Model):
 
     )
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
+    EMI_MONTHS = (
+        (3, "3 Months"),
+        (6, "6 Months"),
+        (9, "9 Months"),
+        (12, "12 Months"),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="orders")
     full_name = models.CharField(max_length=200)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
@@ -112,6 +120,15 @@ class Order(models.Model):
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     final_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending")
+    tracking_number = models.CharField(max_length=100, blank=True)
+    courier_name = models.CharField(max_length=100, blank=True)
+    estimated_delivery = models.DateField(null=True, blank=True)
+    delivery_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    admin_note = models.TextField(blank=True)
+    cancel_reason = models.TextField(blank=True)
+    return_reason = models.TextField(blank=True)
+    emi_months = models.PositiveSmallIntegerField(choices=EMI_MONTHS, null=True, blank=True)
+
 
     def __str__(self):
         return f"Order #{self.id}"
@@ -161,7 +178,8 @@ class CouponUsage(models.Model):
 class OrderTimeline(models.Model):
 
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="timeline")
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    created_by = models.CharField(max_length=100, default="System")
     note = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -189,3 +207,58 @@ class ExchangeRate(models.Model):
     def __str__(self):
 
         return f"1 {self.currency} = ৳{self.rate}"
+    
+class ReturnRequest(models.Model):
+
+    STATUS_CHOICES = (
+
+        ("pending", "Pending"),
+
+        ("approved", "Approved"),
+
+        ("rejected", "Rejected"),
+
+        ("refunded", "Refunded"),
+
+    )
+
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="return_request",
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+    )
+
+    reason = models.TextField()
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending",
+    )
+
+    admin_note = models.TextField(
+        blank=True,
+    )
+
+    refund_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    def __str__(self):
+
+        return f"Return #{self.order.id}"

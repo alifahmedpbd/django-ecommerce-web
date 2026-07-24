@@ -11,9 +11,7 @@ Checkout
 
     <div class="row">
 
-        <!-- ========================= -->
         <!-- Shipping Form -->
-        <!-- ========================= -->
 
         <div class="col-lg-7">
 
@@ -21,13 +19,64 @@ Checkout
 
                 <div class="card-header">
 
-                    <h4>
-
-                        🚚 Shipping Information
-
-                    </h4>
+                    <h4>🚚 Shipping Information</h4>
 
                 </div>
+
+                {% if feature_enabled.emi %}
+
+<div class="card border-primary shadow-sm rounded-3 mx-3 mt-3 mb-3">
+
+    <div class="card-body">
+
+        <div class="d-flex align-items-center">
+
+            <div class="display-6 me-3">
+                💳
+            </div>
+
+            <div>
+
+               <h5 class="mb-1">
+                    Easy EMI Available
+                    <span class="badge bg-success ms-2">NEW</span>
+                </h5>
+
+                <small class="text-muted">
+                    Pay easily in 3, 6, 9 or 12 monthly installments using eligible bank cards.
+                </small>
+
+                <small class="text-muted d-block mt-3">
+    * EMI availability depends on your bank and card eligibility.
+</small>
+
+            </div>
+
+        </div>
+
+        <hr>
+
+        <div class="row text-center">
+
+            <div class="col">
+                ✅ 0% Interest*
+            </div>
+
+            <div class="col">
+                🏦 Selected Banks
+            </div>
+
+            <div class="col">
+                ⚡ Instant Approval
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
 
                 <div class="card-body">
 
@@ -40,9 +89,7 @@ Checkout
                         <button
                             class="btn btn-success w-100 mt-3"
                         >
-
                             Place Order
-
                         </button>
 
                     </form>
@@ -53,9 +100,7 @@ Checkout
 
         </div>
 
-        <!-- ========================= -->
         <!-- Order Summary -->
-        <!-- ========================= -->
 
         <div class="col-lg-5">
 
@@ -63,11 +108,7 @@ Checkout
 
                 <div class="card-header">
 
-                    <h4>
-
-                        🧾 Order Summary
-
-                    </h4>
+                    <h4>🧾 Order Summary</h4>
 
                 </div>
 
@@ -111,87 +152,85 @@ Checkout
 
                     <hr>
 
-                    <!-- ========================= -->
                     <!-- Coupon -->
-                    <!-- ========================= -->
 
-                    {% if coupon %}
+                    {% if feature_enabled.coupon %}
 
-                    <div class="alert alert-success">
+                        {% if coupon %}
 
-                        <strong>
+                        <div class="alert alert-success">
 
-                            Coupon:
+                            <strong>Coupon:</strong>
 
-                        </strong>
+                            {{ coupon.code }}
 
-                        {{ coupon.code }}
+                            <br>
 
-                        <br>
+                            Discount:
 
-                        Discount:
+                            <strong>
 
-                        <strong>
+                                ${{ discount }}
 
-                            ${{ discount }}
+                            </strong>
 
-                        </strong>
+                            <br>
 
-                        <br>
+                            <small class="text-success">
 
-                        <small class="text-success">
+                                ≈ ৳{{ discount|bdt }}
 
-                            ≈ ৳{{ discount|bdt }}
+                            </small>
 
-                        </small>
+                            <br><br>
 
-                        <br><br>
-
-                        <a
-                            href="{% url 'cart:remove_coupon' %}"
-                            class="btn btn-danger btn-sm"
-                        >
-
-                            Remove Coupon
-
-                        </a>
-
-                    </div>
-
-                    {% else %}
-
-                    <form
-                        method="POST"
-                        action="{% url 'cart:apply_coupon' %}"
-                        class="mb-3"
-                    >
-
-                        {% csrf_token %}
-
-                        <div class="input-group">
-
-                            <input
-                                type="text"
-                                name="coupon_code"
-                                class="form-control"
-                                placeholder="Coupon Code"
+                            <a
+                                href="{% url 'cart:remove_coupon' %}"
+                                class="btn btn-danger btn-sm"
                             >
 
-                            <button
-                                class="btn btn-primary"
-                            >
+                                Remove Coupon
 
-                                Apply
-
-                            </button>
+                            </a>
 
                         </div>
 
-                    </form>
+                        {% else %}
+
+                        <form
+                            method="POST"
+                            action="{% url 'cart:apply_coupon' %}"
+                            class="mb-3"
+                        >
+
+                            {% csrf_token %}
+
+                            <div class="input-group">
+
+                                <input
+                                    type="text"
+                                    name="coupon_code"
+                                    class="form-control"
+                                    placeholder="Coupon Code"
+                                >
+
+                                <button
+                                    class="btn btn-primary"
+                                >
+
+                                    Apply
+
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                        {% endif %}
+
+                        <hr>
 
                     {% endif %}
-
-                    <hr>
 
                     <div class="d-flex justify-content-between">
 
@@ -221,7 +260,49 @@ Checkout
 
                     </div>
 
-                    {% if coupon %}
+                    <hr>
+
+<div class="d-flex justify-content-between align-items-center">
+
+    <strong>
+
+        Delivery Charge
+
+    </strong>
+
+    <div class="text-end">
+
+        {% if feature_enabled.free_delivery %}
+
+            <span class="badge bg-success">
+
+                FREE
+
+            </span>
+
+        {% else %}
+
+            <strong>
+
+                ${{ delivery_charge }}
+
+            </strong>
+
+            <br>
+
+            <small class="text-success">
+
+                ≈ ৳{{ delivery_charge|bdt }}
+
+            </small>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+                    {% if feature_enabled.coupon and coupon %}
 
                     <div class="d-flex justify-content-between text-success mt-2">
 

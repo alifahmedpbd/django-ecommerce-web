@@ -57,6 +57,8 @@ urlpatterns = [
     path("orders/<int:order_id>/", views.dashboard_order_detail, name="dashboard_order_detail"),
     path("orders/", views.dashboard_orders, name="dashboard_orders"),
 
+    path("orders/export/excel/", views.export_orders_excel, name="export_orders_excel"),
+
     path("reports/low-stock/", views.low_stock_report, name="low_stock_report"),
 
     path("reports/low-stock/pdf/", views.low_stock_report_pdf, name="low_stock_report_pdf"),
@@ -67,5 +69,25 @@ urlpatterns = [
     path("customers/<int:user_id>/", views.dashboard_customer_detail, name="dashboard_customer_detail"),
 
     path("currency/", views.currency_exchange, name="currency_exchange"),
+
+    path("feature-toggle/", views.feature_toggle_list, name="feature_toggle_list"),
+
+    path("website-settings/", views.website_features, name="website_features"),
+
+    # Announcement
+
+    path("announcements/add/", views.announcement_add, name="announcement_add"),
+
+    path("announcements/", views.announcement_list, name="announcement_list"),
+
+    path("announcements/<int:pk>/edit/", views.announcement_edit, name="announcement_edit"),
+
+    path("announcements/<int:pk>/delete/", views.announcement_delete, name="announcement_delete"),
+
+    path("returns/",views.dashboard_returns, name="dashboard_returns"),
+
+    path("returns/<int:pk>/approve/", views.approve_return, name="approve_return"),
+
+    path("returns/<int:pk>/reject/", views.reject_return, name="reject_return"),
 
 ]

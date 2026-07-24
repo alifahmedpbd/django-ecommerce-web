@@ -26,6 +26,13 @@
 
     </a>
 
+    <a href="{% url 'dashboard:dashboard_returns' %}"
+       class="btn btn-dark w-100 text-start mb-2">
+
+        ↩ Returns
+
+    </a>
+
 
     <!-- Products -->
 
@@ -56,6 +63,27 @@
 
     </a>
     {% endif %}
+
+    
+    <a href="{% url 'dashboard:announcement_list' %}" class="btn btn-dark w-100 text-start mb-2">
+        📢 Announcement
+    </a>
+   
+
+
+    <a href="{% url 'dashboard:feature_toggle_list' %}"
+        class="btn btn-dark w-100 text-start mb-2">
+
+        ⚙ Feature Toggles
+
+    </a>
+
+    <a href="{% url 'dashboard:website_features' %}"
+        class="btn btn-dark w-100 text-start mb-2">
+
+        🌐 Website Features
+
+    </a>
 
     <a href="{% url 'dashboard:brand_list' %}"
         class="btn btn-dark w-100 text-start mb-2">

@@ -1,38 +1,222 @@
 {% extends "dashboard/base.html" %}
 
 {% block title %}
-
 Add Product
-
 {% endblock %}
 
 {% block dashboard_content %}
 
-<div class="card shadow">
+<div class="card shadow border-0">
 
-    <div class="card-header">
+    <div class="card-header bg-dark text-white">
 
-        <h3>
-
-            Add Product
-
+        <h3 class="mb-0">
+            ➕ Add Product
         </h3>
 
     </div>
 
     <div class="card-body">
 
-        <form method="POST"
-              enctype="multipart/form-data">
+        <form method="POST" enctype="multipart/form-data">
 
             {% csrf_token %}
 
-            {{ form.as_p }}
+            <div class="row">
 
-            <button
-                class="btn btn-primary">
+                <div class="col-md-6 mb-3">
 
-                Save Product
+                    {{ form.category.label_tag }}
+
+                    {{ form.category }}
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    {{ form.brand.label_tag }}
+
+                    {{ form.brand }}
+
+                </div>
+
+            </div>
+
+            <div class="mb-3">
+
+                {{ form.name.label_tag }}
+
+                {{ form.name }}
+
+            </div>
+
+            <div class="mb-3">
+
+                {{ form.image.label_tag }}
+
+                {{ form.image }}
+
+            </div>
+
+            <div class="mb-3">
+
+                {{ form.description.label_tag }}
+
+                {{ form.description }}
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-4 mb-3">
+
+                    {{ form.price.label_tag }}
+
+                    {{ form.price }}
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    {{ form.flash_price.label_tag }}
+
+                    {{ form.flash_price }}
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    {{ form.stock.label_tag }}
+
+                    {{ form.stock }}
+
+                </div>
+
+            </div>
+
+            <div class="mb-4">
+
+                {{ form.flash_end.label_tag }}
+
+                {{ form.flash_end }}
+
+            </div>
+
+            <hr>
+
+            <h5 class="mb-3">
+                Marketing Features
+            </h5>
+
+            <div class="row">
+
+                <div class="col-md-3">
+
+                    <div class="form-check">
+
+                        {{ form.featured }}
+
+                        <label class="form-check-label">
+
+                            Featured
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="form-check">
+
+                        {{ form.is_flash_sale }}
+
+                        <label class="form-check-label">
+
+                            Flash Sale
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="form-check">
+
+                        {{ form.is_trending }}
+
+                        <label class="form-check-label">
+
+                            Trending
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="form-check">
+
+                        {{ form.is_new_arrival }}
+
+                        <label class="form-check-label">
+
+                            New Arrival
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="row mt-3">
+
+                <div class="col-md-3">
+
+                    <div class="form-check">
+
+                        {{ form.is_free_delivery }}
+
+                        <label class="form-check-label">
+
+                            Free Delivery
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="form-check">
+
+                        {{ form.available }}
+
+                        <label class="form-check-label">
+
+                            Available
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <hr>
+
+            <button class="btn btn-success">
+
+                💾 Save Product
 
             </button>
 

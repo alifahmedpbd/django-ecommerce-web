@@ -1,82 +1,75 @@
-
 {% extends "base.html" %}
 {% load currency %}
 
 {% block title %}
-
 {{ product.name }}
-
 {% endblock %}
 
 {% block content %}
 
-<div class="container mt-5">
+<div class="container py-5">
 
-    <div class="row">
+    <div class="row g-5">
 
-        <!-- ===========================
-             Product Image
-        =========================== -->
+        <!-- ========================= -->
+        <!-- Product Gallery -->
+        <!-- ========================= -->
 
-        <div class="col-md-5">
+        <div class="col-lg-5">
 
-            {% if product.image %}
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+
+                {% if product.image %}
 
                 <img
                     id="mainImage"
                     src="{{ product.image.url }}"
-                    class="img-fluid rounded shadow"
-                    style="width:100%;height:500px;object-fit:cover;"
+                    class="img-fluid"
+                    style="height:520px;object-fit:cover;"
                 >
 
-            {% else %}
+                {% else %}
 
                 <img
                     id="mainImage"
-                    src="https://placehold.co/600x500?text=No+Image"
-                    class="img-fluid rounded shadow"
-                    style="width:100%;height:500px;object-fit:cover;"
+                    src="https://placehold.co/700x700?text=No+Image"
+                    class="img-fluid"
+                    style="height:520px;object-fit:cover;"
                 >
 
-            {% endif %}
+                {% endif %}
 
-    <!-- ==========================
-         Product Gallery
-    ========================== -->
+            </div>
 
             {% if gallery %}
 
             <div class="d-flex flex-wrap gap-2 mt-3">
 
-        <!-- Main Product Image -->
+                {% if product.image %}
 
-            {% if product.image %}
+                <img
+                    src="{{ product.image.url }}"
+                    class="border rounded-3 shadow-sm"
+                    width="85"
+                    height="85"
+                    style="cursor:pointer;object-fit:cover;"
+                    onclick="changeImage(this)"
+                >
 
-            <img
-                src="{{ product.image.url }}"
-                width="90"
-                height="90"
-                class="border rounded shadow-sm"
-                style="cursor:pointer;object-fit:cover;"
-                onclick="changeImage(this)"
-            >
+                {% endif %}
 
-            {% endif %}
+                {% for image in gallery %}
 
-        <!-- Gallery Images -->
+                <img
+                    src="{{ image.image.url }}"
+                    class="border rounded-3 shadow-sm"
+                    width="85"
+                    height="85"
+                    style="cursor:pointer;object-fit:cover;"
+                    onclick="changeImage(this)"
+                >
 
-            {% for image in gallery %}
-
-            <img
-                src="{{ image.image.url }}"
-                width="90"
-                height="90"
-                class="border rounded shadow-sm"
-                style="cursor:pointer;object-fit:cover;"
-                onclick="changeImage(this)"
-            >
-
-            {% endfor %}
+                {% endfor %}
 
             </div>
 
@@ -84,26 +77,86 @@
 
         </div>
 
-        <!-- ===========================
-             Product Details
-        =========================== -->
 
-        <div class="col-md-7">
+        <!-- ========================= -->
+        <!-- Product Information -->
+        <!-- ========================= -->
 
-            <small class="text-muted">
+        <div class="col-lg-7">
 
-                {{ product.category.name }}
+            <div class="mb-2">
 
-            </small>
+                <span class="badge bg-secondary">
 
-            <h1 class="display-5 fw-bold mt-2">
+                    {{ product.category.name }}
+
+                </span>
+
+                {% if product.brand %}
+
+                <span class="badge bg-light text-dark border">
+
+                    {{ product.brand.name }}
+
+                </span>
+
+                {% endif %}
+
+            </div>
+
+            <h1 class="fw-bold mb-3">
 
                 {{ product.name }}
 
             </h1>
+
+            <!-- ========================= -->
+            <!-- Feature Badges -->
+            <!-- ========================= -->
+
             <div class="mb-3">
 
-                <h5>
+                {% if feature_enabled.flash_sale and product.is_flash_sale %}
+
+                    <span class="badge bg-danger me-2 px-3 py-2">
+                        🔥 Flash Sale
+                    </span>
+
+                {% endif %}
+
+                {% if features.free_delivery and product.is_free_delivery %}
+
+                    <span class="badge bg-success me-2 px-3 py-2">
+                        🚚 Free Delivery
+                    </span>
+
+                {% endif %}
+
+                {% if feature_enabled.trending and product.is_trending %}
+
+                    <span class="badge bg-warning text-dark me-2 px-3 py-2">
+                        📈 Trending
+                    </span>
+
+                {% endif %}
+
+                {% if feature_enabled.new_arrival and product.is_new_arrival %}
+
+                    <span class="badge bg-info text-dark px-3 py-2">
+                        ✨ New Arrival
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+            <!-- ========================= -->
+            <!-- Rating -->
+            <!-- ========================= -->
+
+            <div class="d-flex align-items-center mb-3">
+
+                <h5 class="mb-0 me-3">
 
                     ⭐ {{ average_rating|floatformat:1 }}/5
 
@@ -117,65 +170,71 @@
 
             </div>
 
-            <div class="mt-3">
+            <!-- Rating Progress -->
+
+            <div class="mb-4">
 
                 {% for item in rating_summary %}
 
                 <div class="d-flex align-items-center mb-2">
 
-                    <div style="width:60px;">
+                    <div style="width:55px;">
 
                         {{ item.star }} ★
 
                     </div>
 
-                    <div class="progress flex-grow-1" style="height:10px;">
+                    <div class="progress flex-grow-1 me-2"
+                         style="height:9px;">
 
-                    <div
-                        class="progress-bar bg-warning"
-                        style="width: {{ item.percentage|floatformat:0 }}%;"
-                    ></div>
+                        <div
+                            class="progress-bar bg-warning"
+                            style="width:{{ item.percentage|floatformat:0 }}%;"
+                        ></div>
+
+                    </div>
+
+                    <small class="text-muted">
+
+                        {{ item.count }}
+
+                    </small>
 
                 </div>
 
-                <small class="ms-2">
-
-                    {{ item.count }}
-
-                </small>
+                {% endfor %}
 
             </div>
 
-            {% endfor %}
+            <!-- Price -->
 
-            </div>
-
-            <h3 class="fw-bold">
+            <h2 class="fw-bold text-danger mb-1">
 
                 ${{ product.price }}
 
-            </h3>
+            </h2>
 
-            <p class="text-success">
+            <h5 class="text-success mb-4">
 
                 ≈ ৳{{ product.price|bdt }}
 
-            </p>
+            </h5>
+
+            <!-- Stock -->
 
             {% if product.in_stock %}
 
-                <span class="badge bg-success fs-6 px-3 py-2">
+                <span class="badge bg-success px-3 py-2">
 
-                    In Stock ({{ product.stock }})
+                    ✔ In Stock ({{ product.stock }})
 
                 </span>
 
             {% else %}
 
-                <span class="badge bg-danger fs-6 px-3 py-2">
+                <span class="badge bg-danger px-3 py-2">
 
-
-                    Out of Stock
+                    ✖ Out Of Stock
 
                 </span>
 
@@ -185,95 +244,207 @@
 
             <div class="mt-3">
 
-                <span class="badge bg-warning text-dark">
+                <div class="alert alert-warning mb-0">
 
-                    Hurry!
+                    ⚠ Hurry! Only
+                    <strong>{{ product.stock }}</strong>
+                    item{{ product.stock|pluralize }} left.
 
-                    Only
-
-                    {{ product.stock }}
-
-                    left.
-
-                </span>
+                </div>
 
             </div>
 
             {% endif %}
 
-            <hr>
+            <hr class="my-4">
 
-            <h5>
+            <h5 class="fw-bold">
 
-                Description
+                Product Description
 
             </h5>
 
-            <p>
+            <p class="text-muted">
 
-                {{ product.description }}
+                {{ product.description|linebreaks }}
 
             </p>
+                        <!-- ========================= -->
+            <!-- Action Buttons -->
+            <!-- ========================= -->
 
-            <div class="mt-4">
-                {% if product.in_stock %}
+            <div class="card border-0 shadow-sm rounded-4 mt-4">
 
-                <a
-                    href="{% url 'cart:cart_add' product.id %}"
-                    class="btn btn-primary btn-lg rounded-pill px-4"
-                >
+                <div class="card-body">
 
-                    Add to Cart
+                    {% if product.in_stock %}
 
-                </a>
-                {% else %}
-
-                <button
-
-                class="btn btn-secondary btn-lg rounded-pill px-4"
-
-                disabled
-
-                >
-
-                Out Of Stock
-
-                </button>
-
-                {% endif %}
-                
-                {% if user.is_authenticated %}
-
-                    {% if is_wishlisted %}
+                    <div class="d-grid gap-3">
 
                         <a
-                            href="{% url 'store:remove_from_wishlist' product.id %}"
-                            class="btn btn-danger rounded-pill px-4"
+                            href="{% url 'cart:buy_now' product.id %}"
+                            class="btn btn-danger btn-lg rounded-pill"
                         >
-                            ❤️ Remove Wishlist
+                            ⚡ Buy Now
                         </a>
+
+                        <a
+                            href="{% url 'cart:cart_add' product.id %}"
+                            class="btn btn-primary btn-lg rounded-pill"
+                        >
+                            🛒 Add To Cart
+                        </a>
+
+                    </div>
 
                     {% else %}
 
-                        <a
-                            href="{% url 'store:add_to_wishlist' product.id %}"
-                            class="btn btn-outline-danger rounded-pill px-4"
-                        >
-                            🤍 Add Wishlist
-                        </a>
+                    <button
+                        class="btn btn-secondary btn-lg w-100"
+                        disabled
+                    >
+                        Out Of Stock
+                    </button>
 
                     {% endif %}
 
-                {% endif %}
+                    <hr>
 
-                <a
-                    href="{% url 'store:product_list' %}"
-                    class="btn btn-outline-secondary btn-lg rounded-pill px-4"
-                >
+                    <div class="d-flex flex-wrap gap-2">
 
-                    Continue Shopping
+                        {% if feature_enabled.wishlist %}
 
-                </a>
+                            {% if user.is_authenticated %}
+
+                                {% if is_wishlisted %}
+
+                                <a
+                                    href="{% url 'store:remove_from_wishlist' product.id %}"
+                                    class="btn btn-outline-danger rounded-pill"
+                                >
+                                    ❤️ Remove Wishlist
+                                </a>
+
+                                {% else %}
+
+                                <a
+                                    href="{% url 'store:add_to_wishlist' product.id %}"
+                                    class="btn btn-outline-danger rounded-pill"
+                                >
+                                    🤍 Add Wishlist
+                                </a>
+
+                                {% endif %}
+
+                            {% else %}
+
+                            <a
+                                href="{% url 'accounts:login' %}"
+                                class="btn btn-outline-danger rounded-pill"
+                            >
+                                🤍 Login for Wishlist
+                            </a>
+
+                            {% endif %}
+
+                        {% endif %}
+
+                        <a
+                            href="{% url 'store:product_list' %}"
+                            class="btn btn-outline-secondary rounded-pill"
+                        >
+                            ← Continue Shopping
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ========================= -->
+            <!-- Product Information -->
+            <!-- ========================= -->
+
+            <div class="card shadow-sm border-0 rounded-4 mt-4">
+
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <div class="col-6">
+
+                            <strong>Category</strong>
+
+                            <br>
+
+                            {{ product.category.name }}
+
+                        </div>
+
+                        <div class="col-6">
+
+                            <strong>Brand</strong>
+
+                            <br>
+
+                            {% if product.brand %}
+
+                                {{ product.brand.name }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+
+                        <div class="col-6">
+
+                            <strong>Availability</strong>
+
+                            <br>
+
+                            {% if product.in_stock %}
+
+                                <span class="text-success">
+
+                                    In Stock
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="text-danger">
+
+                                    Out Of Stock
+
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                        <div class="col-6">
+
+                            <strong>Views</strong>
+
+                            <br>
+
+                            👁 {{ product.views }}
+
+                        </div>
+
+                    </div>
+
+                </div>
 
             </div>
 
@@ -281,70 +452,82 @@
 
     </div>
 
-    <hr>
+    <hr class="my-5">
+    {% if feature_enabled.reviews %}
 
-<h3>
+<h3 class="fw-bold mb-4">
 
-    {% if form.instance.pk %}
-
-        Update Your Review
-
-    {% else %}
-
-        Write a Review
-
-    {% endif %}
+    ⭐ Customer Reviews
 
 </h3>
 
 {% if user.is_authenticated %}
 
-<form method="post">
+<div class="card shadow-sm border-0 rounded-4 mb-5">
 
-    {% csrf_token %}
+    <div class="card-header bg-white">
 
-    {{ form.as_p }}
+        <h5 class="mb-0">
 
-    <button
-        type="submit"
-        class="btn btn-primary rounded-pill px-4"
-    >
+            {% if form.instance.pk %}
 
-        {% if form.instance.pk %}
+                Update Your Review
 
-            Update Review
+            {% else %}
 
-        {% else %}
+                Write Your Review
 
-            Submit Review
+            {% endif %}
 
-        {% endif %}
+        </h5>
 
-    </button>
+    </div>
 
-</form>
+    <div class="card-body">
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <button
+                class="btn btn-primary rounded-pill px-4"
+                type="submit"
+            >
+
+                {% if form.instance.pk %}
+
+                    Update Review
+
+                {% else %}
+
+                    Submit Review
+
+                {% endif %}
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
 
 {% else %}
 
-<p>
+<div class="alert alert-info rounded-4">
 
     Please login to write a review.
 
-</p>
+</div>
 
 {% endif %}
 
-<hr>
-
-<h3>
-
-    Customer Reviews
-
-</h3>
 
 {% for review in reviews %}
 
-<div class="card shadow-sm border-0 mb-4">
+<div class="card shadow-sm border-0 rounded-4 mb-4">
 
     <div class="card-body">
 
@@ -354,12 +537,7 @@
 
                 <div
                     class="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center me-3"
-                    style="
-                        width:55px;
-                        height:55px;
-                        font-size:22px;
-                        font-weight:bold;
-                    "
+                    style="width:60px;height:60px;font-size:24px;font-weight:bold;"
                 >
 
                     {{ review.user.username|first|upper }}
@@ -368,7 +546,7 @@
 
                 <div>
 
-                    <h6 class="mb-0">
+                    <h6 class="mb-1">
 
                         {{ review.user.username }}
 
@@ -380,48 +558,50 @@
 
                     </small>
 
+                    <div class="mt-2">
+
+                        {% for i in "12345" %}
+
+                            {% if forloop.counter <= review.rating %}
+
+                                <span class="text-warning fs-5">★</span>
+
+                            {% else %}
+
+                                <span class="text-secondary fs-5">☆</span>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    </div>
+
                 </div>
 
             </div>
 
             {% if review.user == request.user %}
 
-                <div>
+            <div>
 
-                    <a
-                        href="{% url 'store:delete_review' review.id %}"
-                        class="btn btn-sm btn-outline-danger rounded-pill"
-                    >
+                <a
+                    href="{% url 'store:delete_review' review.id %}"
+                    class="btn btn-outline-danger btn-sm rounded-pill"
+                >
 
-                        Delete
+                    Delete
 
-                    </a>
+                </a>
 
-                </div>
+            </div>
 
             {% endif %}
 
         </div>
 
-        <div class="mt-3">
+        <hr>
 
-            {% for i in "12345" %}
-
-                {% if forloop.counter <= review.rating %}
-
-                    <span class="text-warning fs-5">★</span>
-
-                {% else %}
-
-                    <span class="text-secondary fs-5">☆</span>
-
-                {% endif %}
-
-            {% endfor %}
-
-        </div>
-
-        <p class="mt-3 mb-0">
+        <p class="mb-0">
 
             {{ review.comment }}
 
@@ -433,7 +613,7 @@
 
 {% empty %}
 
-<div class="alert alert-info">
+<div class="alert alert-light border">
 
     No reviews yet.
 
@@ -441,66 +621,133 @@
 
 {% endfor %}
 
-    <!-- ===========================
-         Related Products
-    =========================== -->
+<hr class="my-5">
 
-    <hr class="my-5">
+{% endif %}
+<!-- ========================================= -->
+<!-- Related Products -->
+<!-- ========================================= -->
 
-    <h3 class="mb-4">
+<h3 class="fw-bold mb-4">
 
-        Related Products
+    Related Products
 
-    </h3>
+</h3>
 
-    <div class="row">
+<div class="row">
 
-        {% for item in related_products %}
+    {% for item in related_products %}
 
-        <div class="col-md-4 mb-4">
+    <div class="col-lg-3 col-md-4 col-6 mb-4">
 
-            <div class="card h-100 shadow border-0 rounded-4">
+        <div class="card border-0 shadow-sm h-100 rounded-4">
+
+            <div class="position-relative">
 
                 {% if item.image %}
 
-                    <img
-                        src="{{ item.image.url }}"
-                        class="card-img-top"
-                        style="height:200px;object-fit:cover;"
-                    >
+                <img
+                    src="{{ item.image.url }}"
+                    class="card-img-top"
+                    style="height:220px;object-fit:cover;"
+                >
 
                 {% else %}
 
-                    <img
-                        src="https://placehold.co/600x400?text=No+Image"
-                        class="card-img-top"
-                        style="height:200px;object-fit:cover;"
-                    >
+                <img
+                    src="https://placehold.co/500x500?text=No+Image"
+                    class="card-img-top"
+                    style="height:220px;object-fit:cover;"
+                >
 
                 {% endif %}
 
-                <div class="card-body d-flex flex-column">
+                <div class="position-absolute top-0 start-0 p-2">
 
-                    <h5>
+                    {% if feature_enabled.flash_sale and item.is_flash_sale %}
 
-                        {{ item.name|truncatechars:25 }}
+                    <span class="badge bg-danger mb-1 d-block">
+
+                        🔥 Flash Sale
+
+                    </span>
+
+                    {% endif %}
+
+                    {% if feature_enabled.trending and item.is_trending %}
+
+                    <span class="badge bg-warning text-dark mb-1 d-block">
+
+                        📈 Trending
+
+                    </span>
+
+                    {% endif %}
+
+                    {% if feature_enabled.new_arrival and item.is_new_arrival %}
+
+                    <span class="badge bg-info text-dark mb-1 d-block">
+
+                        ✨ New
+
+                    </span>
+
+                    {% endif %}
+
+                    {% if feature_enabled.free_delivery and item.is_free_delivery %}
+
+                    <span class="badge bg-success d-block">
+
+                        🚚 Free Delivery
+
+                    </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <div class="card-body d-flex flex-column">
+
+                <small class="text-muted">
+
+                    {{ item.category.name }}
+
+                </small>
+
+                <h6 class="fw-bold mt-2">
+
+                    {{ item.name|truncatechars:40 }}
+
+                </h6>
+
+                <div class="mt-auto">
+
+                    <h5 class="text-danger mb-1">
+
+                        ${{ item.price }}
 
                     </h5>
 
-                    <p class="text-success fw-bold">
+                    <small class="text-success">
 
-                        $ {{ item.price }}
+                        ≈ ৳{{ item.price|bdt }}
 
-                    </p>
+                    </small>
 
-                    <a
-                        href="{{ item.get_absolute_url }}"
-                        class="btn btn-outline-primary rounded-pill mt-auto"
-                    >
+                    <div class="d-grid mt-3">
 
-                        View Product
+                        <a
+                            href="{{ item.get_absolute_url }}"
+                            class="btn btn-outline-primary rounded-pill"
+                        >
 
-                    </a>
+                            View Product
+
+                        </a>
+
+                    </div>
 
                 </div>
 
@@ -508,24 +755,25 @@
 
         </div>
 
-        {% empty %}
+    </div>
 
-        <div class="col-12">
+    {% empty %}
 
-            <div class="alert alert-info">
+    <div class="col-12">
 
-                No Related Products.
+        <div class="alert alert-light border rounded-4">
 
-            </div>
+            No related products found.
 
         </div>
 
-        {% endfor %}
-
     </div>
+
+    {% endfor %}
 
 </div>
 
+</div>
 
 <script>
 
@@ -536,6 +784,5 @@ function changeImage(image){
 }
 
 </script>
-
 
 {% endblock %}

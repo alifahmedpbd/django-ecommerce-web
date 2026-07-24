@@ -4,11 +4,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from accounts.decorators import owner_or_staff_required
 
 from accounts.models import User
-from orders.models import Order, Coupon, OrderTimeline
+from orders.models import Order, Coupon, OrderTimeline, ReturnRequest
 from django.contrib import messages
 
 from store.models import Category, Product, Brand, ProductImage
-from .forms import CategoryForm, ProductForm, BrandForm, ProductImageForm, CouponForm
+from .forms import CategoryForm, ProductForm, BrandForm, ProductImageForm, CouponForm, AnnouncementForm
 
 from .decorators import owner_required
 from django.core.paginator import Paginator
@@ -29,6 +29,8 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph
 from orders.models import ExchangeRate
 
+from .models import FeatureToggle, Announcement, WebsiteSettings
+from .helpers import clear_feature_cache
 # Create your views here.
 
 
@@ -1456,56 +1458,11 @@ def dashboard_order_detail(request, order_id):
 
     if request.method == "POST":
 
-        # ==========================
-        # Previous Status
-        # ==========================
+        # ====================================================
+        # Add Timeline Only
+        # ====================================================
 
-        old_status = order.status
-
-        # ==========================
-        # Payment Status
-        # ==========================
-
-        payment_status = request.POST.get(
-            "payment_status"
-        )
-
-        if payment_status:
-
-            order.payment_status = payment_status
-
-            order.paid = payment_status in [
-                "paid",
-                "partial",
-            ]
-
-        # ==========================
-        # Order Status
-        # ==========================
-
-        status = request.POST.get(
-            "status"
-        )
-
-        if status:
-
-            order.status = status
-
-        # ==========================
-        # Save Order
-        # ==========================
-
-        order.save()
-
-        # ==========================
-        # Timeline
-        # ==========================
-
-        note = request.POST.get(
-            "note"
-        )
-
-        if note:
+        if "note" in request.POST and request.POST.get("note").strip():
 
             OrderTimeline.objects.create(
 
@@ -1513,13 +1470,258 @@ def dashboard_order_detail(request, order_id):
 
                 user=request.user,
 
-                note=note,
+                created_by=request.user.username,
+
+                note=request.POST.get("note"),
 
             )
 
-        # ==========================
-        # Send Email ONLY if status changed
-        # ==========================
+            messages.success(
+                request,
+                "Timeline note added successfully."
+            )
+
+            return redirect(
+                "dashboard:dashboard_order_detail",
+                order.id,
+            )
+
+        # ====================================================
+        # Previous Values
+        # ====================================================
+
+        old_status = order.status
+        old_payment = order.payment_status
+
+        old_tracking = order.tracking_number
+        old_courier = order.courier_name
+        old_delivery = order.estimated_delivery
+
+        # ====================================================
+        # Payment
+        # ====================================================
+
+        order.payment_status = request.POST.get(
+            "payment_status",
+            order.payment_status,
+        )
+
+        order.paid = order.payment_status in [
+            "paid",
+            "partial",
+        ]
+
+        # ====================================================
+        # Order Status
+        # ====================================================
+
+        order.status = request.POST.get(
+            "status",
+            order.status,
+        )
+
+        # ====================================================
+        # Courier
+        # ====================================================
+
+        order.courier_name = request.POST.get(
+            "courier_name",
+            "",
+        )
+
+        order.tracking_number = request.POST.get(
+            "tracking_number",
+            "",
+        )
+
+        order.delivery_charge = (
+            request.POST.get("delivery_charge")
+            or 0
+        )
+
+        estimated = request.POST.get(
+            "estimated_delivery"
+        )
+
+        if estimated:
+
+            order.estimated_delivery = estimated
+
+        # ====================================================
+        # Save
+        # ====================================================
+
+        order.save()
+
+        # ====================================================
+# Return Request Update
+# ====================================================
+
+        if hasattr(order, "return_request"):
+
+            return_status = request.POST.get("return_status")
+
+            if return_status:
+
+                request_obj = order.return_request
+
+                old_return_status = request_obj.status
+
+                request_obj.status = return_status
+
+                request_obj.admin_note = request.POST.get(
+                    "return_admin_note",
+                    request_obj.admin_note,
+                )
+
+                request_obj.save()
+
+                if old_return_status != return_status:
+
+                    OrderTimeline.objects.create(
+
+                    order=order,
+
+                    user=request.user,
+
+                    created_by=request.user.username,
+
+                    note=f"Return request changed from '{old_return_status}' to '{return_status}'.",
+
+                )
+
+            if return_status == "refunded":
+
+                order.payment_status = "refunded"
+
+                order.status = "cancelled"
+
+                order.save(
+                    update_fields=[
+                        "payment_status",
+                        "status",
+                    ]
+                )
+
+        # ====================================================
+        # Tracking Timeline
+        # ====================================================
+
+        if old_tracking != order.tracking_number and order.tracking_number:
+
+            OrderTimeline.objects.create(
+
+                order=order,
+
+                user=request.user,
+
+                created_by=request.user.username,
+
+                note=f"📍 Tracking Number Added : {order.tracking_number}",
+
+            )
+
+
+        if old_courier != order.courier_name and order.courier_name:
+
+            OrderTimeline.objects.create(
+
+                order=order,
+
+                user=request.user,
+
+                created_by=request.user.username,
+
+                note=f"🚚 Courier Assigned : {order.courier_name}",
+
+            )
+
+
+        if old_delivery != order.estimated_delivery and order.estimated_delivery:
+
+            OrderTimeline.objects.create(
+
+                order=order,
+
+                user=request.user,
+
+                created_by=request.user.username,
+
+                note=f"📅 Estimated Delivery : {order.estimated_delivery}",
+
+            )
+
+        # ====================================================
+        # Admin Note -> Timeline
+        # ====================================================
+
+        admin_note = request.POST.get("admin_note")
+
+        if admin_note:
+
+            OrderTimeline.objects.create(
+
+                order=order,
+
+                user=request.user,
+
+                created_by=request.user.username,
+
+                note=admin_note,
+
+            )
+
+        # ====================================================
+        # Timeline Auto Log
+        # ====================================================
+
+        if old_status != order.status:
+
+            STATUS_MESSAGES = {
+                "pending": "📦 Order placed.",
+                "processing": "⚙️ Order is being processed.",
+                "shipped": f"🚚 Order shipped via {order.courier_name}.",
+                "delivered": "✅ Order delivered successfully.",
+                "cancelled": "❌ Order cancelled.",
+            }
+
+            OrderTimeline.objects.create(
+
+                order=order,
+
+                user=request.user,
+
+                created_by=request.user.username,
+
+                note=STATUS_MESSAGES.get(order.status, order.status),
+
+            )
+
+        if old_payment != order.payment_status:
+
+            PAYMENT_MESSAGES = {
+                "pending": "💳 Payment Pending.",
+                "partial": "💰 Partial Payment Received.",
+                "paid": "✅ Payment Completed.",
+                "failed": "❌ Payment Failed.",
+                "refunded": "↩️ Payment Refunded.",
+            }
+
+            OrderTimeline.objects.create(
+
+                order=order,
+
+                user=request.user,
+
+                created_by=request.user.username,
+
+                note=PAYMENT_MESSAGES.get(order.payment_status),
+
+            )
+
+        # ====================================================
+        # Email
+        # ====================================================
 
         if old_status != order.status:
 
@@ -1530,17 +1732,16 @@ def dashboard_order_detail(request, order_id):
             )
 
             if order.status == "shipped":
+
                 send_shipping_email(request, order)
 
             elif order.status == "delivered":
+
                 send_delivered_email(request, order)
 
             elif order.status == "cancelled":
-                send_cancelled_email(request, order)
 
-        # ==========================
-        # Success Message
-        # ==========================
+                send_cancelled_email(request, order)
 
         messages.success(
 
@@ -1572,22 +1773,184 @@ def dashboard_order_detail(request, order_id):
 
     )
 
+
 @owner_or_staff_required
 def dashboard_orders(request):
 
-    orders = (
-        Order.objects
-        .select_related("user")
-        .order_by("-created_at")
+    orders = Order.objects.select_related(
+        "user"
+    ).order_by(
+        "-created_at"
     )
 
-    return render(
-        request,
-        "dashboard/orders.html",
-        {
-            "orders": orders,
-        },
+    # ==========================
+    # Search
+    # ==========================
+
+    q = request.GET.get("q")
+
+    if q:
+
+        orders = orders.filter(
+
+            Q(id__icontains=q)
+
+            |
+
+            Q(full_name__icontains=q)
+
+            |
+
+            Q(email__icontains=q)
+
+            |
+
+            Q(phone__icontains=q)
+
+        )
+
+    # ==========================
+    # Status
+    # ==========================
+
+    status = request.GET.get("status")
+
+    if status:
+
+        orders = orders.filter(
+            status=status
+        )
+
+    # ==========================
+    # Payment Method
+    # ==========================
+
+    payment = request.GET.get("payment")
+
+    if payment:
+
+        orders = orders.filter(
+            payment_method=payment
+        )
+
+    # ==========================
+    # Paid
+    # ==========================
+
+    paid = request.GET.get("paid")
+
+    if paid == "yes":
+
+        orders = orders.filter(
+            paid=True
+        )
+
+    elif paid == "no":
+
+        orders = orders.filter(
+            paid=False
+        )
+
+    # ==========================
+    # Pagination
+    # ==========================
+
+    paginator = Paginator(
+        orders,
+        20,
     )
+
+    page_number = request.GET.get("page")
+
+    page_obj = paginator.get_page(page_number)
+
+    return render(
+
+        request,
+
+        "dashboard/orders.html",
+
+        {
+
+            "orders": page_obj,
+
+            "page_obj": page_obj,
+
+        },
+
+    )
+
+
+@owner_or_staff_required
+def export_orders_excel(request):
+
+    wb = Workbook()
+
+    ws = wb.active
+
+    ws.title = "Orders"
+
+    ws.append([
+        "Order ID",
+        "Customer",
+        "Email",
+        "Phone",
+        "Total",
+        "Payment",
+        "Payment Status",
+        "Order Status",
+        "Courier",
+        "Tracking",
+        "Date",
+    ])
+
+    orders = Order.objects.select_related(
+        "user"
+    ).order_by(
+        "-created_at"
+    )
+
+    for order in orders:
+
+        ws.append([
+
+            order.id,
+
+            order.full_name,
+
+            order.email,
+
+            order.phone,
+
+            float(order.final_total),
+
+            order.payment_method,
+
+            order.payment_status,
+
+            order.status,
+
+            order.courier_name,
+
+            order.tracking_number,
+
+            order.created_at.strftime("%d-%m-%Y %H:%M"),
+
+        ])
+
+    response = HttpResponse(
+
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+    )
+
+    response["Content-Disposition"] = (
+        'attachment; filename="orders.xlsx"'
+    )
+
+    wb.save(response)
+
+    return response
 
 @owner_or_staff_required
 def low_stock_report(request):
@@ -1698,5 +2061,406 @@ def currency_exchange(request):
         "dashboard/currency_exchange.html",
         {
             "exchange_rate": exchange_rate,
+        },
+    )
+
+@owner_or_staff_required
+def feature_toggle_list(request):
+
+    defaults = [
+
+        {
+            "key": "flash_sale",
+            "category": "marketing",
+            "icon": "bi bi-lightning-charge-fill",
+            "description": "Enable flash sale products.",
+        },
+
+        {
+            "key": "free_delivery",
+            "category": "marketing",
+            "icon": "bi bi-truck",
+            "description": "Show free delivery offers.",
+        },
+
+        {
+            "key": "new_arrival",
+            "category": "products",
+            "icon": "bi bi-stars",
+            "description": "Display new arrival section.",
+        },
+
+        {
+            "key": "trending",
+            "category": "products",
+            "icon": "bi bi-fire",
+            "description": "Display trending products.",
+        },
+
+        {
+            "key": "guest_checkout",
+            "category": "checkout",
+            "icon": "bi bi-person",
+            "description": "Allow guest checkout.",
+        },
+
+        {
+            "key": "wishlist",
+            "category": "website",
+            "icon": "bi bi-heart",
+            "description": "Enable wishlist feature.",
+        },
+
+        {
+            "key": "reviews",
+            "category": "website",
+            "icon": "bi bi-chat-left-text",
+            "description": "Allow product reviews.",
+        },
+
+        {
+            "key": "coupon",
+            "category": "checkout",
+            "icon": "bi bi-ticket",
+            "description": "Enable coupon system.",
+        },
+
+        {
+            "key": "cod",
+            "category": "payment",
+            "icon": "bi bi-cash-stack",
+            "description": "Cash On Delivery payment.",
+        },
+
+        {
+            "key": "emi",
+            "category": "payment",
+            "icon": "bi bi-credit-card",
+            "description": "Enable EMI payment.",
+        },
+
+        {
+            "key": "maintenance",
+            "category": "website",
+            "icon": "bi bi-tools",
+            "description": "Put website into maintenance mode.",
+        },
+
+        {
+            "key": "coming_soon",
+            "category": "website",
+            "icon": "bi bi-hourglass-split",
+            "description": "Show coming soon page.",
+        },
+
+        {
+            "key": "announcement",
+            "category": "marketing",
+            "icon": "bi bi-megaphone",
+            "description": "Display announcement bar.",
+        },
+
+    ]
+
+    for item in defaults:
+
+        FeatureToggle.objects.update_or_create(
+
+            key=item["key"],
+
+            defaults={
+
+                "category": item["category"],
+
+                "icon": item["icon"],
+
+                "description": item["description"],
+
+            },
+
+        )
+
+    if request.method == "POST":
+
+        feature = get_object_or_404(
+            FeatureToggle,
+            id=request.POST.get("id"),
+        )
+
+        feature.enabled = not feature.enabled
+
+        feature.updated_by = request.user
+
+        feature.save()
+
+        clear_feature_cache()
+
+        messages.success(
+            request,
+            f"{feature.get_key_display()} updated successfully.",
+        )
+
+        return redirect("dashboard:feature_toggle_list")
+
+    category = request.GET.get("category")
+
+    features = FeatureToggle.objects.all()
+
+    if category:
+        features = features.filter(category=category)
+
+    return render(
+
+        request,
+
+        "dashboard/feature_toggle_list.html",
+
+        {
+
+            "features": features,
+
+            "active_category": category,
+
+            "categories": FeatureToggle.CATEGORY_CHOICES,
+
+        },
+
+    )
+
+
+@owner_required
+def website_features(request):
+
+    settings = WebsiteSettings.load()
+
+    if request.method == "POST":
+
+        settings.shop_name = request.POST.get("shop_name")
+        settings.shop_tagline = request.POST.get("shop_tagline")
+
+        settings.announcement = request.POST.get("announcement")
+
+        settings.phone = request.POST.get("phone")
+        settings.email = request.POST.get("email")
+        settings.address = request.POST.get("address")
+
+        settings.facebook = request.POST.get("facebook")
+        settings.instagram = request.POST.get("instagram")
+        settings.youtube = request.POST.get("youtube")
+        settings.linkedin = request.POST.get("linkedin")
+        settings.twitter = request.POST.get("twitter")
+
+        settings.footer_text = request.POST.get("footer_text")
+        settings.copyright = request.POST.get("copyright")
+
+        if request.FILES.get("logo"):
+            settings.logo = request.FILES["logo"]
+
+        if request.FILES.get("favicon"):
+            settings.favicon = request.FILES["favicon"]
+
+        settings.save()
+
+        messages.success(request, "Website settings updated successfully.")
+        return redirect("dashboard:website_features")
+
+    return render(
+        request,
+        "dashboard/website_features.html",
+        {
+            "settings": settings,
+        },
+    )
+
+@owner_required
+def announcement_list(request):
+
+    announcements = Announcement.objects.all()
+
+    return render(
+        request,
+        "dashboard/announcement/list.html",
+        {
+            "announcements": announcements,
+        },
+    )
+
+
+@owner_required
+def announcement_add(request):
+
+    if request.method == "POST":
+
+        form = AnnouncementForm(request.POST)
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+                request,
+                "Announcement added successfully.",
+            )
+
+            return redirect("dashboard:announcement_list")
+
+    else:
+
+        form = AnnouncementForm()
+
+    return render(
+        request,
+        "dashboard/announcement/form.html",
+        {
+            "form": form,
+            "title": "Add Announcement",
+        },
+    )
+
+
+@owner_required
+def announcement_edit(request, pk):
+
+    announcement = get_object_or_404(
+        Announcement,
+        pk=pk,
+    )
+
+    if request.method == "POST":
+
+        form = AnnouncementForm(
+            request.POST,
+            instance=announcement,
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+                request,
+                "Announcement updated successfully.",
+            )
+
+            return redirect("dashboard:announcement_list")
+
+    else:
+
+        form = AnnouncementForm(
+            instance=announcement,
+        )
+
+    return render(
+        request,
+        "dashboard/announcement/form.html",
+        {
+            "form": form,
+            "title": "Edit Announcement",
+        },
+    )
+
+@owner_required
+def announcement_delete(request, pk):
+
+    announcement = get_object_or_404(
+        Announcement,
+        pk=pk,
+    )
+
+    if request.method == "POST":
+
+        announcement.delete()
+
+        messages.success(
+            request,
+            "Announcement deleted successfully.",
+        )
+
+        return redirect("dashboard:announcement_list")
+
+    return render(
+        request,
+        "dashboard/announcement/delete.html",
+        {
+            "announcement": announcement,
+        },
+    )
+
+@owner_or_staff_required
+def dashboard_returns(request):
+
+    status = request.GET.get("status")
+
+    returns = (
+        ReturnRequest.objects
+        .select_related("order", "user")
+        .order_by("-created_at")
+    )
+
+    if status:
+        returns = returns.filter(status=status)
+
+    paginator = Paginator(returns, 10)   # প্রতি পেজে 10টি
+
+    page_number = request.GET.get("page")
+
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "returns": page_obj,
+
+        "page_obj": page_obj,
+
+        "pending_count": ReturnRequest.objects.filter(status="pending").count(),
+        "approved_count": ReturnRequest.objects.filter(status="approved").count(),
+        "rejected_count": ReturnRequest.objects.filter(status="rejected").count(),
+        "refunded_count": ReturnRequest.objects.filter(status="refunded").count(),
+        "all_count": ReturnRequest.objects.count(),
+    }
+
+    return render(
+        request,
+        "dashboard/returns.html",
+        context,
+    )
+
+@owner_or_staff_required
+def approve_return(request, pk):
+    return_request = get_object_or_404(ReturnRequest, pk=pk)
+
+    if request.method == "POST":
+        return_request.admin_note = request.POST.get("admin_note", "")
+        return_request.status = "approved"
+        return_request.save()
+
+        messages.success(request, "Return request approved successfully.")
+        return redirect("dashboard:dashboard_returns")
+
+    return render(
+        request,
+        "dashboard/approve_return.html",
+        {
+            "return_request": return_request,
+        },
+    )
+
+
+@owner_or_staff_required
+def reject_return(request, pk):
+    return_request = get_object_or_404(ReturnRequest, pk=pk)
+
+    if request.method == "POST":
+        return_request.admin_note = request.POST.get("admin_note", "")
+        return_request.status = "rejected"
+        return_request.save()
+
+        messages.success(request, "Return request rejected successfully.")
+        return redirect("dashboard:dashboard_returns")
+
+    return render(
+        request,
+        "dashboard/reject_return.html",
+        {
+            "return_request": return_request,
         },
     )

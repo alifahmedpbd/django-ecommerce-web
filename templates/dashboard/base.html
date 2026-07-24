@@ -1,20 +1,38 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}
+Dashboard
+{% endblock %}
 
 {% block content %}
 
-<div class="container-fluid">
+<style>
 
-    <div class="row">
+    .dashboard-navbar{
 
-        <aside class="col-lg-2 bg-dark text-white min-vh-100 p-0">
+        display:none;
+
+    }
+
+</style>
+
+<div class="container-fluid p-0">
+
+    <div class="row g-0">
+
+        <aside class="col-lg-2 bg-dark text-white min-vh-100">
+
             {% include "dashboard/includes/sidebar.html" %}
+
         </aside>
 
-        <main class="col-lg-10 p-0">
+        <main class="col-lg-10">
 
-            {% include "dashboard/includes/navbar.html" %}
+            <div class="dashboard-navbar">
+
+                {% include "dashboard/includes/navbar.html" %}
+
+            </div>
 
             <div class="container-fluid p-4">
 

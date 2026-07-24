@@ -146,7 +146,7 @@ Shopora | Home
 
         <div class="col-lg-3 col-md-6">
 
-            <div class="card border-0 shadow-sm h-100 rounded-4">
+            <div class="card border-0 shadow-sm h-100 rounded-4 product-card position-relative overflow-hidden">
 
                 {% if product.image %}
 
@@ -157,6 +157,68 @@ Shopora | Home
                 >
 
                 {% endif %}
+
+                <div class="product-overlay">
+
+                    {% if product.is_flash_sale %}
+                        <span class="badge bg-danger mb-2">
+                            🔥 Flash Sale
+                        </span>
+                        <br>
+                    {% endif %}
+
+                    {% if product.is_free_delivery %}
+                        <span class="badge bg-success mb-2">
+                            🚚 Free Delivery
+                        </span>
+                        <br>
+                    {% endif %}
+
+                    {% if product.is_trending %}
+                        <span class="badge bg-warning text-dark mb-2">
+                            ⭐ Trending
+                        </span>
+                        <br>
+                    {% endif %}
+
+                    {% if product.is_new_arrival %}
+                        <span class="badge bg-primary mb-3">
+                            New Arrival
+                        </span>
+                        <br>
+                    {% endif %}
+
+                    {% if product.in_stock %}
+
+                        <a
+                            href="{% url 'cart:cart_add' product.id %}"
+                            class="btn btn-light btn-sm w-100 mb-2"    >
+
+                            🛒 Add To Cart
+
+                        </a>
+
+                        <a
+                            href="{% url 'cart:buy_now' product.id %}"
+                            class="btn btn-danger btn-sm w-100">
+
+                            ⚡ Order Now
+
+                        </a>
+
+                    {% else %}
+
+                        <button
+                            class="btn btn-secondary btn-sm w-100"
+                            disabled>
+
+                            Out Of Stock
+
+                        </button>
+
+                    {% endif %}
+
+                </div>
 
                 <div class="card-body">
 
@@ -178,32 +240,84 @@ Shopora | Home
 
                     </p>
 
-                    <h4 class="fw-bold text-primary">
+                    {% if product.has_discount %}
 
-                        ${{ product.price }}
+<h4 class="fw-bold">
 
-                    </h4>
+    <span class="text-danger">
 
-                    <p class="text-success">
+        ${{ product.current_price }}
 
-                        ≈ ৳{{ product.price|bdt }}
+    </span>
 
-                    </p>
+    <br>
+
+    <small class="text-decoration-line-through text-muted">
+
+        ${{ product.price }}
+
+    </small>
+
+</h4>
+
+{% else %}
+
+<h4 class="fw-bold text-primary">
+
+    ${{ product.price }}
+
+</h4>
+
+{% endif %}
+
+<p class="text-success">
+
+    ≈ ৳{{ product.current_price|bdt }}
+
+</p>
 
                 </div>
 
                 <div class="card-footer bg-white border-0">
 
-                    <a
-                        href="{{ product.get_absolute_url }}"
-                        class="btn btn-primary w-100 rounded-pill"
-                    >
+    <div class="d-grid gap-2">
 
-                        View Product
+        <a
+            href="{{ product.get_absolute_url }}"
+            class="btn btn-outline-primary rounded-pill"
+        >
 
-                    </a>
+            👁 View Details
 
-                </div>
+        </a>
+
+        {% if product.in_stock %}
+
+            <a
+                href="{% url 'cart:buy_now' product.id %}"
+                class="btn btn-primary rounded-pill"
+            >
+
+                ⚡ Order Now
+
+            </a>
+
+        {% else %}
+
+            <button
+                class="btn btn-secondary rounded-pill"
+                disabled
+            >
+
+                Out Of Stock
+
+            </button>
+
+        {% endif %}
+
+    </div>
+
+</div>
 
             </div>
 

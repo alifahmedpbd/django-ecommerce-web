@@ -1,0 +1,298 @@
+{% extends "dashboard/base.html" %}
+
+{% block dashboard_content %}
+
+<div class="container-fluid px-4">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <h2 class="fw-bold">
+
+        ↩ Return Requests
+
+    </h2>
+
+</div>
+
+<div class="d-flex flex-wrap gap-2 mb-4">
+
+    <a href="{% url 'dashboard:dashboard_returns' %}"
+       class="btn {% if not request.GET.status %}btn-dark{% else %}btn-outline-dark{% endif %}">
+        All ({{ all_count }})
+    </a>
+
+    <a href="?status=pending"
+       class="btn {% if request.GET.status == 'pending' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+        Pending ({{ pending_count }})
+    </a>
+
+    <a href="?status=approved"
+       class="btn {% if request.GET.status == 'approved' %}btn-info text-white{% else %}btn-outline-info{% endif %}">
+        Approved ({{ approved_count }})
+    </a>
+
+    <a href="?status=rejected"
+       class="btn {% if request.GET.status == 'rejected' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+        Rejected ({{ rejected_count }})
+    </a>
+
+    <a href="?status=refunded"
+       class="btn {% if request.GET.status == 'refunded' %}btn-success{% else %}btn-outline-success{% endif %}">
+        Refunded ({{ refunded_count }})
+    </a>
+
+</div>
+
+<div class="card shadow border-0">
+
+<div class="table-responsive">
+
+<table class="table table-hover align-middle mb-0">
+
+<thead class="table-dark">
+
+<tr>
+
+<th>Order</th>
+
+<th>Customer</th>
+
+<th>Reason</th>
+
+<th>Refund</th>
+
+<th>Status</th>
+
+<th>Date</th>
+
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for item in returns %}
+
+<tr>
+
+<td>
+
+#{{ item.order.id }}
+
+</td>
+
+<td>
+
+{{ item.user.username }}
+
+</td>
+
+<td>
+
+{{ item.reason|truncatechars:40 }}
+
+</td>
+
+<td>
+
+${{ item.refund_amount }}
+
+</td>
+
+<td>
+
+{% if item.status == "pending" %}
+
+<span class="badge bg-warning text-dark">
+
+Pending
+
+</span>
+
+{% elif item.status == "approved" %}
+
+<span class="badge bg-info">
+
+Approved
+
+</span>
+
+{% elif item.status == "rejected" %}
+
+<span class="badge bg-danger">
+
+Rejected
+
+</span>
+
+{% elif item.status == "refunded" %}
+
+<span class="badge bg-success">
+
+Refunded
+
+</span>
+
+{% endif %}
+
+</td>
+
+<td>
+
+{{ item.created_at|date:"d M Y" }}
+
+</td>
+
+<td>
+
+    <a href="{% url 'dashboard:dashboard_order_detail' item.order.id %}"
+       class="btn btn-sm btn-primary">
+        View
+    </a>
+
+    {% if item.status == "pending" %}
+
+        <a href="{% url 'dashboard:approve_return' item.id %}"
+           class="btn btn-sm btn-success"
+           onclick="return confirm('Approve this return request?')">
+
+            Approve
+
+        </a>
+
+        <a href="{% url 'dashboard:reject_return' item.id %}"
+           class="btn btn-sm btn-danger"
+           onclick="return confirm('Reject this return request?')">
+
+            Reject
+
+        </a>
+
+    {% endif %}
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+
+<td colspan="8" class="text-center py-5">
+
+No return requests.
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+{% if page_obj.has_other_pages %}
+
+<nav class="mt-4">
+
+    <ul class="pagination justify-content-center">
+
+        {% if page_obj.has_previous %}
+
+        <li class="page-item">
+
+            <a class="page-link"
+               href="?status={{ request.GET.status }}&page=1">
+
+                First
+
+            </a>
+
+        </li>
+
+        <li class="page-item">
+
+            <a class="page-link"
+               href="?status={{ request.GET.status }}&page={{ page_obj.previous_page_number }}">
+
+                Previous
+
+            </a>
+
+        </li>
+
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+
+            {% if page_obj.number == num %}
+
+                <li class="page-item active">
+
+                    <span class="page-link">
+
+                        {{ num }}
+
+                    </span>
+
+                </li>
+
+            {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+
+                <li class="page-item">
+
+                    <a class="page-link"
+                       href="?status={{ request.GET.status }}&page={{ num }}">
+
+                        {{ num }}
+
+                    </a>
+
+                </li>
+
+            {% endif %}
+
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+
+        <li class="page-item">
+
+            <a class="page-link"
+               href="?status={{ request.GET.status }}&page={{ page_obj.next_page_number }}">
+
+                Next
+
+            </a>
+
+        </li>
+
+        <li class="page-item">
+
+            <a class="page-link"
+               href="?status={{ request.GET.status }}&page={{ page_obj.paginator.num_pages }}">
+
+                Last
+
+            </a>
+
+        </li>
+
+        {% endif %}
+
+    </ul>
+
+</nav>
+
+{% endif %}
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

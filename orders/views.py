@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Order
+from .models import Order, ReturnRequest, OrderTimeline
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from reportlab.lib import colors
@@ -13,9 +13,8 @@ from reportlab.platypus import (
 )
 from django.contrib import messages
 from .services import restore_order_stock
-from orders.models import OrderTimeline
 from django.db import transaction
-
+from .forms import GuestOrderTrackingForm
 # Create your views here.
 
 def order_success(request, order_id):
@@ -36,47 +35,115 @@ def order_success(request, order_id):
 @login_required
 def order_list(request):
 
-    orders = (
-        Order.objects
-        .filter(user=request.user)
-        .only(
-            "id",
-            "status",
-            "payment_method",
-            "paid",
-            "final_total",
-            "created_at",
-        )
-        .order_by("-created_at")
+    orders = Order.objects.filter(
+        user=request.user,
+    ).order_by("-created_at")
+
+    status = request.GET.get("status")
+
+    payment = request.GET.get("payment")
+
+    paid = request.GET.get("paid")
+
+    q = request.GET.get("q")
+
+    if status:
+        orders = orders.filter(status=status)
+
+    if payment:
+        orders = orders.filter(payment_method=payment)
+
+    if paid == "yes":
+        orders = orders.filter(paid=True)
+
+    elif paid == "no":
+        orders = orders.filter(paid=False)
+
+    if q:
+        orders = orders.filter(id__icontains=q)
+
+    context = {
+        "orders": orders,
+    }
+
+    return render(
+        request,
+        "orders/order_list.html",
+        context,
     )
 
-    return render(request, "orders/order_list.html", {"orders": orders })
-
-@login_required
 def order_detail(request, order_id):
 
     order = get_object_or_404(
+
         Order.objects.prefetch_related(
+
             "items__product",
+
             "timeline",
+
         ),
+
         id=order_id,
-        user=request.user,
-    )
-
-    can_pay_now = (order.payment_method == "stripe"
-
-        and
-
-        not order.paid
-
-        and
-
-        order.status == "pending"
 
     )
 
-    return render(request, "orders/order_detail.html", {"order": order, "can_pay_now": can_pay_now})
+    if request.user.is_authenticated:
+
+        if order.user:
+
+            if order.user != request.user and not request.user.is_staff:
+
+                messages.error(
+
+                    request,
+
+                    "You are not allowed to view this order.",
+
+                )
+
+                return redirect("orders:order_list")
+
+    else:
+
+        email = request.GET.get("email")
+
+        if email != order.email:
+
+            messages.error(
+
+                request,
+
+                "Invalid order access.",
+
+            )
+
+            return redirect("orders:track_order")
+
+    timeline = order.timeline.all().order_by(
+
+        "created_at"
+
+    )
+
+    context = {
+
+        "order": order,
+
+        "timeline": timeline,
+
+    }
+
+    return render(
+
+        request,
+
+        "orders/order_detail.html",
+
+        context,
+
+    )
+
 
 @login_required
 def invoice_pdf(request, order_id):
@@ -470,5 +537,186 @@ def cancel_order(request, order_id):
         "orders:order_detail",
 
         order.id,
+
+    )
+def track_order(request):
+
+    form = GuestOrderTrackingForm()
+
+    order = None
+
+    timeline = None
+
+    current_step = 0
+
+    status_steps = [
+
+        "pending",
+
+        "processing",
+
+        "shipped",
+
+        "delivered",
+
+    ]
+
+    if request.method == "POST":
+
+        form = GuestOrderTrackingForm(request.POST)
+
+        if form.is_valid():
+
+            order_id = form.cleaned_data["order_id"]
+
+            email = form.cleaned_data["email"]
+
+            try:
+
+                order = Order.objects.prefetch_related(
+                    "timeline"
+                ).get(
+
+                    id=order_id,
+
+                    email=email,
+
+                )
+
+                timeline = order.timeline.all().order_by("-created_at")
+
+                if order.status in status_steps:
+
+                    current_step = status_steps.index(order.status)
+
+            except Order.DoesNotExist:
+
+                messages.error(
+
+                    request,
+
+                    "Order not found.",
+
+                )
+
+    return render(
+
+        request,
+
+        "orders/track_order.html",
+
+        {
+
+            "form": form,
+
+            "order": order,
+
+            "timeline": timeline,
+
+            "current_step": current_step,
+
+            "status_steps": status_steps,
+
+        },
+
+    )
+
+@login_required
+def return_request(request, order_id):
+
+    order = get_object_or_404(
+        Order,
+        id=order_id,
+        user=request.user,
+    )
+
+    if order.status != "delivered":
+
+        messages.error(
+            request,
+            "Only delivered orders can be returned.",
+        )
+
+        return redirect(
+            "orders:order_detail",
+            order.id,
+        )
+
+    if hasattr(order, "return_request"):
+
+        messages.warning(
+            request,
+            "Return request already submitted.",
+        )
+
+        return redirect(
+            "orders:order_detail",
+            order.id,
+        )
+
+    if request.method == "POST":
+
+        reason = request.POST.get("reason")
+
+        if not reason:
+
+            messages.error(
+                request,
+                "Return reason is required.",
+            )
+
+            return redirect(
+                "orders:return_request",
+                order.id,
+            )
+
+        ReturnRequest.objects.create(
+
+            order=order,
+
+            user=request.user,
+
+            reason=reason,
+
+            refund_amount=order.final_total,
+
+        )
+
+        OrderTimeline.objects.create(
+
+            order=order,
+
+            user=request.user,
+
+            created_by=request.user.username,
+
+            note="↩ Customer requested a return.",
+
+        )
+
+        messages.success(
+
+            request,
+
+            "Return request submitted successfully.",
+
+        )
+
+        return redirect(
+            "orders:order_detail",
+            order.id,
+        )
+
+    return render(
+
+        request,
+
+        "orders/return_request.html",
+
+        {
+
+            "order": order,
+
+        },
 
     )

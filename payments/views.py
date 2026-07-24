@@ -107,7 +107,7 @@ def payment_success(request, order_id):
     
 
         OrderTimeline.objects.create(
-            order=order, user=order.user, note="Stripe payment completed successfully."
+            order=order, user=order.user, created_by="Stripe", note="Stripe payment completed successfully."
         )
 
     # ==========================================
@@ -123,20 +123,16 @@ def payment_success(request, order_id):
 
         if order.coupon:
 
-        
+            if order.user:
 
-            CouponUsage.objects.create(
+                CouponUsage.objects.create(
+                    coupon=order.coupon,
+                    user=order.user,
+                    order=order,
+                )
 
-                coupon=order.coupon,
-
-                user=order.user,
-
-                order=order,
-
-            )
-
-            order.coupon.used_count = F("used_count") + 1
-            order.coupon.save(update_fields=["used_count"])
+                order.coupon.used_count = F("used_count") + 1
+                order.coupon.save(update_fields=["used_count"])
 
     # ==========================================
     # Clear Coupon Session

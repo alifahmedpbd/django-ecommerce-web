@@ -29,6 +29,42 @@ Update Product
 
             {{ form.as_p }}
 
+            <div class="row mb-4">
+
+                <div class="col-md-3">
+
+                    {{ form.is_flash_sale.label_tag }}
+
+                    {{ form.is_flash_sale }}
+
+                </div>
+
+                <div class="col-md-3">
+
+                    {{ form.is_free_delivery.label_tag }}
+
+                    {{ form.is_free_delivery }}
+
+                </div>
+
+                <div class="col-md-3">
+
+                    {{ form.is_trending.label_tag }}
+
+                    {{ form.is_trending }}
+
+                </div>
+
+                <div class="col-md-3">
+
+                    {{ form.is_new_arrival.label_tag }}
+
+                    {{ form.is_new_arrival }}
+
+                </div>
+
+            </div>
+
             {% if product.image %}
 
             <img src="{{ product.image.url }}"

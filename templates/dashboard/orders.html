@@ -3,10 +3,117 @@
 {% block dashboard_content %}
 
 <h2 class="mb-4">
-
     All Orders
-
 </h2>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <a
+        href="{% url 'dashboard:export_orders_excel' %}"
+        class="btn btn-success"
+    >
+
+        ⬇ Export Excel
+
+    </a>
+
+</div>
+
+<div class="card shadow-sm mb-4">
+
+    <div class="card-body">
+
+        <form method="GET">
+
+            <div class="row g-3">
+
+                <div class="col-md-3">
+
+                    <input
+                        type="text"
+                        name="q"
+                        class="form-control"
+                        placeholder="Search Order / Customer"
+                        value="{{ request.GET.q }}"
+                    >
+
+                </div>
+
+                <div class="col-md-2">
+
+                    <select
+                        name="status"
+                        class="form-select"
+                    >
+
+                        <option value="">All Status</option>
+
+                        <option value="pending">Pending</option>
+
+                        <option value="processing">Processing</option>
+
+                        <option value="shipped">Shipped</option>
+
+                        <option value="delivered">Delivered</option>
+
+                        <option value="cancelled">Cancelled</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-2">
+
+                    <select
+                        name="payment"
+                        class="form-select"
+                    >
+
+                        <option value="">Payment</option>
+
+                        <option value="cod">COD</option>
+
+                        <option value="stripe">Stripe</option>
+
+                        <option value="sslcommerz">SSLCommerz</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-2">
+
+                    <select
+                        name="paid"
+                        class="form-select"
+                    >
+
+                        <option value="">Payment Status</option>
+
+                        <option value="yes">Paid</option>
+
+                        <option value="no">Unpaid</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-3 d-grid">
+
+                    <button class="btn btn-primary">
+
+                        Filter Orders
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
 
 <div class="card shadow-sm">
 
@@ -18,7 +125,7 @@
 
                 <tr>
 
-                    <th>#</th>
+                    <th>ID</th>
 
                     <th>Customer</th>
 
@@ -38,45 +145,43 @@
 
             <tbody>
 
-                {% for order in orders %}
+            {% for order in orders %}
 
                 <tr>
 
-                    <td>
-
-                        #{{ order.id }}
-
-                    </td>
+                    <td>#{{ order.id }}</td>
 
                     <td>
 
-                        {{ order.user.username }}
+                        {{ order.full_name }}<br>
+
+                        <small class="text-muted">
+
+                            {{ order.email }}
+
+                        </small>
 
                     </td>
 
-                    <td>
-
-                        ${{ order.final_total }}
-
-                    </td>
+                    <td>${{ order.final_total }}</td>
 
                     <td>
 
                         {% if order.paid %}
 
-                        <span class="badge bg-success">
+                            <span class="badge bg-success">
 
-                            Paid
+                                Paid
 
-                        </span>
+                            </span>
 
                         {% else %}
 
-                        <span class="badge bg-danger">
+                            <span class="badge bg-danger">
 
-                            Unpaid
+                                Unpaid
 
-                        </span>
+                            </span>
 
                         {% endif %}
 
@@ -92,17 +197,14 @@
 
                     </td>
 
-                    <td>
-
-                        {{ order.created_at|date:"d M Y" }}
-
-                    </td>
+                    <td>{{ order.created_at|date:"d M Y" }}</td>
 
                     <td>
 
-                        <a href="{% url 'dashboard:dashboard_order_detail' order.id %}"
-
-                           class="btn btn-dark btn-sm">
+                        <a
+                            href="{% url 'dashboard:dashboard_order_detail' order.id %}"
+                            class="btn btn-dark btn-sm"
+                        >
 
                             View
 
@@ -112,7 +214,7 @@
 
                 </tr>
 
-                {% empty %}
+            {% empty %}
 
                 <tr>
 
@@ -124,7 +226,7 @@
 
                 </tr>
 
-                {% endfor %}
+            {% endfor %}
 
             </tbody>
 
@@ -133,5 +235,7 @@
     </div>
 
 </div>
+
+{% include "dashboard/includes/pagination.html" %}
 
 {% endblock %}

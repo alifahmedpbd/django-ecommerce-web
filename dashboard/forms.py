@@ -1,7 +1,7 @@
 from django import forms
 from store.models import Category, Product, Brand, ProductImage
 from orders.models import Coupon
- 
+from .models import Announcement
 
 class CategoryForm(forms.ModelForm):
 
@@ -31,29 +31,58 @@ class ProductForm(forms.ModelForm):
         fields = [
 
             "category",
+
             "brand",
+
             "name",
-            "slug",
+
             "image",
+
             "description",
+
             "price",
+
+            "flash_price",
+
+            "flash_end",
+
             "stock",
+
             "available",
+
             "featured",
+
+            "is_flash_sale",
+
+            "is_free_delivery",
+
+            "is_trending",
+
+            "is_new_arrival",
 
         ]
 
         widgets = {
 
-            "category": forms.Select(attrs={"class": "form-select"}),
-            "brand": forms.Select(attrs={"class": "form-select"}),
-            "name": forms.TextInput(attrs={"class": "form-control","placeholder": "Product Name"}),
-            "description": forms.Textarea(attrs={"class": "form-control", "rows": 5, "placeholder": "Product Description"}),
-            "price": forms.NumberInput(attrs={"class": "form-control", "placeholder": "Price"}),
-            "stock": forms.NumberInput(attrs={"class": "form-control", "placeholder": "Stock Quantity"}),
-            "image": forms.ClearableFileInput(attrs={"class": "form-control"}),
-            "available": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-            "featured": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "description": forms.Textarea(
+
+                attrs={
+
+                    "rows": 5,
+
+                }
+
+            ),
+
+            "flash_end": forms.DateTimeInput(
+
+                attrs={
+
+                    "type": "datetime-local",
+
+                }
+
+            ),
 
         }
 
@@ -164,3 +193,12 @@ class CouponForm(forms.ModelForm):
             ),
 
         }
+
+
+class AnnouncementForm(forms.ModelForm):
+
+    class Meta:
+
+        model = Announcement
+
+        fields = "__all__"

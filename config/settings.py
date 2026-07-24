@@ -68,6 +68,8 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    "dashboard.middleware.MaintenanceModeMiddleware",
+    "dashboard.middleware.ComingSoonMiddleware",
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -86,6 +88,10 @@ TEMPLATES = [
                 'cart.context_processors.cart',
                 "store.context_processors.wishlist_count",
                 "core.context_processors.global_data",
+                'core.context_processors.site_settings',
+                "core.context_processors.announcement",
+                "dashboard.context_processors.feature_toggles",
+                "dashboard.context_processors.website_context",
             ],
         },
     },

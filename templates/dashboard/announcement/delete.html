@@ -1,0 +1,43 @@
+{% extends "dashboard/base.html" %}
+
+{% block dashboard_content %}
+
+<div class="card shadow">
+
+    <div class="card-body text-center">
+
+        <h4>
+
+            Delete this announcement?
+
+        </h4>
+
+        <p>
+
+            {{ announcement.text }}
+
+        </p>
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            <button class="btn btn-danger">
+
+                Delete
+
+            </button>
+
+            <a href="{% url 'dashboard:announcement_list' %}" class="btn btn-secondary">
+
+                Cancel
+
+            </a>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

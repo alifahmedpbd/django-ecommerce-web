@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import login_required
 from .forms import ReviewForm
 from django.contrib import messages
 from django.db.models import F
+from dashboard.helpers import feature_enabled
+from django.http import Http404
 # Create your views here.
 
 def product_list(request, category_slug=None):
@@ -133,7 +135,11 @@ def product_list(request, category_slug=None):
 
     return render(request, "store/product_list.html", context)
 
+
+
+
 def product_detail(request, slug):
+
     product = get_object_or_404(
         Product.objects.select_related(
             "category",
@@ -146,76 +152,98 @@ def product_detail(request, slug):
     )
 
     gallery = product.gallery.all()
-    form = None
 
-    related_products = Product.objects.filter(
-        category=product.category,
-        available=True,
-    ).exclude(
-        id=product.id,
-    ).select_related(
-        "category",
-    )[:4]
+    related_products = (
+        Product.objects.filter(
+            category=product.category,
+            available=True,
+        )
+        .exclude(id=product.id)
+        .select_related("category")[:4]
+    )
 
-    Product.objects.filter(
-        id=product.id
-    ).update(
+    Product.objects.filter(id=product.id).update(
         views=F("views") + 1
     )
 
     product.refresh_from_db()
 
-    reviews = product.reviews.select_related(
-        "user",
-    )
+    reviews = Review.objects.none()
 
-    average_rating = product.average_rating()
+    average_rating = 0
 
-    total_reviews = reviews.count()
+    total_reviews = 0
 
     rating_summary = []
 
-    for star in range(5, 0, -1):
+    if feature_enabled("reviews"):
 
-        count = reviews.filter(
-            rating=star
-        ).count()
+        reviews = product.reviews.select_related(
+            "user",
+        )
 
-        percentage = 0
+        average_rating = product.average_rating()
 
-        if total_reviews:
+        total_reviews = reviews.count()
 
-            percentage = (count / total_reviews) * 100
+        for star in range(5, 0, -1):
 
-        rating_summary.append({
+            count = reviews.filter(
+                rating=star,).count()
 
-            "star": star,
+            percentage = 0
 
-            "count": count,
+            if total_reviews:
 
-            "percentage": percentage,
+                percentage = (
+                    count / total_reviews) * 100
 
-        })
+            rating_summary.append(
+                {
+                    "star": star,
+                    "count": count,
+                    "percentage": percentage,
+                }
+            )
+
+    # -------------------------
+    # Wishlist
+    # -------------------------
 
     is_wishlisted = False
 
-    if request.user.is_authenticated:
+    if (
+        request.user.is_authenticated
+        and feature_enabled("wishlist")
+    ):
 
         is_wishlisted = Wishlist.objects.filter(
             user=request.user,
-            product=product
+            product=product,
         ).exists()
 
-    # Review Form
-    if request.user.is_authenticated:
+    # -------------------------
+    # Review
+    # -------------------------
 
-        review = Review.objects.select_related(
-            "user",
-            "product",
-        ).filter(
-            product=product,
-            user=request.user,
-        ).first()
+    form = None
+
+    if (
+        request.user.is_authenticated
+        and feature_enabled("reviews")
+    ):
+
+        review = (
+            Review.objects.select_related(
+                "user",
+                "product",
+            )
+            .filter(
+                product=product,
+                user=request.user,
+            )
+            .first()
+        )
 
         if request.method == "POST":
 
@@ -236,10 +264,8 @@ def product_detail(request, slug):
 
                 messages.success(
                     request,
-                    "Thank you for your review."
+                    "Thank you for your review.",
                 )
-
-
 
                 return redirect(
                     "store:product_detail",
@@ -252,29 +278,61 @@ def product_detail(request, slug):
                 instance=review,
             )
 
-    else:
+    features = {
 
-        form = None
+        "wishlist": feature_enabled("wishlist"),
 
-    context = {
-        "product": product,
-        "related_products": related_products,
-        "reviews": reviews,
-        "rating_summary": rating_summary,
-        "average_rating": average_rating,
-        "total_reviews": total_reviews,
-        "form": form,
-        "is_wishlisted": is_wishlisted,
-        "gallery": gallery,
+        "reviews": feature_enabled("reviews"),
+
+        "flash_sale": feature_enabled("flash_sale"),
+
+        "free_delivery": feature_enabled("free_delivery"),
+
+        "trending": feature_enabled("trending"),
+
+        "new_arrival": feature_enabled("new_arrival"),
+
     }
 
-    return render(request, "store/product_detail.html", context)
+    context = {
+
+        "product": product,
+
+        "gallery": gallery,
+
+        "related_products": related_products,
+
+        "reviews": reviews,
+
+        "average_rating": average_rating,
+
+        "total_reviews": total_reviews,
+
+        "rating_summary": rating_summary,
+
+        "form": form,
+
+        "is_wishlisted": is_wishlisted,
+
+        "features": features,
+
+    }
+
+    return render(
+        request,
+        "store/product_detail.html",
+        context,
+    )
 
 
-from django.contrib import messages
+
 
 @login_required
 def delete_review(request, review_id):
+
+    # Review Feature OFF থাকলে
+    if not feature_enabled("reviews"):
+        raise Http404("Review feature is disabled.")
 
     review = get_object_or_404(
         Review,
@@ -288,7 +346,7 @@ def delete_review(request, review_id):
 
     messages.success(
         request,
-        "Review deleted successfully."
+        "Review deleted successfully.",
     )
 
     return redirect(
@@ -302,6 +360,9 @@ def delete_review(request, review_id):
 
 @login_required
 def add_to_wishlist(request, product_id):
+
+    if not feature_enabled("wishlist"):
+        raise Http404("Wishlist feature is disabled.")
 
     product = get_object_or_404(
         Product,
@@ -322,6 +383,9 @@ def add_to_wishlist(request, product_id):
 @login_required
 def remove_from_wishlist(request, product_id):
 
+    if not feature_enabled("wishlist"):
+        raise Http404("Wishlist feature is disabled.")
+
     product = get_object_or_404(
         Product,
         id=product_id,
@@ -341,10 +405,19 @@ def remove_from_wishlist(request, product_id):
 @login_required
 def wishlist(request):
 
+    if not feature_enabled("wishlist"):
+        raise Http404("Wishlist feature is disabled.")
+
     wishlist_items = Wishlist.objects.select_related(
         "product",
     ).filter(
         user=request.user,
     )
 
-    return render(request, "store/wishlist.html", {"wishlist_items": wishlist_items},)
+    return render(
+        request,
+        "store/wishlist.html",
+        {
+            "wishlist_items": wishlist_items,
+        },
+    )

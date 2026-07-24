@@ -1,0 +1,54 @@
+{% extends "dashboard/base.html" %}
+
+{% block dashboard_content %}
+
+<div class="container">
+
+    <div class="card shadow">
+
+        <div class="card-body">
+
+            <h3>Approve Return</h3>
+
+            <p>Order #{{ return_request.order.id }}</p>
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Admin Note
+                    </label>
+
+                    <textarea
+                        name="admin_note"
+                        class="form-control"
+                        rows="5"
+                        required></textarea>
+
+                </div>
+
+                <button class="btn btn-success">
+
+                    Approve
+
+                </button>
+
+                <a href="{% url 'dashboard:dashboard_returns' %}"
+                   class="btn btn-secondary">
+
+                    Cancel
+
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

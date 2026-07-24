@@ -1,146 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 
-    <!-- Character Encoding -->
     <meta charset="UTF-8">
 
-    <!-- Responsive Design -->
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-    <!-- Website Title -->
+    <meta name="description"
+          content="{{ SHOP_NAME }} - {{ SHOP_TAGLINE }}">
 
     <title>
-
         {% block title %}
-
             {{ SHOP_NAME }}
-
         {% endblock %}
-
         | {{ SHOP_TAGLINE }}
-
     </title>
 
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap -->
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet">
+
+    <!-- FontAwesome -->
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+          rel="stylesheet">
 
     <!-- Google Font -->
 
-    <link
-        rel="preconnect"
-        href="https://fonts.googleapis.com"
-    >
-
-    <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossorigin
-    >
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet"
-    >
-
-    <!-- Global Styles -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+          rel="stylesheet">
 
     <style>
 
-        body{
+:root{
 
-            font-family:'Poppins',sans-serif;
+    --primary:#0d6efd;
+    --secondary:#6610f2;
+    --danger:#dc3545;
+    --success:#198754;
+    --warning:#ffc107;
 
-            background:#f8fafc;
+    --light:#f8f9fa;
+    --dark:#212529;
 
-        }
+    --radius:18px;
 
-        a{
+    --shadow:0 12px 28px rgba(0,0,0,.08);
 
-            text-decoration:none;
+}
 
-        }
+*{
 
-        .btn{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 
-            border-radius:12px;
+}
 
-        }
+html{
 
-        .card{
+    scroll-behavior:smooth;
 
-            border:none;
-
-            border-radius:18px;
-
-            transition:.3s;
-
-            box-shadow:0 8px 20px rgba(0,0,0,.05);
-
-        }
-
-        .card:hover{
-
-            transform:translateY(-6px);
-
-            box-shadow:0 15px 35px rgba(0,0,0,.12);
-
-        }
-
-        .dashboard-card{
-
-            transition:.3s;
-
-        }
-
-        .dashboard-card:hover{
-
-            transform:translateY(-6px);
-
-        }
-
-
-        /* ==========================================
-   Global UI
-========================================== */
+}
 
 body{
 
-    background:#f8f9fa;
+    font-family:'Poppins',sans-serif;
+
+    background:#f5f7fb;
+
+    color:#222;
+
+    overflow-x:hidden;
 
 }
 
-.card{
+a{
 
-    border:none;
-
-    border-radius:18px;
-
-    transition:.35s;
+    text-decoration:none;
 
 }
 
-.card:hover{
+img{
 
-    transform:translateY(-8px);
-
-    box-shadow:0 18px 35px rgba(0,0,0,.12);
+    max-width:100%;
 
 }
+
+/* -------------------------
+Announcement
+--------------------------*/
+
+.announcement-bar{
+    width:100%;
+    overflow:hidden;
+    background:#ff3d3d;
+    color:#fff;
+    padding:10px 0;
+}
+
+.announcement-track{
+    display:flex;
+    width:max-content;
+    animation:scrollAnnouncement 25s linear infinite;
+}
+
+.announcement-item{
+    white-space:nowrap;
+    margin-right:100px;
+    font-weight:600;
+    font-size:15px;
+}
+
+@keyframes scrollAnnouncement{
+
+    0%{
+        transform:translateX(0);
+    }
+
+    100%{
+        transform:translateX(-50%);
+    }
+
+}
+/* -------------------------
+Navbar
+--------------------------*/
+
+.navbar{
+
+    background:#fff;
+
+    box-shadow:0 5px 18px rgba(0,0,0,.08);
+
+    z-index:999;
+
+}
+
+.navbar-brand{
+
+    font-size:30px;
+
+    font-weight:700;
+
+}
+
+.navbar-brand small{
+
+    display:block;
+
+    font-size:0.9rem;
+
+    line-height:1.2;
+
+    color:#6c757d;
+
+    margin-top:2px;
+
+}
+
+.nav-link{
+
+    font-weight:500;
+
+    transition:.3s;
+
+}
+
+.nav-link:hover{
+
+    color:var(--primary)!important;
+
+}
+
+.search-box{
+
+    width:250px;
+
+}
+
+.search-box input{
+
+    border-radius:30px;
+
+}
+
+/* -------------------------
+Buttons
+--------------------------*/
 
 .btn{
 
-    border-radius:10px;
+    border-radius:30px;
 
     transition:.3s;
+
+    font-weight:600;
 
 }
 
@@ -150,25 +212,498 @@ body{
 
 }
 
-img{
+/* -------------------------
+Cards
+--------------------------*/
+
+.card{
+
+    border:none;
+
+    border-radius:var(--radius);
+
+    overflow:hidden;
+
+    transition:.35s;
+
+    box-shadow:var(--shadow);
+
+}
+
+.card:hover{
+
+    transform:translateY(-6px);
+
+}
+
+/* -------------------------
+Dashboard
+--------------------------*/
+
+.dashboard-card{
 
     transition:.35s;
 
 }
 
-img:hover{
+.dashboard-card:hover{
 
-    transform:scale(1.04);
+    transform:translateY(-8px);
 
 }
 
-.navbar{
+/* -------------------------
+Product Card
+--------------------------*/
 
-    box-shadow:0 6px 18px rgba(0,0,0,.08);
+.product-card{
+
+    background:#fff;
+
+    min-height:560px;
+
+    position:relative;
+
+    overflow:hidden;
+
+}
+
+.product-image-wrapper{
+
+    background:#eef2f7;
+
+    min-height:260px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    position:relative;
+
+    overflow:hidden;
+
+}
+
+.product-image{
+
+    max-height:220px;
+
+    transition:.4s;
+
+}
+
+.product-card:hover .product-image{
+
+    transform:scale(1.08);
+
+}
+
+.product-badges{
+
+    position:absolute;
+
+    left:10px;
+
+    top:10px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:5px;
+
+    z-index:20;
+
+}
+
+.product-badges .badge{
+
+    border-radius:20px;
+
+    padding:6px 12px;
+
+    font-size:11px;
+
+}
+
+.wishlist-btn{
+
+    position:absolute;
+
+    right:10px;
+
+    top:10px;
+
+    z-index:20;
+
+}
+
+.wishlist-btn .btn{
+
+    width:40px;
+
+    height:40px;
+
+    border-radius:50%;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    background:#fff;
+
+}
+
+/* ==========================
+Product Overlay
+========================== */
+
+.product-overlay{
+
+    position:absolute;
+
+    left:0;
+
+    right:0;
+
+    bottom:0;
+
+    padding:18px;
+
+    background:linear-gradient(
+        transparent,
+        rgba(0,0,0,.88)
+    );
+
+    transform:translateY(100%);
+
+    transition:.35s;
+
+}
+
+.product-card:hover .product-overlay{
+
+    transform:translateY(0);
+
+}
+
+.product-overlay .btn{
+
+    border-radius:30px;
+
+    font-size:14px;
+
+    font-weight:600;
+
+}
+
+/* ==========================
+Discount Badge
+========================== */
+
+.discount-badge{
+
+    position:absolute;
+
+    top:12px;
+
+    left:12px;
+
+    background:#ff2d55;
+
+    color:#fff;
+
+    font-size:12px;
+
+    font-weight:700;
+
+    border-radius:30px;
+
+    padding:6px 12px;
+
+    z-index:50;
+
+}
+
+/* ==========================
+Quick View
+========================== */
+
+.quick-view{
+
+    position:absolute;
+
+    top:50%;
+
+    left:50%;
+
+    transform:translate(-50%,-50%) scale(.8);
+
+    opacity:0;
+
+    transition:.35s;
+
+    z-index:40;
+
+}
+
+.product-card:hover .quick-view{
+
+    opacity:1;
+
+    transform:translate(-50%,-50%) scale(1);
+
+}
+
+/* ==========================
+Rating
+========================== */
+
+.rating-stars{
+
+    color:#ffb400;
+
+    font-size:14px;
+
+    letter-spacing:2px;
+
+}
+
+.rating-count{
+
+    color:#888;
+
+    font-size:13px;
+
+}
+
+/* ==========================
+Price
+========================== */
+
+.old-price{
+
+    text-decoration:line-through;
+
+    color:#999;
+
+    font-size:14px;
+
+}
+
+.new-price{
+
+    color:#0d6efd;
+
+    font-size:24px;
+
+    font-weight:700;
+
+}
+
+/* ==========================
+Stock
+========================== */
+
+.stock-badge{
+
+    border-radius:25px;
+
+    padding:6px 14px;
+
+    font-size:12px;
+
+    font-weight:600;
+
+}
+
+/* ==========================
+Glass Effect
+========================== */
+
+.glass{
+
+    background:rgba(255,255,255,.18);
+
+    backdrop-filter:blur(15px);
+
+    -webkit-backdrop-filter:blur(15px);
+
+}
+
+/* ==========================
+Product Shine
+========================== */
+
+.product-card::before{
+
+    content:"";
+
+    position:absolute;
+
+    top:0;
+
+    left:-120%;
+
+    width:70%;
+
+    height:100%;
+
+    background:linear-gradient(
+
+        120deg,
+
+        transparent,
+
+        rgba(255,255,255,.45),
+
+        transparent
+
+    );
+
+    transition:.8s;
+
+    z-index:30;
+
+}
+
+.product-card:hover::before{
+
+    left:130%;
+
+}
+
+/* ==========================
+Floating Image
+========================== */
+
+.product-card:hover .product-image{
+
+    animation:floatImage .8s ease;
+
+}
+
+@keyframes floatImage{
+
+    0%{
+
+        transform:scale(1);
+
+    }
+
+    50%{
+
+        transform:scale(1.12);
+
+    }
+
+    100%{
+
+        transform:scale(1.08);
+
+    }
+
+}
+
+/* ==========================
+Buttons Animation
+========================== */
+
+.product-card:hover .btn-warning{
+
+    animation:slideUp .35s ease;
+
+}
+
+.product-card:hover .btn-danger{
+
+    animation:slideUp2 .45s ease;
+
+}
+
+@keyframes slideUp{
+
+    from{
+
+        transform:translateY(20px);
+
+        opacity:0;
+
+    }
+
+    to{
+
+        transform:translateY(0);
+
+        opacity:1;
+
+    }
+
+}
+
+@keyframes slideUp2{
+
+    from{
+
+        transform:translateY(35px);
+
+        opacity:0;
+
+    }
+
+    to{
+
+        transform:translateY(0);
+
+        opacity:1;
+
+    }
+
+}
+
+/* ==========================================
+Footer
+========================================== */
+
+footer{
+
+    background:#111827;
+
+    color:#fff;
+
+    padding:50px 0;
+
+    margin-top:60px;
+
+}
+
+footer h5{
+
+    font-weight:700;
+
+    margin-bottom:18px;
+
+}
+
+footer p{
+
+    color:#cfd4da;
+
+    line-height:1.8;
 
 }
 
 footer a{
+
+    color:#dcdcdc;
+
+    display:block;
+
+    margin-bottom:8px;
 
     transition:.3s;
 
@@ -176,65 +711,541 @@ footer a{
 
 footer a:hover{
 
-    padding-left:6px;
+    color:#fff;
 
-    color:#0d6efd !important;
+    padding-left:8px;
 
 }
 
-    </style>
+.footer-bottom{
+
+    border-top:1px solid rgba(255,255,255,.1);
+
+    margin-top:30px;
+
+    padding-top:18px;
+
+    text-align:center;
+
+    color:#bdbdbd;
+
+    font-size:14px;
+
+}
+
+/* ==========================================
+Scroll To Top
+========================================== */
+
+.scroll-top{
+
+    position:fixed;
+
+    right:20px;
+
+    bottom:20px;
+
+    width:50px;
+
+    height:50px;
+
+    border-radius:50%;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    background:#0d6efd;
+
+    color:#fff;
+
+    z-index:999;
+
+    display:none;
+
+    box-shadow:0 12px 24px rgba(0,0,0,.25);
+
+    transition:.3s;
+
+}
+
+.scroll-top:hover{
+
+    background:#0b5ed7;
+
+    color:#fff;
+
+    transform:translateY(-5px);
+
+}
+
+/* ==========================================
+Alerts
+========================================== */
+
+.alert{
+
+    border:none;
+
+    border-radius:14px;
+
+    box-shadow:0 8px 18px rgba(0,0,0,.08);
+
+}
+
+/* ==========================================
+Scrollbar
+========================================== */
+
+::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#0d6efd;
+
+    border-radius:20px;
+
+}
+
+/* ==========================================
+Responsive
+========================================== */
+
+@media(max-width:992px){
+
+.product-image{
+
+    max-height:180px;
+
+}
+
+.search-box{
+
+    width:100%;
+
+    margin-top:10px;
+
+}
+
+.navbar-nav{
+
+    margin-top:15px;
+
+}
+
+}
+
+@media(max-width:768px){
+
+.product-card{
+
+    min-height:auto;
+
+}
+
+.product-image-wrapper{
+
+    min-height:180px;
+
+}
+
+.product-image{
+
+    max-height:150px;
+
+}
+
+.product-title{
+
+    font-size:14px;
+
+    min-height:40px;
+
+}
+
+.product-overlay{
+
+    padding:10px;
+
+}
+
+.product-overlay .btn{
+
+    font-size:13px;
+
+    padding:8px;
+
+}
+
+.quick-view{
+
+    display:none;
+
+}
+
+.discount-badge{
+
+    font-size:10px;
+
+}
+
+.navbar-brand{
+
+    font-size:24px;
+
+}
+
+}
+
+/* ==========================================
+Profile Image
+========================================== */
+
+.nav-profile{
+
+    width:40px;
+
+    height:40px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+
+    border:2px solid #0d6efd;
+
+}
+
+.navbar .nav-link.dropdown-toggle{
+
+    color:#212529;
+
+}
+
+.navbar .nav-link.dropdown-toggle span{
+
+    font-size:0.95rem;
+
+    font-weight:600;
+
+}
+
+/* ==========================================
+Dropdown
+========================================== */
+
+.dropdown-menu{
+
+    border:none;
+
+    border-radius:15px;
+
+    box-shadow:0 15px 30px rgba(0,0,0,.12);
+
+}
+
+.dropdown-item{
+
+    padding:10px 18px;
+
+    transition:.3s;
+
+}
+
+.dropdown-item:hover{
+
+    background:#f4f6fb;
+
+    padding-left:22px;
+
+}
+
+/* ==========================================
+Navbar Fixed
+========================================== */
+
+.navbar.sticky-top{
+
+    z-index:1050;
+
+}
+
+/* ==========================================
+Dashboard Fix
+========================================== */
+
+.dashboard-navbar{
+
+    position:sticky;
+
+    top:0;
+
+    z-index:1030;
+
+    background:#fff;
+
+    box-shadow:0 5px 12px rgba(0,0,0,.06);
+
+}
+
+.dashboard-content{
+
+    padding-top:20px;
+
+}
+
+</style>
 
 </head>
 
 <body>
 
-    <!-- Navbar -->
+<!-- ==========================================
+Announcement Bar
+========================================== -->
 
-    {% include "partials/navbar.html" %}
+{% if website_features.announcement and active_announcements %}
 
-    <!-- Main Content -->
+<div class="announcement-bar">
 
-    <main class="container py-5">
+    <div class="announcement-track">
 
-        <!-- Django Messages -->
+        {% for item in active_announcements %}
 
-        {% if messages %}
+            <span
+                class="announcement-item"
+                style="
+                    background:{{ item.background_color }};
+                    color:{{ item.text_color }};
+                    padding:6px 20px;
+                    border-radius:30px;
+                "
+            >
+                📢 {{ item.text }}
+            </span>
 
-            {% for message in messages %}
+        {% endfor %}
 
-                <div
-                    class="alert alert-{{ message.tags }} alert-dismissible fade show"
-                >
+        {% for item in active_announcements %}
 
-                    {{ message }}
+            <span
+                class="announcement-item"
+                style="
+                    background:{{ item.background_color }};
+                    color:{{ item.text_color }};
+                    padding:6px 20px;
+                    border-radius:30px;
+                "
+            >
+                📢 {{ item.text }}
+            </span>
 
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="alert"
-                    ></button>
+        {% endfor %}
 
-                </div>
+    </div>
 
-            {% endfor %}
+</div>
 
-        {% endif %}
+{% endif %}
+<!-- ==========================================
+Navbar
+========================================== -->
 
-        {% block content %}
+{% include "partials/navbar.html" %}
 
-        {% endblock %}
+<!-- ==========================================
+Messages
+========================================== -->
 
-    </main>
+<div class="container mt-3">
 
-    <!-- Footer -->
+    {% if messages %}
 
-    {% include "partials/footer.html" %}
+        {% for message in messages %}
 
-    <!-- Bootstrap JS -->
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
 
-    <script
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    ></script>
+                {{ message }}
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+                </button>
+
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+</div>
+
+<!-- ==========================================
+Main Content
+========================================== -->
+
+<main class="py-4">
+
+    {% block content %}
+
+    {% endblock %}
+
+</main>
+
+<!-- ==========================================
+Footer
+========================================== -->
+
+{% include "partials/footer.html" %}
+
+<!-- ==========================================
+Scroll To Top
+========================================== -->
+
+<a
+    href="#"
+    id="scrollTop"
+    class="scroll-top">
+
+    <i class="fas fa-arrow-up"></i>
+
+</a>
+
+<!-- ==========================================
+Bootstrap
+========================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- ==========================================
+AOS
+========================================== -->
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+
+<script>
+
+AOS.init({
+
+    duration:700,
+
+    once:true
+
+});
+
+</script>
+
+<!-- ==========================================
+Swiper
+========================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<script>
+
+if(document.querySelector(".heroSwiper")){
+
+    new Swiper(".heroSwiper",{
+
+        loop:true,
+
+        autoplay:{
+
+            delay:3500
+
+        },
+
+        pagination:{
+
+            el:".swiper-pagination",
+
+            clickable:true
+
+        }
+
+    });
+
+}
+
+</script>
+
+<!-- ==========================================
+Scroll Button
+========================================== -->
+
+<script>
+
+const scrollBtn = document.getElementById("scrollTop");
+
+window.addEventListener("scroll",function(){
+
+    if(window.scrollY>300){
+
+        scrollBtn.style.display="flex";
+
+    }else{
+
+        scrollBtn.style.display="none";
+
+    }
+
+});
+
+</script>
+
+<!-- ==========================================
+SweetAlert Toast
+========================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+{% if messages %}
+
+<script>
+
+const Toast = Swal.mixin({
+
+    toast:true,
+
+    position:"top-end",
+
+    showConfirmButton:false,
+
+    timer:2500,
+
+    timerProgressBar:true,
+
+    didOpen:(toast)=>{
+
+        toast.onmouseenter=Swal.stopTimer;
+
+        toast.onmouseleave=Swal.resumeTimer;
+
+    }
+
+});
+
+{% for message in messages %}
+
+Toast.fire({
+
+    icon:"{{ message.tags|default:'info' }}",
+
+    title:"{{ message|escapejs }}"
+
+});
+
+{% endfor %}
+
+</script>
+
+{% endif %}
 
 </body>
 

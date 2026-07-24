@@ -1,0 +1,242 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}
+Website Settings
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="container-fluid">
+
+    <form method="POST" enctype="multipart/form-data">
+
+        {% csrf_token %}
+
+        <div class="card shadow border-0">
+
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+
+                <h4 class="mb-0">
+                    🌐 Website Settings
+                </h4>
+
+                <button type="submit" class="btn btn-light">
+                    💾 Save Settings
+                </button>
+
+            </div>
+
+            <div class="card-body">
+
+                <div class="row g-4">
+
+                    <!-- Shop Name -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            Shop Name
+                        </label>
+
+                        <input
+                            type="text"
+                            name="shop_name"
+                            class="form-control"
+                            value="{{ settings.shop_name }}"
+                        >
+
+                    </div>
+
+                    <!-- Tagline -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            Tagline
+                        </label>
+
+                        <input
+                            type="text"
+                            name="shop_tagline"
+                            class="form-control"
+                            value="{{ settings.shop_tagline }}"
+                        >
+
+                    </div>
+
+                    <!-- Announcement -->
+
+                    <div class="col-12">
+
+                        <label class="form-label fw-semibold">
+                            Announcement Bar
+                        </label>
+
+                        <textarea
+                            class="form-control"
+                            rows="3"
+                            name="announcement"
+                        >{{ settings.announcement }}</textarea>
+
+                    </div>
+
+                    <!-- Phone -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            Support Phone
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            name="phone"
+                            value="{{ settings.phone }}"
+                        >
+
+                    </div>
+
+                    <!-- Email -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            Support Email
+                        </label>
+
+                        <input
+                            type="email"
+                            class="form-control"
+                            name="email"
+                            value="{{ settings.email }}"
+                        >
+
+                    </div>
+
+                    <!-- Facebook -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Facebook URL
+                        </label>
+
+                        <input
+                            type="url"
+                            class="form-control"
+                            name="facebook"
+                            value="{{ settings.facebook }}"
+                        >
+
+                    </div>
+
+                    <!-- Instagram -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Instagram URL
+                        </label>
+
+                        <input
+                            type="url"
+                            class="form-control"
+                            name="instagram"
+                            value="{{ settings.instagram }}"
+                        >
+
+                    </div>
+
+                    <!-- YouTube -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            YouTube URL
+                        </label>
+
+                        <input
+                            type="url"
+                            class="form-control"
+                            name="youtube"
+                            value="{{ settings.youtube }}"
+                        >
+
+                    </div>
+
+                    <!-- Logo -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            Website Logo
+                        </label>
+
+                        <input
+                            type="file"
+                            class="form-control"
+                            name="logo"
+                        >
+
+                        {% if settings.logo %}
+                            <div class="mt-3">
+                                <img
+                                    src="{{ settings.logo.url }}"
+                                    class="img-thumbnail"
+                                    style="height:70px;"
+                                >
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                    <!-- Favicon -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            Website Favicon
+                        </label>
+
+                        <input
+                            type="file"
+                            class="form-control"
+                            name="favicon"
+                        >
+
+                        {% if settings.favicon %}
+                            <div class="mt-3">
+                                <img
+                                    src="{{ settings.favicon.url }}"
+                                    class="img-thumbnail"
+                                    style="height:50px;"
+                                >
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="card-footer text-end">
+
+                <button
+                    type="submit"
+                    class="btn btn-primary px-4">
+
+                    💾 Save Website Settings
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

@@ -185,6 +185,14 @@ Products
 
                     <th>Featured</th>
 
+                    <th>Flash</th>
+
+                    <th>Free</th>
+
+                    <th>Trending</th>
+
+                    <th>New</th>
+
                     <th>Action</th>
 
                 </tr>
@@ -303,6 +311,78 @@ Products
 
                     <td>
 
+                        {% if product.is_flash_sale %}
+
+                            <span class="badge bg-danger">
+
+                                Flash
+
+                            </span>
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {% if product.is_free_delivery %}
+
+                            <span class="badge bg-success">
+
+                                Free
+
+                            </span>
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {% if product.is_trending %}
+
+                            <span class="badge bg-warning text-dark">
+
+                                Trending
+
+                            </span>
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {% if product.is_new_arrival %}
+
+                            <span class="badge bg-primary">
+
+                                New
+
+                            </span>
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
                         <a
                             href="{% url 'dashboard:product_update' product.id %}"
                             class="btn btn-sm btn-warning"
@@ -338,7 +418,7 @@ Products
 
                 <tr>
 
-                    <td colspan="8" class="text-center">
+                    <td colspan="12" class="text-center">
 
                         No Product Found.
 

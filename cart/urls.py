@@ -18,4 +18,6 @@ urlpatterns = [
     
     path("coupon/remove/", views.remove_coupon,name="remove_coupon"),
 
+    path("buy-now/<int:product_id>/", views.buy_now, name="buy_now"),
+
 ]

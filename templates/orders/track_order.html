@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block title %}
+
+Track Order
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-8">
+
+            <div class="card border-0 shadow rounded-4">
+
+                <div class="card-body p-5">
+
+                    <div class="text-center mb-4">
+
+                        <h2 class="fw-bold">
+
+                            📦 Track Your Order
+
+                        </h2>
+
+                        <p class="text-muted">
+
+                            Enter your Order ID and Email Address.
+
+                        </p>
+
+                    </div>
+
+                    {% if messages %}
+
+                        {% for message in messages %}
+
+                        <div class="alert alert-danger">
+
+                            {{ message }}
+
+                        </div>
+
+                        {% endfor %}
+
+                    {% endif %}
+
+                    <form method="POST">
+
+                        {% csrf_token %}
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+
+                                {{ form.order_id.label_tag }}
+
+                                {{ form.order_id }}
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                {{ form.email.label_tag }}
+
+                                {{ form.email }}
+
+                            </div>
+
+                        </div>
+
+                        <button
+                            class="btn btn-primary rounded-pill w-100">
+
+                            🔍 Track Order
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+            {% if order %}
+
+            <div class="card shadow border-0 rounded-4 mt-4">
+
+                <div class="card-body">
+
+                    <h4 class="fw-bold mb-4">
+
+                        Order #{{ order.id }}
+
+                    </h4>
+
+                    <!-- Progress -->
+
+                    <div class="d-flex justify-content-between align-items-center mb-5">
+
+                        <div class="text-center">
+
+                            <div class="rounded-circle p-3 {% if current_step >= 0 %}bg-success text-white{% else %}bg-light{% endif %}">
+
+                                📦
+
+                            </div>
+
+                            <small>
+
+                                Placed
+
+                            </small>
+
+                        </div>
+
+                        <div class="flex-fill border-top mx-2"></div>
+
+                        <div class="text-center">
+
+                            <div class="rounded-circle p-3 {% if current_step >= 1 %}bg-success text-white{% else %}bg-light{% endif %}">
+
+                                ⚙️
+
+                            </div>
+
+                            <small>
+
+                                Processing
+
+                            </small>
+
+                        </div>
+
+                        <div class="flex-fill border-top mx-2"></div>
+
+                        <div class="text-center">
+
+                            <div class="rounded-circle p-3 {% if current_step >= 2 %}bg-success text-white{% else %}bg-light{% endif %}">
+
+                                🚚
+
+                            </div>
+
+                            <small>
+
+                                Shipped
+
+                            </small>
+
+                        </div>
+
+                        <div class="flex-fill border-top mx-2"></div>
+
+                        <div class="text-center">
+
+                            <div class="rounded-circle p-3 {% if current_step >= 3 %}bg-success text-white{% else %}bg-light{% endif %}">
+
+                                ✅
+
+                            </div>
+
+                            <small>
+
+                                Delivered
+
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+
+                        <div class="col-md-6">
+
+                            <p>
+
+                                <strong>Status :</strong>
+
+                                {{ order.get_status_display }}
+
+                            </p>
+
+                            <p>
+
+                                <strong>Payment :</strong>
+
+                                {{ order.get_payment_status_display }}
+
+                            </p>
+
+                            <p>
+
+                                <strong>Courier :</strong>
+
+                                {{ order.courier_name|default:"Not Assigned" }}
+
+                            </p>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <p>
+
+                                <strong>Tracking Number :</strong>
+
+                                {{ order.tracking_number|default:"Pending" }}
+
+                            </p>
+
+                            <p>
+
+                                <strong>Estimated Delivery :</strong>
+
+                                {{ order.estimated_delivery|default:"Pending" }}
+
+                            </p>
+
+                            <p>
+
+                                <strong>Total :</strong>
+
+                                ${{ order.final_total }}
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <hr>
+
+                    <h5 class="fw-bold mb-3">
+
+                        📜 Timeline
+
+                    </h5>
+
+                    {% for item in timeline %}
+
+                    <div class="border-start border-3 border-primary ps-3 mb-3">
+
+                        <strong>
+
+                            {{ item.note }}
+
+                        </strong>
+
+                        <br>
+
+                        <small class="text-muted">
+
+                            {{ item.created_at|date:"d M Y • h:i A" }}
+
+                        </small>
+
+                    </div>
+
+                    {% empty %}
+
+                    <div class="alert alert-info">
+
+                        No timeline available.
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+            {% endif %}
+
+            <div class="text-center mt-4">
+
+                <a
+                    href="{% url 'home' %}"
+                    class="btn btn-outline-secondary rounded-pill">
+
+                    ← Back Home
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
