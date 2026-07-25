@@ -30,7 +30,7 @@ class Cart:
         self.save()
     
     def save(self):
-
+        self.session["cart"] = self.cart
         self.session.modified = True
 
 
@@ -102,7 +102,6 @@ class Cart:
     def clear(self):
 
         if "cart" in self.session:
-
             del self.session["cart"]
 
         self.session.modified = True

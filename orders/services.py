@@ -1,7 +1,7 @@
 from store.services import reduce_stock, restore_stock
 from decimal import Decimal
 from django.utils import timezone
-from .models import Coupon, CouponUsage
+from .models import Coupon, CouponUsage, DeliveryCharge
 from payments.utils import send_low_stock_email
 
 # ==========================================
@@ -138,3 +138,13 @@ def calculate_discount(coupon, subtotal):
         discount = subtotal
 
     return discount
+
+def get_delivery_charge(city):
+
+    try:
+        return DeliveryCharge.objects.get(
+            city=city
+        ).charge
+
+    except DeliveryCharge.DoesNotExist:
+        return Decimal("0.00")

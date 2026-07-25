@@ -1529,11 +1529,6 @@ def dashboard_order_detail(request, order_id):
             "",
         )
 
-        order.tracking_number = request.POST.get(
-            "tracking_number",
-            "",
-        )
-
         order.delivery_charge = (
             request.POST.get("delivery_charge")
             or 0
@@ -1552,6 +1547,7 @@ def dashboard_order_detail(request, order_id):
         # ====================================================
 
         order.save()
+        order.refresh_from_db()
 
         # ====================================================
 # Return Request Update
@@ -1723,25 +1719,37 @@ def dashboard_order_detail(request, order_id):
         # Email
         # ====================================================
 
-        if old_status != order.status:
+        from payments.utils import (
+            send_shipping_email,
+            send_delivered_email,
+            send_cancelled_email,
+        )
 
-            from payments.utils import (
-                send_shipping_email,
-                send_delivered_email,
-                send_cancelled_email,
+        # Send Shipping Email
+        if (
+            order.status == "shipped"
+            and (
+                old_status != order.status
+                or old_courier != order.courier_name
+                or old_tracking != order.tracking_number
+                or old_delivery != order.estimated_delivery
             )
+        ):
+            send_shipping_email(request, order)
 
-            if order.status == "shipped":
+        # Delivered Email
+        if (
+            old_status != order.status
+                and order.status == "delivered"
+        ):
+            send_delivered_email(request, order)
 
-                send_shipping_email(request, order)
-
-            elif order.status == "delivered":
-
-                send_delivered_email(request, order)
-
-            elif order.status == "cancelled":
-
-                send_cancelled_email(request, order)
+        # Cancelled Email
+        if (
+            old_status != order.status
+                and order.status == "cancelled"
+            ):
+            send_cancelled_email(request, order)
 
         messages.success(
 

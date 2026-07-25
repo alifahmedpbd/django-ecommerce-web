@@ -63,20 +63,24 @@ def send_order_confirmation_email(request, order):
 
 def send_shipping_email(request, order):
 
+    context = {
+        "order": order,
+        "site_url": request.build_absolute_uri("/")[:-1],
+        "courier": order.courier_name,
+        "tracking_number": order.tracking_number,
+        "estimated_delivery": order.estimated_delivery,
+    }
+
     html_message = render_to_string(
         "emails/shipping.html",
-        {
-            "order": order,
-            "site_url": request.build_absolute_uri("/")[:-1],
-        },
+        context,
     )
 
     send_brevo_email(
-        subject=f"Your Order #{order.id} Has Been Shipped 🚚",
+        subject=f"🚚 Your Order #{order.id} Has Been Shipped",
         html_content=html_message,
         recipients=[order.email],
     )
-
 
 def send_delivered_email(request, order):
 

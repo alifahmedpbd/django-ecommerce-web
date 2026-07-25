@@ -30,6 +30,13 @@ Order Success
 
         </h4>
 
+        <h4>
+
+            Tracking Number :
+            {{ order.tracking_number }}
+
+        </h4>
+
         <h5 class="mt-4">
 
             Total Paid
@@ -61,6 +68,19 @@ Order Success
         </a>
 
     </div>
+    
+        <a
+
+            href="{% url 'orders:track_order' %}"
+
+            class="btn btn-primary mt-4"
+
+        >
+
+            Track Your Order
+
+        </a>
+    
 
 </div>
 

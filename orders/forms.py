@@ -18,6 +18,8 @@ class OrderCreateForm(forms.ModelForm):
 
             "phone",
 
+            "city",
+
             "address",
 
             "payment_method",
@@ -46,6 +48,12 @@ class OrderCreateForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "placeholder": "Phone Number",
+                }
+            ),
+
+            "city": forms.Select(
+                attrs={
+                    "class": "form-select",
                 }
             ),
 
@@ -97,21 +105,46 @@ class OrderCreateForm(forms.ModelForm):
 class GuestOrderTrackingForm(forms.Form):
 
     order_id = forms.IntegerField(
+        required=False,
         label="Order ID",
         widget=forms.NumberInput(
             attrs={
                 "class": "form-control",
-                "placeholder": "Enter Order ID",
+                "placeholder": "Order ID",
+            }
+        ),
+    )
+
+    tracking_number = forms.CharField(
+        required=False,
+        label="Tracking Number",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Tracking Number",
             }
         ),
     )
 
     email = forms.EmailField(
-        label="Email",
         widget=forms.EmailInput(
             attrs={
                 "class": "form-control",
-                "placeholder": "Enter Order Email",
+                "placeholder": "Email Address",
             }
         ),
     )
+
+    def clean(self):
+
+        cleaned = super().clean()
+
+        order_id = cleaned.get("order_id")
+        tracking = cleaned.get("tracking_number")
+
+        if not order_id and not tracking:
+            raise forms.ValidationError(
+                "Enter Order ID or Tracking Number."
+            )
+
+        return cleaned

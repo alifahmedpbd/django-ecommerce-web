@@ -28,7 +28,7 @@ Track Order
 
                         <p class="text-muted">
 
-                            Enter your Order ID and Email Address.
+                            Enter your Order ID or Tracking Number and Email Address.
 
                         </p>
 
@@ -54,23 +54,45 @@ Track Order
 
                         <div class="row">
 
-                            <div class="col-md-6 mb-3">
+<div class="row g-3">
 
-                                {{ form.order_id.label_tag }}
+    <div class="col-md-6">
 
-                                {{ form.order_id }}
+        <label class="form-label">
 
-                            </div>
+            Order ID
 
-                            <div class="col-md-6 mb-3">
+        </label>
 
-                                {{ form.email.label_tag }}
+        {{ form.order_id }}
 
-                                {{ form.email }}
+    </div>
 
-                            </div>
+    <div class="col-md-6">
 
-                        </div>
+        <label class="form-label">
+
+            Tracking Number
+
+        </label>
+
+        {{ form.tracking_number }}
+
+    </div>
+
+</div>
+
+<div class="mb-3">
+
+    <label class="form-label">
+
+        Email Address
+
+    </label>
+
+    {{ form.email }}
+
+</div>
 
                         <button
                             class="btn btn-primary rounded-pill w-100">

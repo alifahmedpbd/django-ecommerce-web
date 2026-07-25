@@ -539,26 +539,21 @@ def cancel_order(request, order_id):
         order.id,
 
     )
+
+
 def track_order(request):
 
     form = GuestOrderTrackingForm()
 
     order = None
-
     timeline = None
-
     current_step = 0
 
     status_steps = [
-
         "pending",
-
         "processing",
-
         "shipped",
-
         "delivered",
-
     ]
 
     if request.method == "POST":
@@ -567,59 +562,54 @@ def track_order(request):
 
         if form.is_valid():
 
-            order_id = form.cleaned_data["order_id"]
-
-            email = form.cleaned_data["email"]
+            order_id = form.cleaned_data.get("order_id")
+            tracking = form.cleaned_data.get("tracking_number")
+            email = form.cleaned_data.get("email")
 
             try:
 
-                order = Order.objects.prefetch_related(
-                    "timeline"
-                ).get(
+                if order_id:
 
-                    id=order_id,
+                    order = Order.objects.prefetch_related(
+                        "timeline"
+                    ).get(
+                        id=order_id,
+                        email=email,
+                    )
 
-                    email=email,
+                else:
 
-                )
+                    order = Order.objects.prefetch_related(
+                        "timeline"
+                    ).get(
+                        tracking_number=tracking,
+                        email=email,
+                    )
 
-                timeline = order.timeline.all().order_by("-created_at")
+                timeline = order.timeline.all()
 
                 if order.status in status_steps:
-
                     current_step = status_steps.index(order.status)
 
             except Order.DoesNotExist:
 
                 messages.error(
-
                     request,
-
                     "Order not found.",
-
                 )
 
     return render(
-
         request,
-
         "orders/track_order.html",
-
         {
-
             "form": form,
-
             "order": order,
-
             "timeline": timeline,
-
             "current_step": current_step,
-
             "status_steps": status_steps,
-
         },
-
     )
+
 
 @login_required
 def return_request(request, order_id):

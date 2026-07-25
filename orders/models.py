@@ -2,6 +2,8 @@ from django.db import models
 from accounts.models import User
 from store.models import Product
 from django.utils import timezone
+import random
+import string
 # Create your models here.
 
 
@@ -66,6 +68,34 @@ class Coupon(models.Model):
 
         )
 
+class DeliveryCharge(models.Model):
+
+    CITY_CHOICES = (
+        ("dhaka", "Dhaka"),
+        ("outside", "Outside Dhaka"),
+    )
+
+    city = models.CharField(
+        max_length=20,
+        choices=CITY_CHOICES,
+        unique=True,
+    )
+
+    charge = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        help_text="USD Amount",
+    )
+
+    class Meta:
+        ordering = ["city"]
+        verbose_name = "Delivery Charge"
+        verbose_name_plural = "Delivery Charges"
+
+    def __str__(self):
+        return f"{self.get_city_display()} - ${self.charge}"
+
 class Order(models.Model):
 
     PAYMENT_METHODS = (
@@ -99,6 +129,17 @@ class Order(models.Model):
 
     )
 
+    COURIER_CHOICES = (
+        ("", "Select Courier"),
+        ("Steadfast", "Steadfast"),
+        ("RedX", "RedX"),
+        ("Pathao", "Pathao"),
+        ("Sundarban", "Sundarban Courier"),
+        ("Paperfly", "Paperfly"),
+        ("SA Paribahan", "SA Paribahan"),
+        ("Others", "Others"),
+    )
+
     EMI_MONTHS = (
         (3, "3 Months"),
         (6, "6 Months"),
@@ -106,11 +147,18 @@ class Order(models.Model):
         (12, "12 Months"),
     )
 
+    CITY_CHOICES = (
+        ("dhaka", "Dhaka"),
+        ("outside", "Outside Dhaka"),
+    )
+
+
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="orders")
     full_name = models.CharField(max_length=200)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
     address = models.TextField()
+    city = models.CharField(max_length=20, choices=CITY_CHOICES, default="dhaka")
     created_at = models.DateTimeField(auto_now_add=True)
     paid = models.BooleanField(default=False)
     payment_method = models.CharField(max_length=200, choices=PAYMENT_METHODS, default="cod")
@@ -121,7 +169,7 @@ class Order(models.Model):
     final_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending")
     tracking_number = models.CharField(max_length=100, blank=True)
-    courier_name = models.CharField(max_length=100, blank=True)
+    courier_name = models.CharField(max_length=100, choices=COURIER_CHOICES, blank=True)
     estimated_delivery = models.DateField(null=True, blank=True)
     delivery_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     admin_note = models.TextField(blank=True)
@@ -144,6 +192,42 @@ class Order(models.Model):
         )
 
         return subtotal - self.discount
+
+    def generate_tracking_number(self):
+
+        if self.tracking_number:
+            return self.tracking_number
+
+        while True:
+
+            code = "SHP-" + "".join(
+                random.choices(
+                    string.ascii_uppercase + string.digits,
+                    k=10,
+                )
+            )
+
+            if not Order.objects.filter(
+                tracking_number=code
+            ).exists():
+
+                self.tracking_number = code
+                return code
+
+    def get_tracking_url(self):
+
+        if not self.tracking_number:
+            return ""
+
+        urls = {
+            "Steadfast": f"https://steadfast.com.bd/t/{self.tracking_number}",
+            "RedX": f"https://redx.com.bd/track?tracking={self.tracking_number}",
+            "Pathao": f"https://merchant.pathao.com/tracking/{self.tracking_number}",
+            "Sundarban": f"https://tracking.sundarbancourierltd.com/{self.tracking_number}",
+            "Paperfly": f"https://paperfly.com.bd/track/{self.tracking_number}",
+        }
+
+        return urls.get(self.courier_name, "")
     
     
 class OrderItem(models.Model):

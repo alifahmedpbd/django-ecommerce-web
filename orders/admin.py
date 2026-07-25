@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Order, OrderItem, Coupon, ExchangeRate, OrderTimeline
+from .models import Order, OrderItem, Coupon, ExchangeRate, OrderTimeline, DeliveryCharge
 # Register your models here.
 
 class OrderItemInline(admin.TabularInline):
@@ -88,4 +88,12 @@ class ExchangeRateAdmin(admin.ModelAdmin):
 
         "updated_at",
 
+    )
+
+@admin.register(DeliveryCharge)
+class DeliveryChargeAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "city",
+        "charge",
     )

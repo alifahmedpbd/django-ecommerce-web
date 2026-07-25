@@ -180,127 +180,145 @@ style="width:60px;height:60px;font-size:22px;"
 
 </div>
 
-<div class="card-body">
-
-<table class="table table-bordered align-middle">
-
 <tr>
 
-<th width="220">
+    <th width="220">
 
-Courier
+        🚚 Courier
 
-</th>
+    </th>
 
-<td>
+    <td>
 
-{% if order.courier_name %}
+        {% if order.courier_name %}
 
-{{ order.courier_name }}
+            <span class="badge bg-primary">
 
-{% else %}
+                {{ order.courier_name }}
 
-<span class="text-muted">
+            </span>
 
-Not Assigned Yet
+        {% else %}
 
-</span>
+            <span class="badge bg-secondary">
 
-{% endif %}
+                Not Assigned Yet
 
-</td>
+            </span>
+
+        {% endif %}
+
+    </td>
 
 </tr>
 
 <tr>
 
-<th>
+    <th>
 
-Tracking Number
+        📦 Tracking Number
 
-</th>
+    </th>
 
-<td>
+    <td>
 
-{% if order.tracking_number %}
+        {% if order.tracking_number %}
 
-<code>
+            <code class="fs-6">
 
-{{ order.tracking_number }}
+                {{ order.tracking_number }}
 
-</code>
+            </code>
 
-{% else %}
+            {% if order.get_tracking_url %}
 
-<span class="text-muted">
+                <br><br>
 
-Waiting...
+                <a
+                    href="{{ order.get_tracking_url }}"
+                    target="_blank"
+                    class="btn btn-sm btn-outline-primary"
+                >
 
-</span>
+                    🔍 Track Package
 
-{% endif %}
+                </a>
 
-</td>
+            {% endif %}
 
-</tr>
+        {% else %}
 
-<tr>
+            <span class="badge bg-warning text-dark">
 
-<th>
+                Waiting for Courier
 
-Estimated Delivery
+            </span>
 
-</th>
+        {% endif %}
 
-<td>
-
-{% if order.estimated_delivery %}
-
-{{ order.estimated_delivery }}
-
-{% else %}
-
-<span class="text-muted">
-
-Updating...
-
-</span>
-
-{% endif %}
-
-</td>
+    </td>
 
 </tr>
 
 <tr>
 
-<th>
+    <th>
 
-Delivery Charge
+        📅 Estimated Delivery
 
-</th>
+    </th>
 
-<td>
+    <td>
 
-${{ order.delivery_charge }}
+        {% if order.estimated_delivery %}
 
-<br>
+            <span class="fw-semibold text-success">
 
-<small class="text-primary">
+                {{ order.estimated_delivery|date:"d M Y" }}
 
-≈ ৳{{ order.delivery_charge|bdt }}
+            </span>
 
-</small>
+        {% else %}
 
-</td>
+            <span class="text-muted">
+
+                Updating...
+
+            </span>
+
+        {% endif %}
+
+    </td>
 
 </tr>
 
-</table>
+<tr>
 
-</div>
+    <th>
 
-</div>
+        💵 Delivery Charge
+
+    </th>
+
+    <td>
+
+        <strong>
+
+            ${{ order.delivery_charge }}
+
+        </strong>
+
+        <br>
+
+        <small class="text-primary">
+
+            ≈ ৳{{ order.delivery_charge|bdt }}
+
+        </small>
+
+    </td>
+
+</tr>
 
         <!-- ==========================
          Live Progress

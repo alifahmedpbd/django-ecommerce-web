@@ -13,7 +13,7 @@ from store.services import can_purchase
 
 from django.contrib import messages
 
-from orders.services import reduce_order_stock, validate_coupon, calculate_discount
+from orders.services import reduce_order_stock, validate_coupon, calculate_discount, get_delivery_charge
 from payments.utils import send_order_confirmation_email, send_owner_new_order_email
 
 from django.db.models import F
@@ -160,7 +160,7 @@ def checkout(request):
     coupon = None
     discount = 0
 
-    delivery_charge = 5
+    delivery_charge = get_delivery_charge("dhaka")
 
     if feature_enabled("free_delivery"):
         delivery_charge = 0
@@ -236,6 +236,16 @@ def checkout(request):
         )
 
         if form.is_valid():
+
+            city = form.cleaned_data["city"]
+
+            delivery_charge = get_delivery_charge(city)
+
+            if feature_enabled("free_delivery"):
+
+                delivery_charge = 0
+
+            final_total = subtotal - discount + delivery_charge
 
             # ==========================================
             # COD Feature Toggle
@@ -331,11 +341,19 @@ def checkout(request):
                     order.user = None
 
                 order.coupon = coupon
-                order.discount = discount
+                order.city = city
                 order.delivery_charge = delivery_charge
+                order.final_total = final_total
                 order.final_total = final_total
 
                 order.save()
+                order.generate_tracking_number()
+
+                order.save(
+                    update_fields=[
+                        "tracking_number",
+                    ]
+                )
 
                 # ==========================================
                 # Order Items

@@ -5,48 +5,98 @@
 <h2>🚚 Your Order Has Been Shipped</h2>
 
 <p>
+Hi <strong>{{ order.full_name }}</strong>,
+</p>
 
-Hi {{ order.full_name }},
+<p>
+Great news! 🎉 Your order has been shipped and is now on its way.
+</p>
+
+<hr>
+
+<table style="width:100%; border-collapse:collapse;">
+
+    <tr>
+        <td><strong>Order ID</strong></td>
+        <td>#{{ order.id }}</td>
+    </tr>
+
+    <tr>
+        <td><strong>Courier</strong></td>
+        <td>
+            {{ order.courier_name|default:"Will be assigned soon" }}
+        </td>
+    </tr>
+
+    <tr>
+        <td><strong>Tracking Number</strong></td>
+        <td>
+            {{ order.tracking_number|default:"Not Available" }}
+        </td>
+    </tr>
+
+    <tr>
+        <td><strong>Estimated Delivery</strong></td>
+        <td>
+            {% if order.estimated_delivery %}
+                {{ order.estimated_delivery|date:"d M Y" }}
+            {% else %}
+                Will be updated soon
+            {% endif %}
+        </td>
+    </tr>
+
+</table>
+
+<br>
+
+<p>
+You can track your order anytime from your account.
+</p>
+
+<p>
+
+<b>Courier :</b>
+
+{{ courier }}
 
 </p>
 
 <p>
 
-Good news!
+<b>Tracking Number :</b>
 
-Your order has been shipped successfully.
-
-</p>
-
-<p>
-
-<b>Order ID:</b>
-
-#{{ order.id }}
+{{ tracking_number }}
 
 </p>
 
 <p>
 
-Your package is now on the way.
+<b>Estimated Delivery :</b>
 
-You can check your order status anytime from your account.
+{{ estimated_delivery }}
 
 </p>
+
+{% if order.get_tracking_url %}
+
+<p>
 
 <a
-href="{{ site_url }}{% url 'orders:order_detail' order.id %}"
+href="{{ order.get_tracking_url }}"
 class="btn"
 >
 
-Track Order
+Track Package
 
 </a>
 
-<p style="margin-top:40px">
+</p>
 
-Thank you for shopping with Shopora ❤️
+{% endif %}
 
+<p style="margin-top:40px;">
+Thank you for shopping with <strong>Shopora</strong> ❤️
 </p>
 
 {% endblock %}
