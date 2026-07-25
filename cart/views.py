@@ -341,9 +341,9 @@ def checkout(request):
                     order.user = None
 
                 order.coupon = coupon
+                order.discount = discount
                 order.city = city
                 order.delivery_charge = delivery_charge
-                order.final_total = final_total
                 order.final_total = final_total
 
                 order.save()

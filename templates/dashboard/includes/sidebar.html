@@ -26,12 +26,34 @@
 
     </a>
 
+    
     <a href="{% url 'dashboard:dashboard_returns' %}"
-       class="btn btn-dark w-100 text-start mb-2">
+   class="btn btn-dark w-100 text-start mb-2">
 
-        ↩ Returns
+    ↩ Returns
 
-    </a>
+</a>
+
+<a href="{% url 'dashboard:dashboard_refunds' %}"
+   class="btn btn-dark w-100 text-start mb-2">
+
+    💰 Refund Center
+
+</a>
+
+<a href="{% url 'dashboard:dashboard_exchanges' %}"
+   class="btn btn-dark w-100 text-start mb-2">
+
+    🔄 Exchange Center
+
+</a>
+
+<a href="{% url 'dashboard:dashboard_replacements' %}"
+   class="btn btn-dark w-100 text-start mb-2">
+
+    📦 Replacement Center
+
+</a>
 
 
     <!-- Products -->
@@ -40,6 +62,15 @@
         class="btn btn-dark w-100 text-start mb-2">
 
         🛍 Products
+
+    </a>
+
+    <!-- Products -->
+
+    <a href="{% url 'dashboard:product_ranking' %}"
+        class="btn btn-dark w-100 text-start mb-2">
+
+        🥇 Product Ranking
 
     </a>
 

@@ -45,7 +45,10 @@ def home(request):
 
         )
 
-        .order_by("-created_at")[:8]
+        .order_by(
+            "display_order",
+            "-created_at",
+        )[:8]
 
     )
 
@@ -103,7 +106,10 @@ def home(request):
 
             )
 
-            .order_by("-updated_at")[:12]
+            .order_by(
+                "display_order",
+                "-updated_at",
+            )[:12]
 
         )
 

@@ -173,6 +173,8 @@ class Product(models.Model):
         auto_now=True,
     )
 
+    display_order = models.PositiveIntegerField(default=9999, db_index=True, verbose_name="Display Order", help_text="Lower number shows first.")
+
     # ==========================================
     # Save
     # ==========================================
@@ -194,6 +196,7 @@ class Product(models.Model):
         ordering = [
 
             "-created_at",
+            "display_order",
 
         ]
 
@@ -308,6 +311,43 @@ class Product(models.Model):
             )
 
         return 0
+
+    def swap_display_order(self, new_order):
+
+        from store.models import Product
+
+        try:
+            other = Product.objects.get(display_order=new_order)
+
+        except Product.DoesNotExist:
+
+            self.display_order = new_order
+
+            self.save(
+                update_fields=[
+                    "display_order",
+                ]
+            )
+
+            return
+
+        old = self.display_order
+
+        other.display_order = old
+
+        other.save(
+            update_fields=[
+                "display_order",
+            ]
+        )
+
+        self.display_order = new_order
+
+        self.save(
+            update_fields=[
+                "display_order",
+            ]
+        )
     
 # ==========================================
 # Product Images

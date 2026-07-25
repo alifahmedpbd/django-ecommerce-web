@@ -1,0 +1,616 @@
+{% extends "dashboard/base.html" %}
+
+{% block dashboard_content %}
+
+<div class="container-fluid px-4">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+
+        <h2 class="fw-bold">
+
+            📦 Replacement #{{ replacement.id }}
+
+        </h2>
+
+        <small class="text-muted">
+
+            Created :
+            {{ replacement.created_at|date:"d M Y - h:i A" }}
+
+        </small>
+
+    </div>
+
+    <a
+        href="{% url 'dashboard:dashboard_replacements' %}"
+        class="btn btn-outline-secondary">
+
+        ← Back
+
+    </a>
+
+</div>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<div class="row">
+
+<!-- LEFT -->
+
+<div class="col-lg-8">
+
+<div class="card shadow-sm border-0 mb-4">
+
+<div class="card-header bg-dark text-white">
+
+<h5 class="mb-0">
+
+👤 Customer Information
+
+</h5>
+
+</div>
+
+<div class="card-body">
+
+<div class="row">
+
+<div class="col-md-6">
+
+<p>
+
+<strong>
+
+Customer
+
+</strong>
+
+<br>
+
+{{ replacement.order.full_name }}
+
+</p>
+
+<p>
+
+<strong>
+
+Email
+
+</strong>
+
+<br>
+
+{{ replacement.order.email }}
+
+</p>
+
+<p>
+
+<strong>
+
+Phone
+
+</strong>
+
+<br>
+
+{{ replacement.order.phone }}
+
+</p>
+
+</div>
+
+<div class="col-md-6">
+
+<p>
+
+<strong>
+
+Address
+
+</strong>
+
+<br>
+
+{{ replacement.order.address }}
+
+</p>
+
+<p>
+
+<strong>
+
+Order ID
+
+</strong>
+
+<br>
+
+#{{ replacement.order.id }}
+
+</p>
+
+<p>
+
+<strong>
+
+Order Total
+
+</strong>
+
+<br>
+
+${{ replacement.order.final_total }}
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="card shadow-sm border-0">
+
+<div class="card-header bg-primary text-white">
+
+<h5 class="mb-0">
+
+📦 Replacement Information
+
+</h5>
+
+</div>
+
+<div class="card-body">
+
+<div class="row">
+
+<div class="col-md-8">
+
+<label class="form-label">
+
+Product
+
+</label>
+
+<div class="border rounded p-3 bg-light">
+
+<strong>
+
+{{ replacement.product.name }}
+
+</strong>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<label class="form-label">
+
+Quantity
+
+</label>
+
+<input
+type="number"
+class="form-control"
+value="{{ replacement.quantity }}"
+readonly>
+
+</div>
+
+</div>
+
+<hr>
+
+<div class="mb-3">
+
+<label class="form-label">
+
+Replacement Status
+
+</label>
+
+<select
+name="status"
+class="form-select">
+
+{% for value,label in replacement.STATUS_CHOICES %}
+
+<option
+value="{{ value }}"
+{% if replacement.status == value %}selected{% endif %}>
+
+{{ label }}
+
+</option>
+
+{% endfor %}
+
+</select>
+
+</div>
+
+<div>
+
+<label class="form-label">
+
+Admin Note
+
+</label>
+
+<textarea
+name="admin_note"
+rows="5"
+class="form-control">{{ replacement.admin_note }}</textarea>
+
+</div>
+
+</div>
+
+</div>
+<!-- ====================================== -->
+<!-- RIGHT SIDEBAR -->
+<!-- ====================================== -->
+
+</div>
+
+<div class="col-lg-4">
+
+<!-- Status Card -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+<div class="card-header bg-success text-white">
+
+<h5 class="mb-0">
+
+📊 Replacement Status
+
+</h5>
+
+</div>
+
+<div class="card-body text-center">
+
+{% if replacement.status == "pending" %}
+
+<span class="badge bg-warning text-dark fs-6 px-4 py-2">
+
+Pending
+
+</span>
+
+{% elif replacement.status == "approved" %}
+
+<span class="badge bg-info fs-6 px-4 py-2">
+
+Approved
+
+</span>
+
+{% elif replacement.status == "completed" %}
+
+<span class="badge bg-success fs-6 px-4 py-2">
+
+Completed
+
+</span>
+
+{% elif replacement.status == "cancelled" %}
+
+<span class="badge bg-danger fs-6 px-4 py-2">
+
+Cancelled
+
+</span>
+
+{% endif %}
+
+<hr>
+
+<div class="text-start">
+
+<p>
+
+<strong>
+
+Replacement ID
+
+</strong>
+
+<br>
+
+#{{ replacement.id }}
+
+</p>
+
+<p>
+
+<strong>
+
+Order ID
+
+</strong>
+
+<br>
+
+#{{ replacement.order.id }}
+
+</p>
+
+<p>
+
+<strong>
+
+Product
+
+</strong>
+
+<br>
+
+{{ replacement.product.name }}
+
+</p>
+
+<p>
+
+<strong>
+
+Quantity
+
+</strong>
+
+<br>
+
+{{ replacement.quantity }}
+
+</p>
+
+<p>
+
+<strong>
+
+Created
+
+</strong>
+
+<br>
+
+{{ replacement.created_at|date:"d M Y - h:i A" }}
+
+</p>
+
+{% if replacement.completed_at %}
+
+<p>
+
+<strong>
+
+Completed
+
+</strong>
+
+<br>
+
+{{ replacement.completed_at|date:"d M Y - h:i A" }}
+
+</p>
+
+{% endif %}
+
+{% if replacement.completed_by %}
+
+<p>
+
+<strong>
+
+Completed By
+
+</strong>
+
+<br>
+
+{{ replacement.completed_by.username }}
+
+</p>
+
+{% endif %}
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Summary -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+<div class="card-header bg-dark text-white">
+
+<h5 class="mb-0">
+
+📦 Replacement Summary
+
+</h5>
+
+</div>
+
+<div class="card-body">
+
+<table class="table table-borderless mb-0">
+
+<tr>
+
+<th>
+
+Customer
+
+</th>
+
+<td class="text-end">
+
+{{ replacement.order.full_name }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Product
+
+</th>
+
+<td class="text-end">
+
+{{ replacement.product.name }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Quantity
+
+</th>
+
+<td class="text-end">
+
+{{ replacement.quantity }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Order Total
+
+</th>
+
+<td class="text-end">
+
+<strong>
+
+${{ replacement.order.final_total }}
+
+</strong>
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Return Reason
+
+</th>
+
+<td class="text-end">
+
+{{ replacement.return_request.reason|truncatechars:40 }}
+
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- Action -->
+
+<div class="card shadow-sm border-0">
+
+<div class="card-body d-grid gap-2">
+
+<button
+type="submit"
+class="btn btn-primary">
+
+💾 Save Changes
+
+</button>
+
+</form>
+
+{% if replacement.status != "completed" %}
+
+<form
+method="POST"
+action="{% url 'dashboard:complete_replacement' replacement.id %}">
+
+{% csrf_token %}
+
+<button
+class="btn btn-success w-100">
+
+✅ Complete Replacement
+
+</button>
+
+</form>
+
+{% endif %}
+
+{% if replacement.status != "completed" and replacement.status != "cancelled" %}
+
+<form
+method="POST"
+action="{% url 'dashboard:cancel_replacement' replacement.id %}">
+
+{% csrf_token %}
+
+<button
+class="btn btn-outline-danger w-100">
+
+❌ Cancel Replacement
+
+</button>
+
+</form>
+
+{% endif %}
+
+<a
+href="{% url 'dashboard:dashboard_order_detail' replacement.order.id %}"
+class="btn btn-outline-dark">
+
+📦 View Original Order
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

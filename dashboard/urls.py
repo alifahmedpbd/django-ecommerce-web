@@ -86,8 +86,32 @@ urlpatterns = [
 
     path("returns/",views.dashboard_returns, name="dashboard_returns"),
 
-    path("returns/<int:pk>/approve/", views.approve_return, name="approve_return"),
+    path("refunds/", views.dashboard_refunds, name="dashboard_refunds"),
 
-    path("returns/<int:pk>/reject/", views.reject_return, name="reject_return"),
+    path("refunds/<int:pk>/", views.dashboard_refund_detail, name="dashboard_refund_detail"),
+
+    path("refunds/<int:pk>/complete/", views.complete_refund, name="complete_refund"),
+
+    path("refunds/<int:pk>/cancel/", views.cancel_refund, name="cancel_refund"),
+
+    path("exchanges/", views.dashboard_exchanges, name="dashboard_exchanges"),
+
+    path("exchange/<int:pk>/", views.dashboard_exchange_detail, name="dashboard_exchange_detail"),
+
+    path("exchange/<int:pk>/complete/", views.complete_exchange, name="complete_exchange"),
+
+    path("exchange/<int:pk>/cancel/", views.cancel_exchange, name="cancel_exchange"),
+
+    path("replacements/", views.dashboard_replacements, name="dashboard_replacements"),
+
+    path("replacement/<int:pk>/", views.dashboard_replacement_detail, name="dashboard_replacement_detail"),
+
+    path("replacement/<int:pk>/complete/", views.complete_replacement, name="complete_replacement",),
+
+    path("replacement/<int:pk>/cancel/", views.cancel_replacement, name="cancel_replacement"),
+
+    path("returns/<int:pk>/review/", views.return_review, name="return_review"),
+
+    path("product-ranking/", views.product_ranking, name="product_ranking"),
 
 ]

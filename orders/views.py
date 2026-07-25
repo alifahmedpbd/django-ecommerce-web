@@ -126,11 +126,22 @@ def order_detail(request, order_id):
 
     )
 
+    customer_comments = []
+
+    if hasattr(order, "return_request"):
+
+        customer_comments = (
+            order.return_request.comments
+            .filter(customer_visible=True)
+            .order_by("created_at")
+        )
+
     context = {
 
         "order": order,
 
         "timeline": timeline,
+        "customer_comments": customer_comments,
 
     }
 

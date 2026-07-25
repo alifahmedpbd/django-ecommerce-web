@@ -547,44 +547,30 @@ ${{ item.get_total_price }}
 <div class="text-end">
 
 <h5>
-
 Subtotal :
-
 ${{ order.get_total_cost }}
-
 </h5>
 
-<h6>
-
+<h6 class="text-danger">
 Discount :
-
-${{ order.discount }}
-
+- ${{ order.discount }}
 </h6>
 
 <h6>
-
 Delivery Charge :
-
-${{ order.delivery_charge }}
-
+<strong>${{ order.delivery_charge }}</strong><br>
+<small class="text-primary">
+≈ ৳{{ order.delivery_charge|bdt }}
+</small>
 </h6>
 
 <hr>
 
 <h3 class="text-success">
-
 Grand Total :
-
 ${{ order.final_total }}
-
 </h3>
-
-<h5 class="text-primary">
-
 ≈ ৳{{ order.final_total|bdt }}
-
-</h5>
 
 </div>
 
@@ -656,8 +642,6 @@ ${{ order.final_total }}
 
 <hr>
 
-<div class="card shadow-sm">
-
 {% if order.return_request %}
 
 <div class="card mt-4 border-0 shadow-sm">
@@ -674,7 +658,7 @@ ${{ order.final_total }}
                 🟡 Pending
             </span>
 
-            <p class="text-muted mt-2 mb-0">
+            <p class="text-muted mt-2">
                 Your return request has been received and is waiting for admin review.
             </p>
 
@@ -684,8 +668,8 @@ ${{ order.final_total }}
                 🔵 Approved
             </span>
 
-            <p class="text-muted mt-2 mb-0">
-                Your return request has been approved. The refund process will begin soon.
+            <p class="text-muted mt-2">
+                Your return request has been approved.
             </p>
 
         {% elif order.return_request.status == "rejected" %}
@@ -694,7 +678,7 @@ ${{ order.final_total }}
                 🔴 Rejected
             </span>
 
-            <p class="text-muted mt-2 mb-0">
+            <p class="text-muted mt-2">
                 Unfortunately, your return request has been rejected.
             </p>
 
@@ -704,23 +688,38 @@ ${{ order.final_total }}
                 🟢 Refunded
             </span>
 
-            <p class="text-muted mt-2 mb-0">
+            <p class="text-muted mt-2">
                 Your refund has been completed successfully.
             </p>
 
         {% endif %}
+{% if customer_comments %}
+
+<hr>
+
+<div class="mt-4">
+
+    <h5 class="fw-bold mb-3">
+        💬 Messages from Support
+    </h5>
+
+    {% for comment in customer_comments %}
+
+    <div class="alert alert-light border rounded-3 shadow-sm mb-2">
+
+        {{ comment.message|linebreaks }}
 
     </div>
-    {% if order.return_request.admin_note %}
-    <hr>
-        <h6>Admin Note</h6>
-            <p class="mb-0">
-            {{ order.return_request.admin_note }}
-            </p>
-            {% endif %}
+
+    {% endfor %}
 
 </div>
 
 {% endif %}
 
+    </div>
+
+</div>
+
+{% endif %}
 {% endblock %}

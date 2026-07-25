@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Order, OrderItem, Coupon, ExchangeRate, OrderTimeline, DeliveryCharge
+from .models import Order, OrderItem, Coupon, ExchangeRate, OrderTimeline, DeliveryCharge, ReturnComment
 # Register your models here.
 
 class OrderItemInline(admin.TabularInline):
@@ -96,4 +96,24 @@ class DeliveryChargeAdmin(admin.ModelAdmin):
     list_display = (
         "city",
         "charge",
+    )
+
+@admin.register(ReturnComment)
+class ReturnCommentAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "return_request",
+        "user",
+        "customer_visible",
+        "created_at",
+    )
+
+    list_filter = (
+        "customer_visible",
+        "created_at",
+    )
+
+    search_fields = (
+        "message",
+        "user__username",
     )

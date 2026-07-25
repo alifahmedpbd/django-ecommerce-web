@@ -1,0 +1,859 @@
+{% extends "dashboard/base.html" %}
+
+{% block dashboard_content %}
+
+<div class="container-fluid px-4">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+
+        <h2 class="fw-bold">
+
+            ↩ Review Return Request
+
+        </h2>
+
+        <small class="text-muted">
+
+            Order #{{ order.id }}
+
+        </small>
+
+    </div>
+
+    <a href="{% url 'dashboard:dashboard_returns' %}"
+       class="btn btn-outline-secondary">
+
+        ← Back
+
+    </a>
+
+</div>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<div class="row">
+
+<!-- ================================= -->
+<!-- LEFT SIDE -->
+<!-- ================================= -->
+
+<div class="col-lg-8">
+
+<div class="card shadow-sm border-0 mb-4">
+
+<div class="card-header bg-dark text-white">
+
+<h5 class="mb-0">
+
+👤 Customer Information
+
+</h5>
+
+</div>
+
+<div class="card-body">
+
+<div class="row">
+
+<div class="col-md-6">
+
+<p>
+
+<strong>Name</strong>
+
+<br>
+
+{{ order.full_name }}
+
+</p>
+
+<p>
+
+<strong>Email</strong>
+
+<br>
+
+{{ order.email }}
+
+</p>
+
+<p>
+
+<strong>Phone</strong>
+
+<br>
+
+{{ order.phone }}
+
+</p>
+
+</div>
+
+<div class="col-md-6">
+
+<p>
+
+<strong>Address</strong>
+
+<br>
+
+{{ order.address }}
+
+</p>
+
+<p>
+
+<strong>Payment</strong>
+
+<br>
+
+{{ order.payment_method|upper }}
+
+</p>
+
+<p>
+
+<strong>Paid</strong>
+
+<br>
+
+{% if order.paid %}
+
+<span class="badge bg-success">
+
+Paid
+
+</span>
+
+{% else %}
+
+<span class="badge bg-danger">
+
+Unpaid
+
+</span>
+
+{% endif %}
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+<!-- ================================= -->
+<!-- Products -->
+<!-- ================================= -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-header bg-primary text-white">
+
+        <h5 class="mb-0">
+
+            📦 Ordered Products
+
+        </h5>
+
+    </div>
+
+    <div class="card-body p-0">
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+
+                    <tr>
+
+                        <th style="width:90px">
+
+                            Image
+
+                        </th>
+
+                        <th>
+
+                            Product
+
+                        </th>
+
+                        <th>
+
+                            Price
+
+                        </th>
+
+                        <th>
+
+                            Qty
+
+                        </th>
+
+                        <th>
+
+                            Total
+
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for item in order.items.all %}
+
+                    <tr>
+
+                        <td>
+
+                            {% if item.product.image %}
+
+                                <img
+                                    src="{{ item.product.image.url }}"
+                                    class="img-thumbnail"
+                                    style="width:70px;height:70px;object-fit:cover;">
+
+                            {% else %}
+
+                                <div
+                                    class="bg-light border rounded d-flex align-items-center justify-content-center"
+                                    style="width:70px;height:70px;">
+
+                                    No Image
+
+                                </div>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            <strong>
+
+                                {{ item.product.name }}
+
+                            </strong>
+
+                        </td>
+
+                        <td>
+
+                            ${{ item.price }}
+
+                        </td>
+
+                        <td>
+
+                            {{ item.quantity }}
+
+                        </td>
+
+                        <td>
+
+                            <strong>
+
+                                ${{ item.get_total_price }}
+
+                            </strong>
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- ================================= -->
+<!-- Return Information -->
+<!-- ================================= -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-header bg-warning">
+
+        <h5 class="mb-0">
+
+            ↩ Return Request Information
+
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <p>
+
+                    <strong>Requested By</strong>
+
+                    <br>
+
+                    {% if return_request.user %}
+
+                        {{ return_request.user.username }}
+
+                    {% else %}
+
+                        {{ order.full_name }}
+
+                    {% endif %}
+
+                </p>
+
+                <p>
+
+                    <strong>Requested On</strong>
+
+                    <br>
+
+                    {{ return_request.created_at|date:"d M Y - h:i A" }}
+
+                </p>
+
+                <p>
+
+                    <strong>Refund Amount</strong>
+
+                    <br>
+
+                    <span class="badge bg-success">
+
+                        ${{ return_request.refund_amount }}
+
+                    </span>
+
+                </p>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <p>
+
+                    <strong>Current Status</strong>
+
+                    <br>
+
+                    {% if return_request.status == "pending" %}
+
+                        <span class="badge bg-warning text-dark">
+
+                            Pending
+
+                        </span>
+
+                    {% elif return_request.status == "approved" %}
+
+                        <span class="badge bg-info">
+
+                            Approved
+
+                        </span>
+
+                    {% elif return_request.status == "rejected" %}
+
+                        <span class="badge bg-danger">
+
+                            Rejected
+
+                        </span>
+
+                    {% elif return_request.status == "refunded" %}
+
+                        <span class="badge bg-success">
+
+                            Refunded
+
+                        </span>
+
+                    {% endif %}
+
+                </p>
+
+                <p>
+
+                    <strong>Resolution</strong>
+
+                    <br>
+
+                    {% if return_request.resolution %}
+
+                        <span class="badge bg-primary">
+
+                            {{ return_request.resolution|title }}
+
+                        </span>
+
+                    {% else %}
+
+                        <span class="text-muted">
+
+                            Not Decided
+
+                        </span>
+
+                    {% endif %}
+
+                </p>
+
+            </div>
+
+        </div>
+
+        <hr>
+
+        <h6 class="fw-bold">
+
+            Customer Reason
+
+        </h6>
+
+        <div class="alert alert-light border">
+
+            {{ return_request.reason|linebreaks }}
+
+        </div>
+
+        {% if return_request.admin_note %}
+
+        <h6 class="fw-bold mt-4">
+
+            Previous Admin Note
+
+        </h6>
+
+        <div class="alert alert-secondary">
+
+            {{ return_request.admin_note|linebreaks }}
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+<!-- ================================= -->
+<!-- Admin Decision -->
+<!-- ================================= -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-header bg-success text-white">
+
+        <h5 class="mb-0">
+
+            ⚙ Admin Decision
+
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="alert alert-info">
+
+            <strong>
+
+                Choose what you want to do with this return request.
+
+            </strong>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <div class="form-check border rounded p-3 mb-3">
+
+                    <input
+                        class="form-check-input"
+                        type="radio"
+                        name="resolution"
+                        id="refund"
+                        value="refund"
+                        required>
+
+                    <label
+                        class="form-check-label fw-bold"
+                        for="refund">
+
+                        💰 Refund
+
+                    </label>
+
+                    <div class="text-muted small mt-2">
+
+                        Customer will receive money back.
+                        Refund Center will process this request.
+
+                    </div>
+
+                </div>
+
+                <div class="form-check border rounded p-3 mb-3">
+
+                    <input
+                        class="form-check-input"
+                        type="radio"
+                        name="resolution"
+                        id="exchange"
+                        value="exchange">
+
+                    <label
+                        class="form-check-label fw-bold"
+                        for="exchange">
+
+                        🔄 Exchange Product
+
+                    </label>
+
+                    <div class="text-muted small mt-2">
+
+                        Customer will receive another product.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <div class="form-check border rounded p-3 mb-3">
+
+                    <input
+                        class="form-check-input"
+                        type="radio"
+                        name="resolution"
+                        id="replacement"
+                        value="replacement">
+
+                    <label
+                        class="form-check-label fw-bold"
+                        for="replacement">
+
+                        📦 Replacement
+
+                    </label>
+
+                    <div class="text-muted small mt-2">
+
+                        Same product will be shipped again.
+
+                    </div>
+
+                </div>
+
+                <div class="form-check border rounded p-3 mb-3 border-danger">
+
+                    <input
+                        class="form-check-input"
+                        type="radio"
+                        name="resolution"
+                        id="reject"
+                        value="reject">
+
+                    <label
+                        class="form-check-label fw-bold text-danger"
+                        for="reject">
+
+                        ❌ Reject Return
+
+                    </label>
+
+                    <div class="text-muted small mt-2">
+
+                        Return request will be rejected.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <hr>
+
+        <label class="form-label fw-bold">
+
+            Admin Note
+
+        </label>
+
+        <textarea
+            name="admin_note"
+            class="form-control"
+            rows="6"
+            placeholder="Write a note for customer...">{{ return_request.admin_note }}</textarea>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+
+            <a
+                href="{% url 'dashboard:dashboard_returns' %}"
+                class="btn btn-secondary">
+
+                Cancel
+
+            </a>
+
+            <button
+                class="btn btn-success px-4">
+
+                Save Decision
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- ================================= -->
+<!-- Order Timeline -->
+<!-- ================================= -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-header bg-dark text-white">
+
+        <h5 class="mb-0">
+
+            📜 Order Timeline
+
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        {% if order.timeline.all %}
+
+            <div class="timeline">
+
+                {% for item in order.timeline.all %}
+
+                <div class="border-start border-3 border-primary ps-3 mb-4">
+
+                    <div class="fw-bold">
+
+                        {{ item.note }}
+
+                    </div>
+
+                    <small class="text-muted">
+
+                        {{ item.created_at|date:"d M Y - h:i A" }}
+
+                    </small>
+
+                    {% if item.created_by %}
+
+                        <br>
+
+                        <small class="text-primary">
+
+                            By {{ item.created_by }}
+
+                        </small>
+
+                    {% endif %}
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="alert alert-light">
+
+                No timeline available.
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</div>
+
+<!-- ================================= -->
+<!-- Right Sidebar -->
+<!-- ================================= -->
+
+<div class="col-lg-4">
+
+<div class="card shadow-sm border-0 sticky-top"
+     style="top:90px;">
+
+<div class="card-header bg-primary text-white">
+
+<h5 class="mb-0">
+
+📊 Return Summary
+
+</h5>
+
+</div>
+
+<div class="card-body">
+
+<table class="table table-sm">
+
+<tr>
+
+<th>
+
+Order ID
+
+</th>
+
+<td>
+
+#{{ order.id }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Customer
+
+</th>
+
+<td>
+
+{{ order.full_name }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Total
+
+</th>
+
+<td>
+
+${{ order.final_total }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Refund Amount
+
+</th>
+
+<td>
+
+${{ return_request.refund_amount }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Status
+
+</th>
+
+<td>
+
+{{ return_request.get_status_display }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Requested
+
+</th>
+
+<td>
+
+{{ return_request.created_at|date:"d M Y" }}
+
+</td>
+
+</tr>
+
+</table>
+
+<div class="d-grid gap-2 mt-4">
+
+<a href="{% url 'dashboard:dashboard_order_detail' order.id %}"
+   class="btn btn-outline-primary">
+
+📦 Order Details
+
+</a>
+
+<a href="{% url 'dashboard:dashboard_returns' %}"
+   class="btn btn-outline-secondary">
+
+↩ Return List
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+{% endblock %}

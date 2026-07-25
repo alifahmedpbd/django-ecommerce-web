@@ -1,4 +1,5 @@
 {% extends "dashboard/base.html" %}
+{% load currency %}
 
 {% block dashboard_content %}
 
@@ -108,9 +109,10 @@
 
                 <h3>
 
-                    ${{ revenue }}
+                    ${{ revenue|floatformat:2  }}
 
                 </h3>
+                <p>৳{{ revenue|bdt }}</P>
 
             </div>
 
@@ -173,7 +175,7 @@
 
                     <td>
 
-                        {{ order.user.username }}
+                        {{ order.full_name }}
 
                     </td>
 

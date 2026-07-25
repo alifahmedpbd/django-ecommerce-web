@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from accounts.decorators import owner_or_staff_required
 
 from accounts.models import User
-from orders.models import Order, Coupon, OrderTimeline, ReturnRequest
+from orders.models import Order, Coupon, OrderTimeline, ReturnRequest,Refund, Replacement, Exchange, ReturnComment
 from django.contrib import messages
 
 from store.models import Category, Product, Brand, ProductImage
@@ -31,6 +31,8 @@ from orders.models import ExchangeRate
 
 from .models import FeatureToggle, Announcement, WebsiteSettings
 from .helpers import clear_feature_cache
+from django.views.decorators.http import require_POST
+from django.db import transaction
 # Create your views here.
 
 
@@ -1550,31 +1552,59 @@ def dashboard_order_detail(request, order_id):
         order.refresh_from_db()
 
         # ====================================================
-# Return Request Update
-# ====================================================
+        # Return Request Update
+        # ====================================================
 
         if hasattr(order, "return_request"):
 
-            return_status = request.POST.get("return_status")
+            request_obj = order.return_request
 
-            if return_status:
+            old_return_status = request_obj.status
 
-                request_obj = order.return_request
+            return_status = request.POST.get(
+                "return_status",
+                request_obj.status,
+            )
 
-                old_return_status = request_obj.status
+            resolution = request.POST.get(
+                "resolution",
+                request_obj.resolution,
+            )
 
-                request_obj.status = return_status
+            request_obj.status = return_status
+            request_obj.resolution = resolution
 
-                request_obj.admin_note = request.POST.get(
-                    "return_admin_note",
-                    request_obj.admin_note,
+
+            request_obj.save()
+
+            # ==========================================
+# Return Comment
+# ==========================================
+
+            new_admin_note = request.POST.get(
+                "return_admin_note",
+                "",
+            ).strip()
+
+            customer_visible = (
+                request.POST.get("customer_visible") == "on"
+            )
+
+            if new_admin_note:
+
+                ReturnComment.objects.create(
+
+                    return_request=request_obj,
+
+                    user=request.user,
+
+                    message=new_admin_note,
+
+                    customer_visible=customer_visible,
+
                 )
 
-                request_obj.save()
-
-                if old_return_status != return_status:
-
-                    OrderTimeline.objects.create(
+                OrderTimeline.objects.create(
 
                     order=order,
 
@@ -1582,22 +1612,96 @@ def dashboard_order_detail(request, order_id):
 
                     created_by=request.user.username,
 
-                    note=f"Return request changed from '{old_return_status}' to '{return_status}'.",
+                    note="💬 Admin replied to return request.",
 
                 )
 
-            if return_status == "refunded":
+            if old_return_status != return_status:
 
-                order.payment_status = "refunded"
-
-                order.status = "cancelled"
-
-                order.save(
-                    update_fields=[
-                        "payment_status",
-                        "status",
-                    ]
+                OrderTimeline.objects.create(
+                    order=order,
+                    user=request.user,
+                    created_by=request.user.username,
+                    note=(
+                        f"↩ Return request updated "
+                        f"({old_return_status} → {return_status})"
+                    ),
                 )
+
+    # ==========================================
+    # Approved
+    # ==========================================
+
+            if return_status == "approved":
+
+                first_item = order.items.select_related(
+                    "product"
+                ).first()
+
+        # ---------------- Refund ----------------
+
+                if resolution == "refund":
+
+                    Refund.objects.get_or_create(
+                        return_request=request_obj,
+                        defaults={
+                            "order": order,
+                            "amount": order.final_total,
+                            "status": "pending",
+                        },
+                    )
+
+                    OrderTimeline.objects.create(
+                        order=order,
+                        user=request.user,
+                        created_by=request.user.username,
+                        note="💰 Refund request sent to Refund Center.",
+                    )
+
+        # ---------------- Exchange ----------------
+
+                elif resolution == "exchange":
+
+                    if first_item:
+
+                        Exchange.objects.get_or_create(
+                            return_request=request_obj,
+                            defaults={
+                                "order": order,
+                                "old_product": first_item.product,
+                                "status": "pending",
+                            },
+                        )
+
+                        OrderTimeline.objects.create(
+                            order=order,
+                            user=request.user,
+                            created_by=request.user.username,
+                            note="🔄 Exchange request sent to Exchange Center.",
+                    )
+
+        # ---------------- Replacement ----------------
+
+                elif resolution == "replacement":
+
+                    if first_item:
+
+                        Replacement.objects.get_or_create(
+                            return_request=request_obj,
+                            defaults={
+                                "order": order,
+                                "product": first_item.product,
+                                "quantity": first_item.quantity,
+                                "status": "pending",
+                            },
+                        )
+
+                        OrderTimeline.objects.create(
+                            order=order,
+                            user=request.user,
+                            created_by=request.user.username,
+                            note="📦 Replacement request sent to Replacement Center.",
+                        )
 
         # ====================================================
         # Tracking Timeline
@@ -2432,43 +2536,1337 @@ def dashboard_returns(request):
         context,
     )
 
+
 @owner_or_staff_required
-def approve_return(request, pk):
-    return_request = get_object_or_404(ReturnRequest, pk=pk)
+def dashboard_refunds(request):
 
-    if request.method == "POST":
-        return_request.admin_note = request.POST.get("admin_note", "")
-        return_request.status = "approved"
-        return_request.save()
+    status = request.GET.get("status")
 
-        messages.success(request, "Return request approved successfully.")
-        return redirect("dashboard:dashboard_returns")
+    refunds = (
+        Refund.objects
+        .select_related(
+            "order",
+            "return_request",
+            "completed_by",
+        )
+        .order_by("-created_at")
+    )
+
+    if status:
+
+        refunds = refunds.filter(
+            status=status,
+        )
+
+    paginator = Paginator(
+        refunds,
+        20,
+    )
+
+    page = request.GET.get("page")
+
+    page_obj = paginator.get_page(page)
+
+    context = {
+
+        "refunds": page_obj,
+
+        "page_obj": page_obj,
+
+        "pending_count": Refund.objects.filter(
+            status="pending",
+        ).count(),
+
+        "processing_count": Refund.objects.filter(
+            status="processing",
+        ).count(),
+
+        "completed_count": Refund.objects.filter(
+            status="completed",
+        ).count(),
+
+        "cancelled_count": Refund.objects.filter(
+            status="cancelled",
+        ).count(),
+
+        "total_amount": (
+            Refund.objects.filter(
+                status="completed",
+            ).aggregate(
+                total=Sum("amount")
+            )["total"]
+            or 0
+        ),
+
+        "current_status": status,
+
+    }
+
+    return render(
+
+        request,
+
+        "dashboard/refunds.html",
+
+        context,
+
+    )
+
+
+
+@owner_or_staff_required
+def dashboard_refund_detail(request, pk):
+
+    refund = get_object_or_404(
+        Refund.objects.select_related(
+            "order",
+            "return_request",
+        ),
+        pk=pk,
+    )
 
     return render(
         request,
-        "dashboard/approve_return.html",
+        "dashboard/refund_detail.html",
         {
-            "return_request": return_request,
+            "refund": refund,
         },
+    )
+
+@require_POST
+@owner_or_staff_required
+def complete_refund(request, pk):
+
+    refund = get_object_or_404(
+        Refund.objects.select_related(
+            "order",
+            "return_request",
+        ),
+        pk=pk,
+    )
+
+    # Already completed
+    if refund.status == "completed":
+
+        messages.warning(
+            request,
+            "Refund already completed.",
+        )
+
+        return redirect(
+            "dashboard:dashboard_refund_detail",
+            refund.id,
+        )
+
+    # Cancelled refund cannot be completed
+    if refund.status == "cancelled":
+
+        messages.error(
+            request,
+            "Cancelled refund cannot be completed.",
+        )
+
+        return redirect(
+            "dashboard:dashboard_refund_detail",
+            refund.id,
+        )
+
+    # ==========================================
+    # Refund
+    # ==========================================
+
+    refund.status = "completed"
+    refund.completed_at = timezone.now()
+    refund.completed_by = request.user
+
+    refund.admin_note = request.POST.get(
+        "admin_note",
+        refund.admin_note,
+    )
+
+    refund.refund_method = request.POST.get(
+        "refund_method",
+        refund.refund_method,
+    )
+
+    refund.transaction_id = request.POST.get(
+        "transaction_id",
+        refund.transaction_id,
+    )
+
+    refund.save()
+
+    # ==========================================
+    # Order
+    # ==========================================
+
+    order = refund.order
+
+    order.payment_status = "refunded"
+    order.status = "cancelled"
+
+    order.save(
+        update_fields=[
+            "payment_status",
+            "status",
+        ]
+    )
+
+    # ==========================================
+    # Return Request
+    # ==========================================
+
+    refund.return_request.status = "refunded"
+    refund.return_request.admin_note = refund.admin_note
+
+    refund.return_request.save(
+        update_fields=[
+            "status",
+            "admin_note",
+            "updated_at",
+        ]
+    )
+
+    # ==========================================
+    # Timeline
+    # ==========================================
+
+    OrderTimeline.objects.create(
+        order=order,
+        user=request.user,
+        created_by=request.user.username,
+        note=(
+            "💰 Refund completed successfully.\n\n"
+            f"Refund Method : {refund.get_refund_method_display()}\n"
+            f"Transaction ID : {refund.transaction_id or 'N/A'}"
+        ),
+    )
+
+    messages.success(
+        request,
+        "Refund completed successfully.",
+    )
+
+    return redirect(
+        "dashboard:dashboard_refund_detail",
+        refund.id,
+    )
+
+@require_POST
+@owner_or_staff_required
+def cancel_refund(request, pk):
+
+    refund = get_object_or_404(
+        Refund.objects.select_related(
+            "order",
+            "return_request",
+        ),
+        pk=pk,
+    )
+
+    # Already completed
+    if refund.status == "completed":
+
+        messages.error(
+            request,
+            "Completed refund cannot be cancelled.",
+        )
+
+        return redirect(
+            "dashboard:dashboard_refund_detail",
+            refund.id,
+        )
+
+    refund.status = "cancelled"
+
+    refund.admin_note = request.POST.get(
+        "admin_note",
+        refund.admin_note,
+    )
+
+    refund.save(
+        update_fields=[
+            "status",
+            "admin_note",
+        ]
+    )
+
+    refund.return_request.status = "approved"
+    refund.return_request.admin_note = refund.admin_note
+
+    refund.return_request.save(
+        update_fields=[
+            "status",
+            "admin_note",
+            "updated_at",
+        ]
+    )
+
+    OrderTimeline.objects.create(
+        order=refund.order,
+        user=request.user,
+        created_by=request.user.username,
+        note="❌ Refund request cancelled by admin.",
+    )
+
+    messages.success(
+        request,
+        "Refund cancelled successfully.",
+    )
+
+    return redirect(
+        "dashboard:dashboard_refund_detail",
+        refund.id,
+    )
+
+@owner_or_staff_required
+def dashboard_exchanges(request):
+
+    status = request.GET.get("status")
+
+    exchanges = (
+        Exchange.objects
+        .select_related(
+            "order",
+            "old_product",
+            "new_product",
+            "return_request",
+            "completed_by",
+        )
+        .order_by("-created_at")
+    )
+
+    if status:
+
+        exchanges = exchanges.filter(
+            status=status,
+        )
+
+    paginator = Paginator(
+        exchanges,
+        20,
+    )
+
+    page = request.GET.get("page")
+
+    page_obj = paginator.get_page(page)
+
+    context = {
+
+        "exchanges": page_obj,
+
+        "page_obj": page_obj,
+
+        "pending_count": Exchange.objects.filter(
+            status="pending",
+        ).count(),
+
+        "approved_count": Exchange.objects.filter(
+            status="approved",
+        ).count(),
+
+        "completed_count": Exchange.objects.filter(
+            status="completed",
+        ).count(),
+
+        "cancelled_count": Exchange.objects.filter(
+            status="cancelled",
+        ).count(),
+
+        "current_status": status,
+
+    }
+
+    return render(
+
+        request,
+
+        "dashboard/exchanges.html",
+
+        context,
+
+    )
+
+
+
+@owner_or_staff_required
+def dashboard_exchange_detail(request, pk):
+
+    exchange = get_object_or_404(
+        Exchange.objects.select_related(
+            "order",
+            "old_product",
+            "new_product",
+            "return_request",
+        ),
+        pk=pk,
+    )
+
+    if request.method == "POST":
+
+        product_id = request.POST.get(
+            "new_product",
+        )
+
+        if product_id:
+
+            exchange.new_product = get_object_or_404(
+                Product,
+                pk=product_id,
+            )
+
+        exchange.status = request.POST.get(
+            "status",
+            exchange.status,
+        )
+
+        exchange.admin_note = request.POST.get(
+            "admin_note",
+            exchange.admin_note,
+        )
+
+        exchange.save()
+
+        OrderTimeline.objects.create(
+
+            order=exchange.order,
+
+            user=request.user,
+
+            created_by=request.user.username,
+
+            note=(
+                f"🔄 Exchange updated.\n"
+                f"Status : {exchange.get_status_display()}"
+            ),
+
+        )
+
+        messages.success(
+
+            request,
+
+            "Exchange updated successfully.",
+
+        )
+
+        return redirect(
+
+            "dashboard:dashboard_exchange_detail",
+
+            exchange.id,
+
+        )
+
+    products = Product.objects.filter(
+    available=True,
+    ).order_by(
+        "name",
+    )
+
+    return render(
+
+        request,
+
+        "dashboard/exchange_detail.html",
+
+        {
+            "exchange": exchange,
+            "products": products,
+        },
+
+    )
+
+
+@require_POST
+@owner_or_staff_required
+def complete_exchange(request, pk):
+
+    exchange = get_object_or_404(
+        Exchange.objects.select_related(
+            "order",
+            "old_product",
+            "new_product",
+            "return_request",
+        ).prefetch_related(
+            "order__items__product",
+        ),
+        pk=pk,
+    )
+
+    if exchange.status == "completed":
+
+        messages.warning(
+            request,
+            "Exchange already completed.",
+        )
+
+        return redirect(
+            "dashboard:dashboard_exchange_detail",
+            exchange.id,
+        )
+
+    if exchange.status == "cancelled":
+
+        messages.error(
+            request,
+            "Cancelled exchange cannot be completed.",
+        )
+
+        return redirect(
+            "dashboard:dashboard_exchange_detail",
+            exchange.id,
+        )
+
+    if not exchange.new_product:
+
+        messages.error(
+            request,
+            "Please select a new product before completing the exchange.",
+        )
+
+        return redirect(
+            "dashboard:dashboard_exchange_detail",
+            exchange.id,
+        )
+
+    # ==========================================
+    # Order Item & Quantity
+    # ==========================================
+
+    order_item = exchange.order.items.select_related(
+        "product"
+    ).first()
+
+    if not order_item:
+
+        messages.error(
+            request,
+            "Order item not found.",
+        )
+
+        return redirect(
+            "dashboard:dashboard_exchange_detail",
+            exchange.id,
+        )
+
+    quantity = order_item.quantity
+
+    # ==========================================
+    # Stock Check
+    # ==========================================
+
+    if exchange.new_product.stock < quantity:
+
+        messages.error(
+            request,
+            "Insufficient stock for the selected product.",
+        )
+
+        return redirect(
+            "dashboard:dashboard_exchange_detail",
+            exchange.id,
+        )
+
+    # ==========================================
+    # Complete Exchange
+    # ==========================================
+
+    exchange.status = "completed"
+    exchange.completed_by = request.user
+    exchange.completed_at = timezone.now()
+    exchange.admin_note = request.POST.get(
+        "admin_note",
+        exchange.admin_note,
+    )
+
+    exchange.save()
+
+    # ==========================================
+    # Restore Old Product Stock
+    # ==========================================
+
+    exchange.old_product.stock += quantity
+
+    exchange.old_product.save(
+        update_fields=[
+            "stock",
+        ]
+    )
+
+    # ==========================================
+    # Reduce New Product Stock
+    # ==========================================
+
+    exchange.new_product.stock -= quantity
+
+    exchange.new_product.save(
+        update_fields=[
+            "stock",
+        ]
+    )
+
+    # ==========================================
+    # Update Return Request
+    # ==========================================
+
+    exchange.return_request.status = "completed"
+    exchange.return_request.admin_note = exchange.admin_note
+
+    exchange.return_request.save(
+        update_fields=[
+            "status",
+            "admin_note",
+        ]
+    )
+
+    # ==========================================
+    # Timeline
+    # ==========================================
+
+    OrderTimeline.objects.create(
+
+        order=exchange.order,
+
+        user=request.user,
+
+        created_by=request.user.username,
+
+        note=(
+            f"🔄 Exchange completed.\n"
+            f"Old Product : {exchange.old_product.name}\n"
+            f"New Product : {exchange.new_product.name}\n"
+            f"Quantity : {quantity}"
+        ),
+
+    )
+
+    messages.success(
+
+        request,
+
+        "Exchange completed successfully.",
+
+    )
+
+    return redirect(
+
+        "dashboard:dashboard_exchange_detail",
+
+        exchange.id,
+
+    )
+
+
+@require_POST
+@owner_or_staff_required
+def cancel_exchange(request, pk):
+
+    exchange = get_object_or_404(
+        Exchange.objects.select_related(
+            "order",
+            "return_request",
+        ),
+        pk=pk,
+    )
+
+    if exchange.status == "completed":
+
+        messages.error(
+            request,
+            "Completed exchange cannot be cancelled.",
+        )
+
+        return redirect(
+            "dashboard:dashboard_exchange_detail",
+            exchange.id,
+        )
+
+    exchange.status = "cancelled"
+
+    exchange.admin_note = request.POST.get(
+        "admin_note",
+        exchange.admin_note,
+    )
+
+    exchange.save(
+        update_fields=[
+            "status",
+            "admin_note",
+        ]
+    )
+
+    exchange.return_request.status = "approved"
+
+    exchange.return_request.admin_note = exchange.admin_note
+
+    exchange.return_request.save(
+        update_fields=[
+            "status",
+            "admin_note",
+        ]
+    )
+
+    OrderTimeline.objects.create(
+
+        order=exchange.order,
+
+        user=request.user,
+
+        created_by=request.user.username,
+
+        note="❌ Exchange cancelled by admin.",
+
+    )
+
+    messages.success(
+
+        request,
+
+        "Exchange cancelled successfully.",
+
+    )
+
+    return redirect(
+
+        "dashboard:dashboard_exchange_detail",
+
+        exchange.id,
+
+    )
+
+@owner_or_staff_required
+def dashboard_replacements(request):
+
+    status = request.GET.get("status")
+    q = request.GET.get("q")
+
+    replacements = (
+        Replacement.objects
+        .select_related(
+            "order",
+            "product",
+            "return_request",
+            "completed_by",
+        )
+        .order_by("-created_at")
+    )
+
+    if q:
+
+        replacements = replacements.filter(
+
+            Q(order__id__icontains=q)
+
+            |
+
+            Q(order__full_name__icontains=q)
+
+            |
+
+            Q(order__email__icontains=q)
+
+            |
+
+            Q(product__name__icontains=q)
+
+        )
+
+    if status:
+
+        replacements = replacements.filter(
+            status=status
+        )
+
+    paginator = Paginator(
+        replacements,
+        20,
+    )
+
+    page = request.GET.get("page")
+
+    page_obj = paginator.get_page(page)
+
+    context = {
+
+        "replacements": page_obj,
+
+        "page_obj": page_obj,
+
+        "pending_count": Replacement.objects.filter(
+            status="pending"
+        ).count(),
+
+        "approved_count": Replacement.objects.filter(
+            status="approved"
+        ).count(),
+
+        "completed_count": Replacement.objects.filter(
+            status="completed"
+        ).count(),
+
+        "cancelled_count": Replacement.objects.filter(
+            status="cancelled"
+        ).count(),
+
+    }
+
+    return render(
+        request,
+        "dashboard/replacements.html",
+        context,
+    )
+
+    
+@owner_or_staff_required
+def dashboard_replacement_detail(request, pk):
+
+    replacement = get_object_or_404(
+
+        Replacement.objects.select_related(
+
+            "order",
+
+            "product",
+
+            "return_request",
+
+            "completed_by",
+
+        ),
+
+        pk=pk,
+
+    )
+
+    if request.method == "POST":
+
+        replacement.status = request.POST.get(
+
+            "status",
+
+            replacement.status,
+
+        )
+
+        replacement.admin_note = request.POST.get(
+
+            "admin_note",
+
+            replacement.admin_note,
+
+        )
+
+        replacement.save()
+
+        messages.success(
+
+            request,
+
+            "Replacement updated successfully.",
+
+        )
+
+        return redirect(
+
+            "dashboard:dashboard_replacement_detail",
+
+            replacement.id,
+
+        )
+
+    return render(
+
+        request,
+
+        "dashboard/replacement_detail.html",
+
+        {
+
+            "replacement": replacement,
+
+        },
+
+    )
+
+@require_POST
+@owner_or_staff_required
+def complete_replacement(request, pk):
+
+    replacement = get_object_or_404(
+        Replacement.objects.select_related(
+            "order",
+            "product",
+            "return_request",
+        ),
+        pk=pk,
+    )
+
+    if replacement.status == "completed":
+
+        messages.warning(
+            request,
+            "Replacement already completed.",
+        )
+
+        return redirect(
+            "dashboard:dashboard_replacement_detail",
+            replacement.id,
+        )
+
+    # ==========================
+    # Update Replacement
+    # ==========================
+
+    replacement.status = "completed"
+
+    replacement.completed_by = request.user
+
+    replacement.completed_at = timezone.now()
+
+    replacement.admin_note = request.POST.get(
+        "admin_note",
+        replacement.admin_note,
+    )
+
+    replacement.save()
+
+    # ==========================
+    # Update Return Request
+    # ==========================
+
+    replacement.return_request.status = "completed"
+
+    replacement.return_request.save(
+        update_fields=[
+            "status",
+        ]
+    )
+
+    # ==========================
+    # Timeline
+    # ==========================
+
+    OrderTimeline.objects.create(
+
+        order=replacement.order,
+
+        user=request.user,
+
+        created_by=request.user.username,
+
+        note=(
+            f"📦 Replacement completed.\n"
+            f"Product : {replacement.product.name}\n"
+            f"Quantity : {replacement.quantity}"
+        ),
+
+    )
+
+    messages.success(
+
+        request,
+
+        "Replacement completed successfully.",
+
+    )
+
+    return redirect(
+
+        "dashboard:dashboard_replacement_detail",
+
+        replacement.id,
+
+    )
+
+
+@require_POST
+@owner_or_staff_required
+def cancel_replacement(request, pk):
+
+    replacement = get_object_or_404(
+        Replacement.objects.select_related(
+            "order",
+            "return_request",
+        ),
+        pk=pk,
+    )
+
+    if replacement.status == "completed":
+
+        messages.error(
+
+            request,
+
+            "Completed replacement cannot be cancelled.",
+
+        )
+
+        return redirect(
+
+            "dashboard:dashboard_replacement_detail",
+
+            replacement.id,
+
+        )
+
+    replacement.status = "cancelled"
+
+    replacement.admin_note = request.POST.get(
+
+        "admin_note",
+
+        replacement.admin_note,
+
+    )
+
+    replacement.save()
+
+    OrderTimeline.objects.create(
+
+        order=replacement.order,
+
+        user=request.user,
+
+        created_by=request.user.username,
+
+        note="❌ Replacement cancelled.",
+
+    )
+
+    messages.success(
+
+        request,
+
+        "Replacement cancelled successfully.",
+
+    )
+
+    return redirect(
+
+        "dashboard:dashboard_replacement_detail",
+
+        replacement.id,
+
     )
 
 
 @owner_or_staff_required
-def reject_return(request, pk):
-    return_request = get_object_or_404(ReturnRequest, pk=pk)
+def return_review(request, pk):
+
+    return_request = get_object_or_404(
+        ReturnRequest.objects.select_related(
+            "order",
+            "user",
+        ).prefetch_related(
+            "order__items__product",
+            "order__timeline",
+        ),
+        pk=pk,
+    )
+
+    order = return_request.order
 
     if request.method == "POST":
-        return_request.admin_note = request.POST.get("admin_note", "")
-        return_request.status = "rejected"
+
+        resolution = request.POST.get("resolution")
+
+        admin_note = request.POST.get(
+            "admin_note",
+            "",
+        ).strip()
+
+        if not resolution:
+
+            messages.error(
+                request,
+                "Please select a resolution.",
+            )
+
+            return redirect(
+                "dashboard:return_review",
+                pk=pk,
+            )
+
+        return_request.admin_note = admin_note
+
+        return_request.resolution = resolution
+
+        # =====================================
+        # Reject
+        # =====================================
+
+        if resolution == "reject":
+
+            return_request.status = "rejected"
+
+            return_request.save()
+
+            OrderTimeline.objects.create(
+                order=order,
+                user=request.user,
+                created_by=request.user.username,
+                note="❌ Return request rejected.",
+            )
+
+            messages.success(
+                request,
+                "Return request rejected.",
+            )
+
+            return redirect(
+                "dashboard:dashboard_returns",
+            )
+
+        # =====================================
+        # Approved
+        # =====================================
+
+        return_request.status = "approved"
+
         return_request.save()
 
-        messages.success(request, "Return request rejected successfully.")
-        return redirect("dashboard:dashboard_returns")
+        OrderTimeline.objects.create(
+            order=order,
+            user=request.user,
+            created_by=request.user.username,
+            note=f"✅ Return approved ({resolution.title()}).",
+        )
+
+        order_item = order.items.first()
+
+        if not order_item:
+
+            messages.error(
+                request,
+                "Order item not found.",
+            )
+
+            return redirect(
+                "dashboard:dashboard_returns",
+            )
+
+        # =====================================
+        # Refund
+        # =====================================
+
+        if resolution == "refund":
+
+            Refund.objects.get_or_create(
+                order=order,
+                return_request=return_request,
+                defaults={
+                    "amount": order.final_total,
+                    "status": "pending",
+                },
+            )
+
+            OrderTimeline.objects.create(
+                order=order,
+                user=request.user,
+                created_by=request.user.username,
+                note="💰 Sent to Refund Center.",
+            )
+
+            messages.success(
+                request,
+                "Refund request sent to Refund Center.",
+            )
+
+        # =====================================
+        # Exchange
+        # =====================================
+
+        elif resolution == "exchange":
+
+            Exchange.objects.get_or_create(
+                order=order,
+                return_request=return_request,
+                defaults={
+                    "old_product": order_item.product,
+                    "status": "pending",
+                },
+            )
+
+            OrderTimeline.objects.create(
+                order=order,
+                user=request.user,
+                created_by=request.user.username,
+                note="🔄 Sent to Exchange Center.",
+            )
+
+            messages.success(
+                request,
+                "Exchange request sent to Exchange Center.",
+            )
+
+        # =====================================
+        # Replacement
+        # =====================================
+
+        elif resolution == "replacement":
+
+            Replacement.objects.get_or_create(
+                order=order,
+                return_request=return_request,
+                defaults={
+                    "product": order_item.product,
+                    "quantity": order_item.quantity,
+                    "status": "pending",
+                },
+            )
+
+            OrderTimeline.objects.create(
+                order=order,
+                user=request.user,
+                created_by=request.user.username,
+                note="📦 Sent to Replacement Center.",
+            )
+
+            messages.success(
+                request,
+                "Replacement request sent to Replacement Center.",
+            )
+
+        return redirect(
+            "dashboard:dashboard_returns",
+        )
 
     return render(
         request,
-        "dashboard/reject_return.html",
+        "dashboard/return_review.html",
         {
             "return_request": return_request,
+            "order": order,
+        },
+    )
+
+
+
+@owner_required
+def product_ranking(request):
+
+    products = Product.objects.order_by(
+        "display_order",
+        "-created_at",
+    )
+
+    if request.method == "POST":
+
+        product_id = request.POST.get("product_id")
+        new_rank = request.POST.get("display_order")
+
+        try:
+            product = Product.objects.get(id=product_id)
+            new_rank = int(new_rank)
+
+        except (Product.DoesNotExist, ValueError):
+
+            messages.error(
+                request,
+                "Invalid request.",
+            )
+
+            return redirect(
+                "dashboard:product_ranking",
+            )
+
+        # ==========================================
+        # Validation
+        # ==========================================
+
+        max_rank = Product.objects.count()
+
+        if new_rank < 1 or new_rank > max_rank:
+
+            messages.error(
+                request,
+                f"Rank must be between 1 and {max_rank}.",
+            )
+
+            return redirect(
+                "dashboard:product_ranking",
+            )
+
+        # ==========================================
+        # Already Same Rank
+        # ==========================================
+
+        if product.display_order == new_rank:
+
+            messages.info(
+                request,
+                "This product is already in that position.",
+            )
+
+            return redirect(
+                "dashboard:product_ranking",
+            )
+
+        # ==========================================
+        # Swap Ranking
+        # ==========================================
+
+        with transaction.atomic():
+
+            old_rank = product.display_order
+
+            try:
+
+                target = Product.objects.get(
+                    display_order=new_rank
+                )
+
+                target.display_order = old_rank
+
+                target.save(
+                    update_fields=[
+                        "display_order",
+                    ]
+                )
+
+            except Product.DoesNotExist:
+
+                pass
+
+            product.display_order = new_rank
+
+            product.save(
+                update_fields=[
+                    "display_order",
+                ]
+            )
+
+        messages.success(
+            request,
+            "Product ranking updated successfully.",
+        )
+
+        return redirect(
+            "dashboard:product_ranking",
+        )
+
+    # ==========================================
+    # Statistics
+    # ==========================================
+
+    total_products = Product.objects.count()
+
+    highest = Product.objects.order_by(
+        "display_order",
+    ).first()
+
+    lowest = Product.objects.order_by(
+        "-display_order",
+    ).first()
+
+    return render(
+        request,
+        "dashboard/product_ranking.html",
+        {
+            "products": products,
+            "total_products": total_products,
+            "highest": highest,
+            "lowest": lowest,
         },
     )

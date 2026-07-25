@@ -20,11 +20,11 @@ def product_list(request, category_slug=None):
         "slug",
     )
 
-    products = Product.objects.filter(
-        available=True
-    ).select_related(
-        "category",
-    )
+    products = (
+        Product.objects
+            .filter(available=True)
+            .select_related("category")
+            .order_by("display_order", "-created_at"))
 
     #Category Filter
     if category_slug:
@@ -84,7 +84,9 @@ def product_list(request, category_slug=None):
     ).select_related(
         "category",
     ).order_by(
-        "-created_at"
+        "display_order",
+        "-created_at",
+        
     )[:5]
 
     # Popular Products
@@ -97,12 +99,11 @@ def product_list(request, category_slug=None):
     )[:5]
 
     #Featured Products
-    featured_products = Product.objects.filter(
-        featured=True,
-        available=True,
-    ).select_related(
-        "category",
-    )[:4]
+    featured_products = (
+        Product.objects
+            .filter(featured=True, available=True)
+            .select_related("category")
+            .order_by("display_order", "-created_at")[:4])
 
     #Pagination
     paginator = Paginator(products, 6) # Show 6 products per page

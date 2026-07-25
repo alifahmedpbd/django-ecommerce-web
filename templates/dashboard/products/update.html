@@ -1,95 +1,196 @@
 {% extends "dashboard/base.html" %}
 
 {% block title %}
-
 Update Product
-
 {% endblock %}
 
 {% block dashboard_content %}
 
-<div class="card shadow">
+<div class="container-fluid">
 
-    <div class="card-header">
+    <div class="card shadow border-0">
 
-        <h3>
+        <div class="card-header bg-primary text-white">
 
-            Update Product
+            <h4 class="mb-0">
+                ✏️ Update Product
+            </h4>
 
-        </h3>
+        </div>
 
-    </div>
+        <div class="card-body">
 
-    <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
 
-        <form method="POST"
-              enctype="multipart/form-data">
+                {% csrf_token %}
 
-            {% csrf_token %}
+                <div class="row">
 
-            {{ form.as_p }}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">
+                            {{ form.name.label }}
+                        </label>
+                        {{ form.name }}
+                    </div>
 
-            <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">
+                            {{ form.slug.label }}
+                        </label>
+                        {{ form.slug }}
+                    </div>
 
-                <div class="col-md-3">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">
+                            {{ form.category.label }}
+                        </label>
+                        {{ form.category }}
+                    </div>
 
-                    {{ form.is_flash_sale.label_tag }}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">
+                            {{ form.brand.label }}
+                        </label>
+                        {{ form.brand }}
+                    </div>
 
-                    {{ form.is_flash_sale }}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">
+                            {{ form.price.label }}
+                        </label>
+                        {{ form.price }}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">
+                            {{ form.stock.label }}
+                        </label>
+                        {{ form.stock }}
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label fw-bold">
+                            {{ form.description.label }}
+                        </label>
+                        {{ form.description }}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">
+                            {{ form.image.label }}
+                        </label>
+                        {{ form.image }}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">
+                            {{ form.flash_sale_end.label }}
+                        </label>
+                        {{ form.flash_sale_end }}
+                    </div>
 
                 </div>
 
-                <div class="col-md-3">
+                <hr>
 
-                    {{ form.is_free_delivery.label_tag }}
+                <h5 class="mb-3">
+                    🚀 Product Features
+                </h5>
 
-                    {{ form.is_free_delivery }}
+                <div class="row">
+
+                    <div class="col-md-3 mb-3">
+                        <div class="form-check">
+                            {{ form.available }}
+                            <label class="form-check-label">
+                                Available
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <div class="form-check">
+                            {{ form.featured }}
+                            <label class="form-check-label">
+                                Featured
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <div class="form-check">
+                            {{ form.is_flash_sale }}
+                            <label class="form-check-label">
+                                Flash Sale
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <div class="form-check">
+                            {{ form.is_free_delivery }}
+                            <label class="form-check-label">
+                                Free Delivery
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <div class="form-check">
+                            {{ form.is_trending }}
+                            <label class="form-check-label">
+                                Trending
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <div class="form-check">
+                            {{ form.is_new_arrival }}
+                            <label class="form-check-label">
+                                New Arrival
+                            </label>
+                        </div>
+                    </div>
 
                 </div>
 
-                <div class="col-md-3">
+                <hr>
 
-                    {{ form.is_trending.label_tag }}
+                {% if product.image %}
 
-                    {{ form.is_trending }}
+                <div class="mb-4">
+
+                    <label class="fw-bold d-block mb-2">
+
+                        Current Image
+
+                    </label>
+
+                    <img src="{{ product.image.url }}"
+                         class="rounded border shadow-sm"
+                         width="180">
 
                 </div>
 
-                <div class="col-md-3">
+                {% endif %}
 
-                    {{ form.is_new_arrival.label_tag }}
+                <button class="btn btn-success px-4">
 
-                    {{ form.is_new_arrival }}
+                    💾 Update Product
 
-                </div>
+                </button>
 
-            </div>
+                <a href="{% url 'dashboard:product_list' %}"
+                   class="btn btn-outline-secondary px-4">
 
-            {% if product.image %}
+                    Cancel
 
-            <img src="{{ product.image.url }}"
-                 width="120"
-                 class="rounded mb-3">
+                </a>
 
-            {% endif %}
+            </form>
 
-            <br>
-
-            <button
-                class="btn btn-success">
-
-                Update Product
-
-            </button>
-
-            <a href="{% url 'dashboard:product_list' %}"
-               class="btn btn-secondary">
-
-                Cancel
-
-            </a>
-
-        </form>
+        </div>
 
     </div>
 
