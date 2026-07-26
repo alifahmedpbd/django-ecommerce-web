@@ -158,9 +158,7 @@
 
                 <!-- Wishlist -->
 
-                {% if user.is_authenticated %}
-
-                {% if feature_enabled.wishlist %}
+                {% if user.is_authenticated and website_features.wishlist %}
 
                 <li class="nav-item me-lg-2">
 
@@ -169,7 +167,7 @@
 
                         <i class="fa-solid fa-heart text-danger"></i>
 
-                        {% if wishlist_count %}
+                        {% if wishlist_count and wishlist_count > 0 %}
 
                         <span class="badge bg-danger rounded-pill cart-badge">
 
@@ -182,8 +180,6 @@
                     </a>
 
                 </li>
-
-                {% endif %}
 
                 {% endif %}
 
@@ -331,19 +327,6 @@
                 <i class="fa-solid fa-box me-2"></i>
 
                 My Orders
-
-            </a>
-
-        </li>
-
-        <li>
-
-            <a class="dropdown-item py-2"
-               href="{% url 'orders:track_order' %}">
-
-                <i class="fa-solid fa-location-dot me-2"></i>
-
-                Track Order
 
             </a>
 

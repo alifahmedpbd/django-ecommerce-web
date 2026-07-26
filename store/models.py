@@ -60,6 +60,7 @@ class Category(models.Model):
 
 class Product(models.Model):
 
+
     # ==========================================
     # Basic
     # ==========================================
@@ -348,6 +349,8 @@ class Product(models.Model):
                 "display_order",
             ]
         )
+
+
     
 # ==========================================
 # Product Images

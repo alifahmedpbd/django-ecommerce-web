@@ -2,56 +2,54 @@
 {% load currency %}
 
 {% block title %}
-
 Shopora | Home
-
 {% endblock %}
 
 {% block content %}
 
-<div class="container mt-5">
+<div class="container py-5">
 
-<!-- ==========================================
-     Premium Hero Section
-========================================== -->
+<!-- ===================================================== -->
+<!-- PREMIUM HERO SECTION -->
+<!-- ===================================================== -->
 
-<div
-    class="rounded-5 shadow-lg overflow-hidden mb-5"
-    style="background:linear-gradient(135deg,#0d6efd,#4f46e5,#7c3aed);"
->
+<section class="hero-section mb-5">
 
-    <div class="row align-items-center p-5">
+    <div class="row align-items-center g-5">
 
-        <!-- Left -->
+        <!-- LEFT -->
 
-        <div class="col-lg-6 text-white">
+        <div class="col-lg-6">
 
-            <span class="badge bg-light text-primary px-3 py-2 mb-3">
+            <span class="badge rounded-pill bg-primary px-3 py-2 mb-3">
 
-                🛍️ Smart Shopping, Simplified.
+                ✨ Trusted Online Shopping Platform
 
             </span>
 
-            <h1
-                class="display-3 fw-bold mb-4"
-                style="line-height:1.2;"
-            >
+            <h1 class="display-3 fw-bold mb-4">
 
-                Shop Smarter
+                Discover The
+
+                <span class="text-primary">
+
+                    Best Products
+
+                </span>
 
                 <br>
 
-                Live Better.
+                At The Best Prices
 
             </h1>
 
-            <p class="lead mb-4">
+            <p class="lead text-muted mb-4">
 
-                Discover premium electronics with secure payments,
+                Shop premium electronics, fashion and accessories with
 
-                lightning-fast delivery and a shopping experience
+                secure payments, lightning-fast delivery and exceptional
 
-                designed for everyone.
+                customer support.
 
             </p>
 
@@ -59,7 +57,7 @@ Shopora | Home
 
                 <a
                     href="{% url 'store:product_list' %}"
-                    class="btn btn-light btn-lg px-5 fw-semibold"
+                    class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm"
                 >
 
                     🛒 Shop Now
@@ -68,7 +66,7 @@ Shopora | Home
 
                 <a
                     href="{% url 'store:product_list' %}"
-                    class="btn btn-outline-light btn-lg px-5"
+                    class="btn btn-outline-dark btn-lg px-5 rounded-pill"
                 >
 
                     Browse Products
@@ -77,50 +75,89 @@ Shopora | Home
 
             </div>
 
-            <div class="mt-5">
+            <div class="row mt-5 g-4">
 
-                <small class="opacity-75">
+                <div class="col-4">
 
-                    ⭐ Trusted by hundreds of happy shoppers
+                    <h3 class="fw-bold mb-0">
 
-                </small>
+                        500+
+
+                    </h3>
+
+                    <small class="text-muted">
+
+                        Products
+
+                    </small>
+
+                </div>
+
+                <div class="col-4">
+
+                    <h3 class="fw-bold mb-0">
+
+                        1500+
+
+                    </h3>
+
+                    <small class="text-muted">
+
+                        Customers
+
+                    </small>
+
+                </div>
+
+                <div class="col-4">
+
+                    <h3 class="fw-bold mb-0">
+
+                        99%
+
+                    </h3>
+
+                    <small class="text-muted">
+
+                        Satisfaction
+
+                    </small>
+
+                </div>
 
             </div>
 
         </div>
 
-        <!-- Right -->
+        <!-- RIGHT -->
 
-        <div class="col-lg-6 text-center mt-5 mt-lg-0">
+        <div class="col-lg-6">
 
-            <img
+            <div class="hero-image text-center">
 
-                src="https://cdn-icons-png.flaticon.com/512/869/869636.png"
+                <img
+                    src="https://cdn-icons-png.flaticon.com/512/869/869636.png"
+                    class="img-fluid"
+                    alt="Shopping"
+                >
 
-                class="img-fluid"
-
-                style="max-height:320px;"
-
-                alt="Shopping"
-
-            >
+            </div>
 
         </div>
 
     </div>
 
-</div>
+</section>
 
-  
-<!-- ==========================================
-     Featured Products
-========================================== -->
+<!-- ===================================================== -->
+<!-- FEATURED PRODUCTS -->
+<!-- ===================================================== -->
 
-<div class="mb-5">
+<section class="featured-products">
 
     <div class="text-center mb-5">
 
-        <span class="badge bg-primary px-3 py-2">
+        <span class="badge bg-primary rounded-pill px-3 py-2">
 
             Featured Collection
 
@@ -134,190 +171,292 @@ Shopora | Home
 
         <p class="text-muted">
 
-            Discover our hand-picked premium products.
+            Carefully selected premium products for you.
 
         </p>
 
     </div>
 
     <div class="row g-4">
+                {% for product in featured_products %}
 
-        {% for product in featured_products %}
+        <div class="col-xl-3 col-lg-4 col-md-6">
 
-        <div class="col-lg-3 col-md-6">
+            <div class="card product-card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
 
-            <div class="card border-0 shadow-sm h-100 rounded-4 product-card position-relative overflow-hidden">
+                <!-- ========================= -->
+                <!-- Product Image -->
+                <!-- ========================= -->
 
-                {% if product.image %}
+                <div class="product-image-wrapper position-relative">
 
-                <img
-                    src="{{ product.image.url }}"
-                    class="card-img-top rounded-top-4"
-                    style="height:240px; object-fit:cover;"
-                >
+                    {% if product.image %}
 
-                {% endif %}
+                        <img
+                            src="{{ product.image.url }}"
+                            class="product-image"
+                            alt="{{ product.name }}"
+                        >
 
-                <div class="product-overlay">
+                    {% else %}
 
-                    {% if product.is_flash_sale %}
-                        <span class="badge bg-danger mb-2">
+                        <img
+                            src="https://placehold.co/600x600?text=No+Image"
+                            class="product-image"
+                            alt="No Image"
+                        >
+
+                    {% endif %}
+
+                    <!-- ========================= -->
+                    <!-- Badges -->
+                    <!-- ========================= -->
+
+                    <div class="position-absolute top-0 start-0 p-3 d-flex flex-column gap-2">
+
+                        {% if website_features.flash_sale and product.is_flash_sale %}
+
+                        <span class="badge bg-danger">
+
                             🔥 Flash Sale
-                        </span>
-                        <br>
-                    {% endif %}
 
-                    {% if product.is_free_delivery %}
-                        <span class="badge bg-success mb-2">
+                        </span>
+
+                        {% endif %}
+
+                        {% if website_features.free_delivery and product.is_free_delivery %}
+
+                        <span class="badge bg-success">
+
                             🚚 Free Delivery
-                        </span>
-                        <br>
-                    {% endif %}
 
-                    {% if product.is_trending %}
-                        <span class="badge bg-warning text-dark mb-2">
-                            ⭐ Trending
                         </span>
-                        <br>
-                    {% endif %}
 
-                    {% if product.is_new_arrival %}
-                        <span class="badge bg-primary mb-3">
+                        {% endif %}
+
+                        {% if website_features.new_arrival and product.is_new_arrival %}
+
+                        <span class="badge bg-primary">
+
                             New Arrival
-                        </span>
-                        <br>
-                    {% endif %}
 
-                    {% if product.in_stock %}
+                        </span>
+
+                        {% endif %}
+
+                        {% if website_features.trending and product.is_trending %}
+
+                        <span class="badge bg-warning text-dark">
+
+                            ⭐ Trending
+
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+                    <!-- ========================= -->
+                    <!-- Wishlist -->
+                    <!-- ========================= -->
+
+                    {% if user.is_authenticated and website_features.wishlist %}
+
+                    <div class="position-absolute top-0 end-0 p-3">
+
+                        {% if product.id in wishlist_products %}
 
                         <a
-                            href="{% url 'cart:cart_add' product.id %}"
-                            class="btn btn-light btn-sm w-100 mb-2"    >
+                            href="{% url 'store:remove_from_wishlist' product.id %}"
+                            class="wishlist-btn text-danger"
+                        >
 
-                            🛒 Add To Cart
+                            ❤️
 
                         </a>
 
+                        {% else %}
+
+                        <a
+                            href="{% url 'store:add_to_wishlist' product.id %}"
+                            class="wishlist-btn"
+                        >
+
+                            🤍
+
+                        </a>
+
+                        {% endif %}
+
+                    </div>
+
+                    {% endif %}
+
+                    <!-- ========================= -->
+                    <!-- Hover Buttons -->
+                    <!-- ========================= -->
+
+                    <div class="product-overlay">
+
+                        {% if product.in_stock %}
+
+                        <div class="overlay-buttons">
+
+                            <a
+                                href="{% url 'cart:cart_add' product.id %}"
+                                class="btn btn-light w-100"
+                            >
+
+                                🛒 Add To Cart
+
+                            </a>
+
+                            <a
+                                href="{% url 'cart:buy_now' product.id %}"
+                                class="btn btn-primary w-100"
+                            >
+
+                                ⚡ Buy Now
+
+                            </a>
+
+                        </div>
+
+                        {% else %}
+
+                        <div class="overlay-buttons">
+
+                            <button
+                                class="btn btn-secondary w-100"
+                                disabled
+                            >
+
+                                Out Of Stock
+
+                            </button>
+
+                        </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+                <!-- ========================= -->
+                <!-- Card Body -->
+                <!-- ========================= -->
+
+                <div class="card-body d-flex flex-column">
+
+                    <small class="text-primary fw-semibold mb-2">
+
+                        {{ product.category.name }}
+
+                    </small>
+
+                    <h5 class="fw-bold mb-2">
+
+                        {{ product.name|truncatechars:35 }}
+
+                    </h5>
+
+                    <p class="text-muted small mb-4">
+
+                        {{ product.description|truncatechars:80 }}
+
+                    </p>
+
+                    <div class="mt-auto">
+
+                        {% if website_features.flash_sale and product.has_flash_sale %}
+
+                        <div class="mb-3">
+
+                            <span class="fs-4 fw-bold text-danger">
+
+                                ${{ product.current_price }}
+
+                            </span>
+
+                            <br>
+
+                            <small class="text-decoration-line-through text-muted">
+
+                                ${{ product.price }}
+
+                            </small>
+
+                        </div>
+
+                        {% else %}
+
+                        <div class="mb-3">
+
+                            <span class="fs-4 fw-bold text-primary">
+
+                                ${{ product.price }}
+
+                            </span>
+
+                        </div>
+
+                        {% endif %}
+
+                        <small class="text-success d-block mb-3">
+
+                            ≈ ৳{{ product.current_price|bdt }}
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <!-- ========================= -->
+                <!-- Footer -->
+                <!-- ========================= -->
+
+                <div class="card-footer bg-white border-0 pt-0">
+
+                    <div class="d-grid gap-2">
+
+                        <a
+                            href="{{ product.get_absolute_url }}"
+                            class="btn btn-outline-primary rounded-pill"
+                        >
+
+                            👁 View Details
+
+                        </a>
+
+                        {% if product.in_stock %}
+
                         <a
                             href="{% url 'cart:buy_now' product.id %}"
-                            class="btn btn-danger btn-sm w-100">
+                            class="btn btn-primary rounded-pill"
+                        >
 
                             ⚡ Order Now
 
                         </a>
 
-                    {% else %}
+                        {% else %}
 
                         <button
-                            class="btn btn-secondary btn-sm w-100"
-                            disabled>
+                            class="btn btn-secondary rounded-pill"
+                            disabled
+                        >
 
                             Out Of Stock
 
                         </button>
 
-                    {% endif %}
+                        {% endif %}
+
+                    </div>
 
                 </div>
-
-                <div class="card-body">
-
-                    <span class="badge bg-light text-primary mb-2">
-
-                        {{ product.category.name }}
-
-                    </span>
-
-                    <h5 class="fw-bold">
-
-                        {{ product.name|truncatechars:24 }}
-
-                    </h5>
-
-                    <p class="text-muted small">
-
-                        {{ product.description|truncatechars:70 }}
-
-                    </p>
-
-                    {% if product.has_discount %}
-
-<h4 class="fw-bold">
-
-    <span class="text-danger">
-
-        ${{ product.current_price }}
-
-    </span>
-
-    <br>
-
-    <small class="text-decoration-line-through text-muted">
-
-        ${{ product.price }}
-
-    </small>
-
-</h4>
-
-{% else %}
-
-<h4 class="fw-bold text-primary">
-
-    ${{ product.price }}
-
-</h4>
-
-{% endif %}
-
-<p class="text-success">
-
-    ≈ ৳{{ product.current_price|bdt }}
-
-</p>
-
-                </div>
-
-                <div class="card-footer bg-white border-0">
-
-    <div class="d-grid gap-2">
-
-        <a
-            href="{{ product.get_absolute_url }}"
-            class="btn btn-outline-primary rounded-pill"
-        >
-
-            👁 View Details
-
-        </a>
-
-        {% if product.in_stock %}
-
-            <a
-                href="{% url 'cart:buy_now' product.id %}"
-                class="btn btn-primary rounded-pill"
-            >
-
-                ⚡ Order Now
-
-            </a>
-
-        {% else %}
-
-            <button
-                class="btn btn-secondary rounded-pill"
-                disabled
-            >
-
-                Out Of Stock
-
-            </button>
-
-        {% endif %}
-
-    </div>
-
-</div>
 
             </div>
 
@@ -325,13 +464,23 @@ Shopora | Home
 
         {% empty %}
 
-        <div class="col-12 text-center">
+        <div class="col-12">
 
-            <h5 class="text-muted">
+            <div class="alert alert-light text-center shadow-sm rounded-4 py-5">
 
-                No featured products available.
+                <h4 class="fw-bold mb-2">
 
-            </h5>
+                    No Featured Products Found
+
+                </h4>
+
+                <p class="text-muted mb-0">
+
+                    Please check back later.
+
+                </p>
+
+            </div>
 
         </div>
 
@@ -339,33 +488,25 @@ Shopora | Home
 
     </div>
 
-</div>
-
-
+</section>
 <!-- ==========================================
      Featured Categories
 ========================================== -->
 
-<div class="py-5">
+<section class="py-5">
 
     <div class="text-center mb-5">
 
         <span class="badge bg-success px-3 py-2">
-
             Shop By Category
-
         </span>
 
         <h2 class="fw-bold mt-3">
-
-            Browse Categories
-
+            Browse Popular Categories
         </h2>
 
         <p class="text-muted">
-
-            Find products faster by exploring categories.
-
+            Explore our most popular product categories.
         </p>
 
     </div>
@@ -376,57 +517,84 @@ Shopora | Home
 
         <div class="col-lg-3 col-md-6">
 
-            <div class="card border-0 shadow-sm h-100 text-center rounded-4 dashboard-card">
+            <a href="{% url 'store:products_by_category' category.slug %}"
+               class="text-decoration-none">
 
-                <div class="card-body py-5">
+                <div class="card border-0 shadow-sm rounded-4 h-100 dashboard-card category-card">
 
-                    {% if category.name == "Mobile" %}
+                    <div class="card-body text-center py-5">
 
-                        <div class="display-3">
+                        {% if category.name == "Mobile" %}
 
-                            📱
+                            <div class="display-3 mb-3">
+                                📱
+                            </div>
 
-                        </div>
+                        {% elif category.name == "Laptop" %}
 
-                    {% elif category.name == "Laptop" %}
+                            <div class="display-3 mb-3">
+                                💻
+                            </div>
 
-                        <div class="display-3">
+                        {% elif category.name == "Camera" %}
 
-                            💻
+                            <div class="display-3 mb-3">
+                                📷
+                            </div>
 
-                        </div>
+                        {% elif category.name == "Watch" %}
 
-                    {% elif category.name == "Camera" %}
+                            <div class="display-3 mb-3">
+                                ⌚
+                            </div>
 
-                        <div class="display-3">
+                        {% elif category.name == "Headphone" %}
 
-                            📷
+                            <div class="display-3 mb-3">
+                                🎧
+                            </div>
 
-                        </div>
+                        {% else %}
 
-                    {% else %}
+                            <div class="display-3 mb-3">
+                                🛍️
+                            </div>
 
-                        <div class="display-3">
+                        {% endif %}
 
-                            🛍️
+                        <h4 class="fw-bold text-dark">
 
-                        </div>
+                            {{ category.name }}
 
-                    {% endif %}
+                        </h4>
 
-                    <h4 class="fw-bold mt-4">
+                        <p class="text-muted mb-3">
 
-                        {{ category.name }}
+                            Premium {{ category.name }} Collection
 
-                    </h4>
+                        </p>
 
-                    <p class="text-muted">
+                        <span class="btn btn-outline-primary rounded-pill px-4">
 
-                        Premium {{ category.name }} collection.
+                            Explore →
 
-                    </p>
+                        </span>
+
+                    </div>
 
                 </div>
+
+            </a>
+
+        </div>
+
+        {% empty %}
+
+        <div class="col-12">
+
+            <div class="alert alert-light text-center border">
+
+                No featured categories available.
 
             </div>
 
@@ -436,7 +604,8 @@ Shopora | Home
 
     </div>
 
-</div>
+</section>
+
 
 
 <!-- ==========================================
@@ -447,16 +616,36 @@ Shopora | Home
 
     <div class="container">
 
-        <div class="row text-center g-4">
+        <div class="text-center mb-5">
+
+            <span class="badge bg-primary px-3 py-2">
+
+                Shopora In Numbers
+
+            </span>
+
+            <h2 class="fw-bold mt-3">
+
+                Trusted By Thousands
+
+            </h2>
+
+            <p class="text-muted">
+
+                We are growing every day with our happy customers.
+
+            </p>
+
+        </div>
+
+        <div class="row g-4">
 
             <div class="col-lg-3 col-md-6">
 
-                <div class="card border-0 shadow-sm rounded-4 py-4 dashboard-card">
+                <div class="card border-0 shadow rounded-4 text-center py-4 dashboard-card">
 
                     <div class="display-5">
-
                         📦
-
                     </div>
 
                     <h2 class="fw-bold text-primary mt-3">
@@ -477,17 +666,15 @@ Shopora | Home
 
             <div class="col-lg-3 col-md-6">
 
-                <div class="card border-0 shadow-sm rounded-4 py-4 dashboard-card">
+                <div class="card border-0 shadow rounded-4 text-center py-4 dashboard-card">
 
                     <div class="display-5">
-
                         😊
-
                     </div>
 
                     <h2 class="fw-bold text-success mt-3">
 
-                        1500+
+                        1,500+
 
                     </h2>
 
@@ -503,12 +690,10 @@ Shopora | Home
 
             <div class="col-lg-3 col-md-6">
 
-                <div class="card border-0 shadow-sm rounded-4 py-4 dashboard-card">
+                <div class="card border-0 shadow rounded-4 text-center py-4 dashboard-card">
 
                     <div class="display-5">
-
                         ⭐
-
                     </div>
 
                     <h2 class="fw-bold text-warning mt-3">
@@ -529,12 +714,10 @@ Shopora | Home
 
             <div class="col-lg-3 col-md-6">
 
-                <div class="card border-0 shadow-sm rounded-4 py-4 dashboard-card">
+                <div class="card border-0 shadow rounded-4 text-center py-4 dashboard-card">
 
                     <div class="display-5">
-
-                        🎧
-
+                        🚚
                     </div>
 
                     <h2 class="fw-bold text-danger mt-3">
@@ -558,145 +741,168 @@ Shopora | Home
     </div>
 
 </section>
-
-
 <!-- ==========================================
      Customer Testimonials
 ========================================== -->
 
-<section class="py-5">
+<section class="py-5 bg-light rounded-5 my-5">
 
-    <div class="text-center mb-5">
+    <div class="container">
 
-        <span class="badge bg-warning text-dark px-3 py-2">
+        <div class="text-center mb-5">
 
-            Customer Reviews
+            <span class="badge bg-warning text-dark px-3 py-2">
+                Customer Reviews
+            </span>
 
-        </span>
+            <h2 class="fw-bold mt-3">
+                What Our Customers Say
+            </h2>
 
-        <h2 class="fw-bold mt-3">
+            <p class="text-muted">
+                Thousands of satisfied customers trust Shopora every day.
+            </p>
 
-            What Our Customers Say
+        </div>
 
-        </h2>
+        <div class="row g-4">
 
-        <p class="text-muted">
+            <div class="col-lg-4">
 
-            Trusted by happy customers across the country.
+                <div class="card border-0 shadow-sm rounded-4 h-100 dashboard-card">
 
-        </p>
+                    <div class="card-body p-4">
 
-    </div>
+                        <div class="fs-4 text-warning mb-3">
+                            ⭐⭐⭐⭐⭐
+                        </div>
 
-    <div class="row g-4">
+                        <p class="text-muted">
 
-        <div class="col-lg-4">
+                            "Amazing experience! The delivery was incredibly fast and the product quality exceeded my expectations."
 
-            <div class="card border-0 shadow-sm rounded-4 h-100 dashboard-card">
+                        </p>
 
-                <div class="card-body p-4">
+                        <hr>
 
-                    <div class="fs-3 mb-3">
+                        <div class="d-flex align-items-center">
 
-                        ⭐⭐⭐⭐⭐
+                            <div class="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center me-3"
+                                 style="width:55px;height:55px;">
+
+                                A
+
+                            </div>
+
+                            <div>
+
+                                <h6 class="fw-bold mb-0">
+                                    Alif Ahmed
+                                </h6>
+
+                                <small class="text-muted">
+                                    Verified Buyer
+                                </small>
+
+                            </div>
+
+                        </div>
 
                     </div>
-
-                    <p class="text-muted">
-
-                        "Excellent shopping experience. The delivery was fast and the product quality exceeded my expectations."
-
-                    </p>
-
-                    <hr>
-
-                    <h6 class="fw-bold mb-0">
-
-                        Alif Ahmed
-
-                    </h6>
-
-                    <small class="text-muted">
-
-                        Verified Customer
-
-                    </small>
 
                 </div>
 
             </div>
 
-        </div>
+            <div class="col-lg-4">
 
-        <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100 dashboard-card">
 
-            <div class="card border-0 shadow-sm rounded-4 h-100 dashboard-card">
+                    <div class="card-body p-4">
 
-                <div class="card-body p-4">
+                        <div class="fs-4 text-warning mb-3">
+                            ⭐⭐⭐⭐⭐
+                        </div>
 
-                    <div class="fs-3 mb-3">
+                        <p class="text-muted">
 
-                        ⭐⭐⭐⭐⭐
+                            "Secure payment, professional support and premium products. Definitely recommended."
+
+                        </p>
+
+                        <hr>
+
+                        <div class="d-flex align-items-center">
+
+                            <div class="rounded-circle bg-success text-white d-flex justify-content-center align-items-center me-3"
+                                 style="width:55px;height:55px;">
+
+                                S
+
+                            </div>
+
+                            <div>
+
+                                <h6 class="fw-bold mb-0">
+                                    Sarah Khan
+                                </h6>
+
+                                <small class="text-muted">
+                                    Premium Member
+                                </small>
+
+                            </div>
+
+                        </div>
 
                     </div>
-
-                    <p class="text-muted">
-
-                        "Secure payment, smooth checkout and excellent customer support. Highly recommended."
-
-                    </p>
-
-                    <hr>
-
-                    <h6 class="fw-bold mb-0">
-
-                        Sarah Khan
-
-                    </h6>
-
-                    <small class="text-muted">
-
-                        Happy Customer
-
-                    </small>
 
                 </div>
 
             </div>
 
-        </div>
+            <div class="col-lg-4">
 
-        <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100 dashboard-card">
 
-            <div class="card border-0 shadow-sm rounded-4 h-100 dashboard-card">
+                    <div class="card-body p-4">
 
-                <div class="card-body p-4">
+                        <div class="fs-4 text-warning mb-3">
+                            ⭐⭐⭐⭐⭐
+                        </div>
 
-                    <div class="fs-3 mb-3">
+                        <p class="text-muted">
 
-                        ⭐⭐⭐⭐⭐
+                            "One of the best online stores I have ever used. Everything works smoothly."
+
+                        </p>
+
+                        <hr>
+
+                        <div class="d-flex align-items-center">
+
+                            <div class="rounded-circle bg-danger text-white d-flex justify-content-center align-items-center me-3"
+                                 style="width:55px;height:55px;">
+
+                                M
+
+                            </div>
+
+                            <div>
+
+                                <h6 class="fw-bold mb-0">
+                                    Mahmud Hasan
+                                </h6>
+
+                                <small class="text-muted">
+                                    Loyal Customer
+                                </small>
+
+                            </div>
+
+                        </div>
 
                     </div>
-
-                    <p class="text-muted">
-
-                        "One of the best online shopping websites I've used. Everything works perfectly."
-
-                    </p>
-
-                    <hr>
-
-                    <h6 class="fw-bold mb-0">
-
-                        Mahmud Hasan
-
-                    </h6>
-
-                    <small class="text-muted">
-
-                        Premium Member
-
-                    </small>
 
                 </div>
 
@@ -709,169 +915,181 @@ Shopora | Home
 </section>
 
 
+
 <!-- ==========================================
-     Why Shopora
+     Why Choose Shopora
 ========================================== -->
 
-<div class="text-center mb-5">
+<section class="py-5">
 
-    <span class="badge bg-primary px-3 py-2">
+    <div class="text-center mb-5">
 
-        Why Choose Us
+        <span class="badge bg-primary px-3 py-2">
+            Why Choose Us
+        </span>
 
-    </span>
+        <h2 class="fw-bold mt-3">
+            Everything You Need In One Place
+        </h2>
 
-    <h2 class="fw-bold mt-3">
+        <p class="text-muted">
+            Designed to make your shopping experience faster, safer and easier.
+        </p>
 
-        Why Shopora?
+    </div>
 
-    </h2>
+    <div class="row g-4">
 
-    <p class="text-muted">
+        <div class="col-lg-3 col-md-6">
 
-        Everything you need for a modern shopping experience.
+            <div class="card border-0 shadow rounded-4 h-100 text-center p-4 dashboard-card">
 
-    </p>
+                <div class="display-4">
+                    🚚
+                </div>
 
-</div>
+                <h5 class="fw-bold mt-3">
 
-<div class="row g-4 mb-5">
+                    Fast Delivery
 
-    <div class="col-lg-3 col-md-6">
+                </h5>
 
-        <div class="card h-100 text-center p-4">
+                <p class="text-muted mb-0">
 
-            <div class="display-4">
+                    Nationwide delivery with trusted courier partners.
 
-                🚚
+                </p>
 
             </div>
 
-            <h5 class="fw-bold mt-3">
+        </div>
 
-                Fast Delivery
+        <div class="col-lg-3 col-md-6">
 
-            </h5>
+            <div class="card border-0 shadow rounded-4 h-100 text-center p-4 dashboard-card">
 
-            <p class="text-muted mb-0">
+                <div class="display-4">
+                    🔒
+                </div>
 
-                Get your products delivered quickly and safely.
+                <h5 class="fw-bold mt-3">
 
-            </p>
+                    Secure Payments
+
+                </h5>
+
+                <p class="text-muted mb-0">
+
+                    Safe checkout with Stripe and Cash On Delivery.
+
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card border-0 shadow rounded-4 h-100 text-center p-4 dashboard-card">
+
+                <div class="display-4">
+                    💎
+                </div>
+
+                <h5 class="fw-bold mt-3">
+
+                    Premium Quality
+
+                </h5>
+
+                <p class="text-muted mb-0">
+
+                    Carefully selected products from trusted brands.
+
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card border-0 shadow rounded-4 h-100 text-center p-4 dashboard-card">
+
+                <div class="display-4">
+                    🎧
+                </div>
+
+                <h5 class="fw-bold mt-3">
+
+                    24/7 Support
+
+                </h5>
+
+                <p class="text-muted mb-0">
+
+                    Friendly customer support whenever you need help.
+
+                </p>
+
+            </div>
 
         </div>
 
     </div>
 
-    <div class="col-lg-3 col-md-6">
+</section>
 
-        <div class="card h-100 text-center p-4">
 
-            <div class="display-4">
 
-                🔒
+<!-- ==========================================
+     Call To Action
+========================================== -->
 
-            </div>
+<section class="py-5">
 
-            <h5 class="fw-bold mt-3">
+    <div class="rounded-5 overflow-hidden shadow-lg p-5 text-center text-white"
+         style="background:linear-gradient(135deg,#0d6efd,#4f46e5,#7c3aed);">
 
-                Secure Payments
+        <span class="badge bg-light text-primary px-3 py-2 mb-3">
 
-            </h5>
+            Join Thousands Of Happy Customers
 
-            <p class="text-muted mb-0">
+        </span>
 
-                Stripe & Cash on Delivery with secure checkout.
-
-            </p>
-
-        </div>
-
-    </div>
-
-    <div class="col-lg-3 col-md-6">
-
-        <div class="card h-100 text-center p-4">
-
-            <div class="display-4">
-
-                💳
-
-            </div>
-
-            <h5 class="fw-bold mt-3">
-
-                Easy Checkout
-
-            </h5>
-
-            <p class="text-muted mb-0">
-
-                Complete your purchase in just a few clicks.
-
-            </p>
-
-        </div>
-
-    </div>
-
-    <div class="col-lg-3 col-md-6">
-
-        <div class="card h-100 text-center p-4">
-
-            <div class="display-4">
-
-                🎧
-
-            </div>
-
-            <h5 class="fw-bold mt-3">
-
-                Customer Support
-
-            </h5>
-
-            <p class="text-muted mb-0">
-
-                Friendly support whenever you need help.
-
-            </p>
-
-        </div>
-
-    </div>
-
-</div>
-
-    <!-- ==========================================
-         CTA
-    =========================================== -->
-
-    <div class="bg-light rounded-4 p-5 shadow-sm text-center">
-
-        <h2 class="fw-bold">
+        <h2 class="display-5 fw-bold mb-3">
 
             Start Shopping Today
 
         </h2>
 
-        <p class="text-muted mt-3">
+        <p class="lead opacity-75 mb-4">
 
-            Browse hundreds of premium products and enjoy
-            a smooth shopping experience with Shopora.
+            Discover premium electronics, unbeatable prices and fast delivery—all in one place.
 
         </p>
 
-        <a
-            href="{% url 'store:product_list' %}"
-            class="btn btn-primary btn-lg mt-3 px-5"
-        >
+        <div class="d-flex justify-content-center flex-wrap gap-3">
 
-            Explore Store
+            <a href="{% url 'store:product_list' %}"
+               class="btn btn-light btn-lg px-5 fw-bold">
 
-        </a>
+                🛒 Explore Store
+
+            </a>
+
+            <a href="{% url 'store:product_list' %}"
+               class="btn btn-outline-light btn-lg px-5">
+
+                Browse Products
+
+            </a>
+
+        </div>
 
     </div>
+
+</section>
 
 </div>
 

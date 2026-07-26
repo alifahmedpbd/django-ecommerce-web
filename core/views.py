@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from store.models import Product, Category
+from store.models import Product, Category, Wishlist
 
 from dashboard.helpers import feature_enabled
 
@@ -26,23 +26,28 @@ def home(request):
         .only(
 
             "id",
-
             "slug",
-
             "name",
-
-            "price",
-
+            "description",
             "image",
 
+            "price",
+            "flash_price",
+
+            "stock",
+            "available",
+
             "is_flash_sale",
-
             "is_trending",
-
             "is_new_arrival",
-
             "is_free_delivery",
+            
+            "display_order",
+            "created_at",
 
+            "category__id",
+            "category__name",
+            
         )
 
         .order_by(
@@ -113,6 +118,18 @@ def home(request):
 
         )
 
+    wishlist_products = set()
+
+    if request.user.is_authenticated:
+        wishlist_products = set(
+            Wishlist.objects.filter(
+                user=request.user
+            ).values_list(
+                "product_id",
+                flat=True,
+            )
+        )
+
     context = {
 
         "featured_products": featured_products,
@@ -120,6 +137,8 @@ def home(request):
         "featured_categories": featured_categories,
 
         "flash_products": flash_products,
+
+        "wishlist_products": wishlist_products,
 
     }
 
