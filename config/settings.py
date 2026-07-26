@@ -68,6 +68,8 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'accounts.middleware.UserActivityMiddleware',
+    "accounts.middleware.BlockedUserMiddleware",
     "dashboard.middleware.MaintenanceModeMiddleware",
     "dashboard.middleware.ComingSoonMiddleware",
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -266,3 +268,13 @@ cloudinary.config(
     api_secret=os.getenv("CLOUDINARY_API_SECRET"),
     secure=True,
 )
+
+SHOP_NAME = "Shopora"
+
+SHOP_URL = "http://127.0.0.1:8000"
+
+FACEBOOK_URL = "https://facebook.com/"
+
+INSTAGRAM_URL = "https://instagram.com/"
+
+YOUTUBE_URL = "https://youtube.com/"

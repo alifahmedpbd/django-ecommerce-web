@@ -384,6 +384,8 @@ class Wishlist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wishlist",)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="wishlisted_by",)
     created_at = models.DateTimeField(auto_now_add=True)
+    promotion_sent = models.BooleanField(default=False)
+    last_promotion = models.DateTimeField(null=True, blank=True)
     class Meta:
 
         unique_together = ("user", "product")
@@ -429,3 +431,32 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.product.name} - {self.user.username}"
+
+class AbandonedCart(models.Model):
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="abandoned_carts",
+    )
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+    )
+
+    quantity = models.PositiveIntegerField(default=1)
+
+    recovered = models.BooleanField(default=False)
+
+    reminder_sent = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+
+        ordering = [
+            "-created_at",
+        ]

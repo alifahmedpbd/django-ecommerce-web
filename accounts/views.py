@@ -231,7 +231,6 @@ def email_login_view(request):
     )
 
 
-
 def verify_login_otp_view(request):
 
     user_id = request.session.get("login_user_id")
@@ -245,9 +244,22 @@ def verify_login_otp_view(request):
             "email",
             "password",
             "is_active",
+            "is_blocked",
         ),
         id=user_id,
     )
+
+    # Blocked User Check
+    if user.is_blocked:
+
+        request.session.pop("login_user_id", None)
+
+        messages.error(
+            request,
+            "Your account has been blocked. Please contact support.",
+        )
+
+        return redirect("accounts:email_login")
 
     if request.method == "POST":
 
@@ -264,7 +276,10 @@ def verify_login_otp_view(request):
 
         except EmailOTP.DoesNotExist:
 
-            messages.error(request, "Invalid OTP.")
+            messages.error(
+                request,
+                "Invalid OTP.",
+            )
 
             return redirect("accounts:verify_login_otp")
 
@@ -272,12 +287,27 @@ def verify_login_otp_view(request):
 
             email_otp.delete()
 
-            messages.error(request, "OTP expired.")
+            messages.error(
+                request,
+                "OTP expired.",
+            )
 
             return redirect("accounts:email_login")
 
         email_otp.is_verified = True
         email_otp.save()
+
+        # Double Check Before Login
+        if user.is_blocked:
+
+            request.session.pop("login_user_id", None)
+
+            messages.error(
+                request,
+                "Your account has been blocked.",
+            )
+
+            return redirect("accounts:email_login")
 
         login(request, user)
 
@@ -286,7 +316,10 @@ def verify_login_otp_view(request):
             purpose="login",
         ).delete()
 
-        request.session.pop("login_user_id", None)
+        request.session.pop(
+            "login_user_id",
+            None,
+        )
 
         messages.success(
             request,
@@ -300,6 +333,7 @@ def verify_login_otp_view(request):
         "accounts/verify_login_otp.html",
     )
 
+
 def login_view(request):
 
     if request.method == "POST":
@@ -310,10 +344,17 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
 
         if user:
+
+            if user.is_blocked:
+
+                messages.error(request, "Your account has been blocked. Please contact support.")
+
+                return redirect("accounts:login")
+
             login(request, user)
 
             return redirect("home")
-        
+
         messages.error(request, "Invalid username or password.")
 
     return render(request, "accounts/login.html")

@@ -7,8 +7,8 @@ from accounts.models import User
 from orders.models import Order, Coupon, OrderTimeline, ReturnRequest,Refund, Replacement, Exchange, ReturnComment
 from django.contrib import messages
 
-from store.models import Category, Product, Brand, ProductImage
-from .forms import CategoryForm, ProductForm, BrandForm, ProductImageForm, CouponForm, AnnouncementForm
+from store.models import Category, Product, Brand, ProductImage, AbandonedCart, Wishlist
+from .forms import CategoryForm, ProductForm, BrandForm, ProductImageForm, CouponForm, AnnouncementForm, EmailCampaignForm
 
 from .decorators import owner_required
 from django.core.paginator import Paginator
@@ -19,7 +19,7 @@ from django.db.models.functions import TruncMonth
 
 import json
 
-
+from datetime import timedelta
 from django.http import HttpResponse
 from openpyxl import Workbook
 
@@ -29,10 +29,14 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph
 from orders.models import ExchangeRate
 
-from .models import FeatureToggle, Announcement, WebsiteSettings
+from .models import FeatureToggle, Announcement, WebsiteSettings, CustomerActivity, EmailCampaign, EmailCampaignLog
 from .helpers import clear_feature_cache
 from django.views.decorators.http import require_POST
 from django.db import transaction
+from django.core.mail import EmailMultiAlternatives
+from .email_utils import send_campaign_email
+from django.core.mail import send_mail
+from django.conf import settings
 # Create your views here.
 
 
@@ -2081,28 +2085,70 @@ def low_stock_report(request):
 @owner_or_staff_required
 def dashboard_customers(request):
 
+    q = request.GET.get("q")
+
     customers = (
-        User.objects.filter(
-            role="customer",
-        ).only(
-            "id",
-            "username",
-            "email",
-            "date_joined",
-        )
+        User.objects
+        .filter(role="customer")
         .annotate(
-            total_orders=Count("orders"),
+            total_orders=Count("orders", distinct=True),
             total_spent=Sum("orders__final_total"),
         )
         .order_by("-date_joined")
     )
 
+    if q:
+
+        customers = customers.filter(
+            Q(username__icontains=q)
+            |
+            Q(email__icontains=q)
+            |
+            Q(phone__icontains=q)
+        )
+
+    paginator = Paginator(customers, 20)
+
+    page_number = request.GET.get("page")
+
+    page_obj = paginator.get_page(page_number)
+
+    # Stats
+
+    now = timezone.now()
+
+    online_threshold = now - timedelta(minutes=5)
+
+    context = {
+
+        "customers": page_obj,
+        "page_obj": page_obj,
+
+        "total_customers": User.objects.filter(
+            role="customer"
+        ).count(),
+
+        "online_customers": User.objects.filter(
+            role="customer",
+            last_activity__gte=online_threshold,
+            is_blocked=False,
+        ).count(),
+
+        "blocked_customers": User.objects.filter(
+            role="customer",
+            is_blocked=True,
+        ).count(),
+
+        "today_joined": User.objects.filter(
+            role="customer",
+            date_joined__date=now.date(),
+        ).count(),
+    }
+
     return render(
         request,
         "dashboard/customers.html",
-        {
-            "customers": customers,
-        },
+        context,
     )
 
 
@@ -2130,6 +2176,16 @@ def dashboard_customer_detail(request, user_id):
         )["total"] or 0
     )
 
+    # Online status
+
+    is_online = False
+
+    if customer.last_activity:
+
+        is_online = (
+            timezone.now() - customer.last_activity
+        ).total_seconds() <= 300  # 5 minutes
+
     context = {
 
         "customer": customer,
@@ -2138,12 +2194,363 @@ def dashboard_customer_detail(request, user_id):
 
         "total_spent": total_spent,
 
+        "is_online": is_online,
+
     }
 
     return render(
         request,
         "dashboard/customer_detail.html",
         context,
+    )
+
+
+@owner_or_staff_required
+def customer_block(request, user_id):
+
+    customer = get_object_or_404(
+        User,
+        id=user_id,
+        role="customer",
+    )
+
+    customer.is_blocked = True
+    customer.save(update_fields=["is_blocked"])
+
+    messages.success(
+        request,
+        f"{customer.username} has been blocked.",
+    )
+
+    return redirect(
+        "dashboard:dashboard_customer_detail",
+        user_id=customer.id,
+    )
+
+
+@owner_or_staff_required
+def customer_unblock(request, user_id):
+
+    customer = get_object_or_404(
+        User,
+        id=user_id,
+        role="customer",
+    )
+
+    customer.is_blocked = False
+    customer.save(update_fields=["is_blocked"])
+
+    messages.success(
+        request,
+        f"{customer.username} has been unblocked.",
+    )
+
+    return redirect(
+        "dashboard:dashboard_customer_detail",
+        user_id=customer.id,
+    )
+
+
+@owner_or_staff_required
+def customer_activity(request):
+
+    activities = (
+        CustomerActivity.objects
+        .select_related(
+            "user",
+            "product",
+        )
+        .order_by("-created_at")
+    )
+
+    q = request.GET.get("q")
+    action = request.GET.get("action")
+
+    if q:
+        activities = activities.filter(
+            Q(user__username__icontains=q)
+            |
+            Q(user__email__icontains=q)
+            |
+            Q(product__name__icontains=q)
+        )
+
+    if action:
+        activities = activities.filter(
+            action=action,
+        )
+
+    paginator = Paginator(
+        activities,
+        30,
+    )
+
+    page_obj = paginator.get_page(
+        request.GET.get("page")
+    )
+
+    context = {
+
+        "page_obj": page_obj,
+
+        "cart_count": CustomerActivity.objects.filter(
+            action="cart_add",
+        ).count(),
+
+        "wishlist_count": CustomerActivity.objects.filter(
+            action="wishlist_add",
+        ).count(),
+
+        "today_count": CustomerActivity.objects.filter(
+            created_at__date=timezone.now().date(),
+        ).count(),
+
+    }
+
+    return render(
+        request,
+        "dashboard/customer_activity.html",
+        context,
+    )
+
+@owner_or_staff_required
+def online_customers(request):
+
+    online_threshold = timezone.now() - timedelta(minutes=5)
+
+    customers = (
+        User.objects.filter(
+            role="customer",
+            is_blocked=False,
+        )
+        .only(
+            "id",
+            "username",
+            "email",
+            "phone",
+            "profile_image",
+            "last_activity",
+            "last_seen_page",
+            "browser",
+            "last_ip",
+            "is_blocked",
+        )
+        .order_by("-last_activity")
+    )
+
+    context = {
+
+        "customers": customers,
+
+        "online_threshold": online_threshold,
+
+        "online_count": customers.filter(
+            last_activity__gte=online_threshold,
+        ).count(),
+
+    }
+
+    return render(
+        request,
+        "dashboard/online_customers.html",
+        context,
+    )
+
+
+@owner_or_staff_required
+def abandoned_carts(request):
+
+    carts = (
+        AbandonedCart.objects
+        .select_related(
+            "user",
+            "product",
+        )
+        .filter(
+            recovered=False,
+        )
+        .order_by(
+            "-updated_at",
+        )
+    )
+
+    context = {
+
+        "carts": carts,
+
+    }
+
+    return render(
+        request,
+        "dashboard/abandoned_carts.html",
+        context,
+    )
+
+@owner_or_staff_required
+def send_abandoned_cart_email(request, cart_id):
+
+    cart = get_object_or_404(
+        AbandonedCart.objects.select_related(
+            "user",
+            "product",
+        ),
+        id=cart_id,
+    )
+
+    customer = cart.user
+    product = cart.product
+
+    message = f"""
+Hi {customer.first_name or customer.username},
+
+You left the following product in your cart.
+
+Product:
+{product.name}
+
+Quantity:
+{cart.quantity}
+
+Complete your order before it goes out of stock.
+
+Thank you.
+"""
+
+    email = EmailMultiAlternatives(
+        subject=f"Complete your order - {product.name}",
+        body=message,
+        to=[customer.email],
+    )
+
+    email.send()
+
+    cart.reminder_sent = True
+
+    # যদি last_reminder field add করে থাকো
+    # cart.last_reminder = timezone.now()
+
+    cart.save(
+        update_fields=[
+            "reminder_sent",
+            # "last_reminder",
+        ]
+    )
+
+    messages.success(
+        request,
+        "Reminder email sent successfully.",
+    )
+
+    return redirect(
+        "dashboard:abandoned_carts",
+    )
+
+@owner_or_staff_required
+def wishlist_recovery(request):
+
+    items = Wishlist.objects.select_related(
+        "user",
+        "product",
+    ).order_by(
+        "-created_at",
+    )
+
+    q = request.GET.get("q")
+
+    if q:
+
+        items = items.filter(
+            Q(user__username__icontains=q)
+            |
+            Q(user__email__icontains=q)
+            |
+            Q(product__name__icontains=q)
+        )
+
+    paginator = Paginator(items, 30)
+
+    page_number = request.GET.get("page")
+
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+
+        "page_obj": page_obj,
+
+        "total_items": Wishlist.objects.count(),
+
+        "pending_items": Wishlist.objects.filter(
+            promotion_sent=False,
+        ).count(),
+
+        "sent_items": Wishlist.objects.filter(
+            promotion_sent=True,
+        ).count(),
+    }
+
+    return render(
+        request,
+        "dashboard/wishlist_recovery.html",
+        context,
+    )
+
+@owner_or_staff_required
+def send_wishlist_promotion(request, wishlist_id):
+
+    wishlist = get_object_or_404(
+        Wishlist.objects.select_related(
+            "user",
+            "product",
+        ),
+        id=wishlist_id,
+    )
+
+    product = wishlist.product
+    user = wishlist.user
+
+    message = f"""
+Hi {user.first_name or user.username},
+
+Good news!
+
+Your wishlist product is still available.
+
+Product:
+{product.name}
+
+Price:
+${product.current_price}
+
+Visit now and complete your purchase.
+
+Thank you.
+"""
+
+    send_mail(
+        subject=f"{product.name} is waiting for you ❤️",
+        message=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        fail_silently=False,
+    )
+
+    wishlist.promotion_sent = True
+    wishlist.last_promotion = timezone.now()
+
+    wishlist.save(
+        update_fields=[
+            "promotion_sent",
+            "last_promotion",
+        ]
+    )
+
+    messages.success(
+        request,
+        "Promotion email sent successfully.",
+    )
+
+    return redirect(
+        "dashboard:wishlist_recovery",
     )
 
 @owner_or_staff_required
@@ -3869,4 +4276,173 @@ def product_ranking(request):
             "highest": highest,
             "lowest": lowest,
         },
+    )
+
+@owner_or_staff_required
+def email_campaign_list(request):
+
+    campaigns = (
+        EmailCampaign.objects
+        .select_related("created_by")
+        .order_by("-created_at")
+    )
+
+    return render(
+        request,
+        "dashboard/email_campaign_list.html",
+        {
+            "campaigns": campaigns,
+        },
+    )
+
+@owner_or_staff_required
+def email_campaign_create(request):
+
+    if request.method == "POST":
+
+        form = EmailCampaignForm(request.POST)
+
+        if form.is_valid():
+
+            campaign = form.save(commit=False)
+
+            campaign.created_by = request.user
+
+            campaign.save()
+
+            messages.success(
+                request,
+                "Campaign created successfully.",
+            )
+
+            return redirect(
+                "dashboard:email_campaign_list",
+            )
+
+    else:
+
+        form = EmailCampaignForm()
+
+    return render(
+        request,
+        "dashboard/email_campaign_form.html",
+        {
+            "form": form,
+        },
+    )
+
+
+@owner_or_staff_required
+def email_campaign_send(request, campaign_id):
+
+    campaign = get_object_or_404(
+        EmailCampaign,
+        id=campaign_id,
+    )
+
+    campaign.status = "sending"
+    campaign.save(update_fields=["status"])
+
+    # -----------------------------
+    # Target Users
+    # -----------------------------
+
+    if campaign.target == "all":
+
+        customers = User.objects.filter(
+            role="customer",
+            is_active=True,
+            is_blocked=False,
+        )
+
+    elif campaign.target == "wishlist":
+
+        customers = User.objects.filter(
+            wishlist__isnull=False,
+            role="customer",
+            is_blocked=False,
+        ).distinct()
+
+    elif campaign.target == "cart":
+
+        customers = User.objects.filter(
+            abandonedcart__recovered=False,
+            role="customer",
+            is_blocked=False,
+        ).distinct()
+
+    elif campaign.target == "no_order":
+
+        customers = User.objects.filter(
+            role="customer",
+            orders__isnull=True,
+            is_blocked=False,
+        ).distinct()
+
+    else:
+
+        customers = User.objects.none()
+
+    # -----------------------------
+    # Send Email
+    # -----------------------------
+
+    for customer in customers:
+
+        try:
+
+            email = EmailMultiAlternatives(
+
+                subject=campaign.subject,
+
+                body=campaign.message,
+
+                to=[customer.email],
+
+            )
+
+            email.send()
+
+            EmailCampaignLog.objects.create(
+
+                campaign=campaign,
+
+                customer=customer,
+
+                status="success",
+
+            )
+
+        except Exception as e:
+
+            EmailCampaignLog.objects.create(
+
+                campaign=campaign,
+
+                customer=customer,
+
+                status="failed",
+
+                error=str(e),
+
+            )
+
+    campaign.status = "completed"
+
+    campaign.sent_at = timezone.now()
+
+    campaign.save(
+        update_fields=[
+            "status",
+            "sent_at",
+        ]
+    )
+
+    messages.success(
+        request,
+        "Campaign sent successfully.",
+    )
+
+    return redirect(
+        "dashboard:email_campaign_list",
     )

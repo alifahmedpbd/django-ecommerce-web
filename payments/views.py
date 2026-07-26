@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from orders.models import Order, OrderTimeline, CouponUsage
 from .utils import clear_user_cart, send_order_confirmation_email, send_owner_new_order_email
-
+from store.models import AbandonedCart
 from django.conf import settings
 
 import stripe
@@ -142,6 +142,19 @@ def payment_success(request, order_id):
         "coupon_code",
         None,
     )
+
+    # ==========================================
+# Recover Abandoned Cart
+# ==========================================
+
+    if order.user:
+
+        AbandonedCart.objects.filter(
+            user=order.user,
+            recovered=False,
+            ).update(
+            recovered=True,
+        )
 
     # ==========================================
     # Clear Cart

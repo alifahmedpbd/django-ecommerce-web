@@ -1,0 +1,257 @@
+{% extends "dashboard/base.html" %}
+
+{% block dashboard_content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+
+        <h3 class="fw-bold mb-1">
+
+            Email Marketing
+
+        </h3>
+
+        <p class="text-muted mb-0">
+
+            Create and send promotional email campaigns.
+
+        </p>
+
+    </div>
+
+    <a href="{% url 'dashboard:email_campaign_create' %}"
+       class="btn btn-primary rounded-pill px-4">
+
+        <i class="bi bi-plus-circle me-2"></i>
+
+        New Campaign
+
+    </a>
+
+</div>
+
+
+<div class="row g-4 mb-4">
+
+    <div class="col-lg-4">
+
+        <div class="card border-0 shadow-sm rounded-4">
+
+            <div class="card-body">
+
+                <small class="text-muted">
+
+                    Total Campaigns
+
+                </small>
+
+                <h2 class="fw-bold mt-2">
+
+                    {{ campaigns.count }}
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-4">
+
+        <div class="card border-0 shadow-sm rounded-4">
+
+            <div class="card-body">
+
+                <small class="text-muted">
+
+                    Completed
+
+                </small>
+
+                <h2 class="fw-bold mt-2 text-success">
+
+                    {{ campaigns|length }}
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-4">
+
+        <div class="card border-0 shadow-sm rounded-4">
+
+            <div class="card-body">
+
+                <small class="text-muted">
+
+                    Marketing Center
+
+                </small>
+
+                <h5 class="fw-bold mt-3">
+
+                    Ready
+
+                </h5>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="card border-0 shadow-sm rounded-4">
+
+    <div class="card-body">
+
+        <div class="table-responsive">
+
+            <table class="table align-middle">
+
+                <thead>
+
+                <tr>
+
+                    <th>Title</th>
+
+                    <th>Subject</th>
+
+                    <th>Target</th>
+
+                    <th>Status</th>
+
+                    <th>Created</th>
+
+                    <th width="180"></th>
+
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for campaign in campaigns %}
+
+                <tr>
+
+                    <td>
+
+                        <strong>
+
+                            {{ campaign.title }}
+
+                        </strong>
+
+                    </td>
+
+                    <td>
+
+                        {{ campaign.subject }}
+
+                    </td>
+
+                    <td>
+
+                        {{ campaign.get_target_display }}
+
+                    </td>
+
+                    <td>
+
+                        {% if campaign.status == "draft" %}
+
+                            <span class="badge bg-secondary">
+
+                                Draft
+
+                            </span>
+
+                        {% elif campaign.status == "sending" %}
+
+                            <span class="badge bg-warning">
+
+                                Sending
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-success">
+
+                                Completed
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {{ campaign.created_at|date:"d M Y" }}
+
+                    </td>
+
+                    <td>
+
+                        {% if campaign.status == "draft" %}
+
+                        <a href="{% url 'dashboard:email_campaign_send' campaign.id %}"
+                           class="btn btn-success btn-sm rounded-pill">
+
+                            <i class="bi bi-send-fill me-1"></i>
+
+                            Send
+
+                        </a>
+
+                        {% else %}
+
+                        <button class="btn btn-outline-secondary btn-sm rounded-pill"
+                                disabled>
+
+                            Sent
+
+                        </button>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="6"
+                        class="text-center py-5 text-muted">
+
+                        No Email Campaign Found
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

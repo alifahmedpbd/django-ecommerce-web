@@ -3,7 +3,7 @@ from django.conf import settings
 
 import stripe
 
-from store.models import Product
+from store.models import Product, AbandonedCart
 from .cart import Cart
 from orders.forms import OrderCreateForm
 from orders.models import OrderItem, OrderTimeline, CouponUsage
@@ -20,6 +20,7 @@ from django.db.models import F
 from django.db import transaction
 
 from dashboard.helpers import feature_enabled
+from dashboard.models import CustomerActivity
 
 # ===============================
 # Add Product To Cart
@@ -51,17 +52,47 @@ def cart_add(request, product_id):
 
         return redirect(product.get_absolute_url())
 
+    # Add product to cart
     cart.add(
         product,
         quantity=quantity,
     )
 
+    # Save customer activity
+    if request.user.is_authenticated:
+
+        CustomerActivity.objects.create(
+            user=request.user,
+            product=product,
+            action="cart_add",
+        )
+
+        # Create / Update abandoned cart
+        abandoned_cart, created = AbandonedCart.objects.get_or_create(
+            user=request.user,
+            product=product,
+            recovered=False,
+            defaults={
+                "quantity": quantity,
+            },
+        )
+
+        if not created:
+
+            abandoned_cart.quantity = quantity
+
+            abandoned_cart.save(
+                update_fields=[
+                    "quantity",
+                    "updated_at",
+                ],
+            )
+
     messages.success(
         request,
-        f'"{product.name}" added to cart successfully.'
+        f'"{product.name}" added to cart successfully.',
     )
 
-    # Go back to previous page (Home/Product page)
     return redirect(
         request.META.get(
             "HTTP_REFERER",
@@ -101,6 +132,14 @@ def cart_remove(request, product_id):
         ),
         id=product_id,
     )
+
+    if request.user.is_authenticated:
+
+        CustomerActivity.objects.create(
+            user=request.user,
+            product=product,
+            action="cart_remove",
+        )
 
     cart.remove(product)
 
@@ -434,6 +473,8 @@ def checkout(request):
             # ==========================================
 
             if order.payment_method == "stripe":
+                
+                request.session.pop("coupon_code", None)
 
                 return redirect(
 
@@ -449,45 +490,36 @@ def checkout(request):
 
             if order.payment_method == "cod":
 
-                send_order_confirmation_email(
+                send_order_confirmation_email(request, order)
 
-                    request,
+                send_owner_new_order_email(request, order)
 
-                    order,
+            # ==========================================
+            # Recover Abandoned Cart
+            # ==========================================
 
-                )
+                if request.user.is_authenticated:
 
-                send_owner_new_order_email(
-
-                    request,
-
-                    order,
-
-                )
+                    AbandonedCart.objects.filter(
+                        user=request.user,
+                        recovered=False,
+                        ).update(
+                        recovered=True,
+                    )
 
                 cart.clear()
 
-                request.session.pop(
+                request.session.pop("coupon_code", None)
 
-                    "coupon_code",
-
-                    None,
-
-                )
-
-                return redirect(
-
-                    "orders:order_success",
-
-                    order.id,
-
-                )
+                return redirect("orders:order_success", order.id)
 
             # ==========================================
             # SSLCommerz
             # ==========================================
 
             if order.payment_method == "sslcommerz":
+
+                request.session.pop("coupon_code", None)
 
                 return redirect(
 

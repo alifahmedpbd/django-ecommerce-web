@@ -1,7 +1,7 @@
 from django import forms
 from store.models import Category, Product, Brand, ProductImage
 from orders.models import Coupon
-from .models import Announcement
+from .models import Announcement, EmailCampaign, EmailCampaignLog
 
 class CategoryForm(forms.ModelForm):
 
@@ -202,3 +202,90 @@ class AnnouncementForm(forms.ModelForm):
         model = Announcement
 
         fields = "__all__"
+
+class EmailCampaignForm(forms.ModelForm):
+
+    class Meta:
+
+        model = EmailCampaign
+
+        fields = [
+
+            "title",
+
+            "subject",
+
+            "target",
+
+            "message",
+
+        ]
+
+        widgets = {
+
+            "title": forms.TextInput(
+
+                attrs={
+
+                    "class": "form-control",
+
+                    "placeholder": "Campaign Name",
+
+                }
+
+            ),
+
+            "subject": forms.TextInput(
+
+                attrs={
+
+                    "class": "form-control",
+
+                    "placeholder": "Email Subject",
+
+                }
+
+            ),
+
+            "target": forms.Select(
+
+                attrs={
+
+                    "class": "form-select",
+
+                }
+
+            ),
+
+            "message": forms.Textarea(
+
+                attrs={
+
+                    "class": "form-control",
+
+                    "rows": 12,
+
+                    "placeholder": "Write your email message...",
+
+                }
+
+            ),
+
+        }
+
+    def __init__(self, *args, **kwargs):
+
+        super().__init__(*args, **kwargs)
+
+        for name, field in self.fields.items():
+
+            if name == "target":
+
+                field.widget.attrs["class"] = "form-select"
+
+            else:
+
+                field.widget.attrs["class"] = "form-control"
+
+        self.fields["message"].widget.attrs["rows"] = 12
+

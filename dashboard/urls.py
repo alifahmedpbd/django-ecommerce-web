@@ -66,7 +66,24 @@ urlpatterns = [
     path("reports/low-stock/excel/", views.low_stock_report_excel, name="low_stock_report_excel"),
 
     path("customers/", views.dashboard_customers, name="dashboard_customers"),
+
     path("customers/<int:user_id>/", views.dashboard_customer_detail, name="dashboard_customer_detail"),
+
+    path("customers/<int:user_id>/block/", views.customer_block, name="customer_block"),
+
+    path("customers/<int:user_id>/unblock/", views.customer_unblock, name="customer_unblock"),
+
+    path("customer-activity/", views.customer_activity, name="customer_activity"),
+
+    path("customers/online/", views.online_customers, name="online_customers"),
+
+    path("marketing/abandoned-carts/", views.abandoned_carts, name="abandoned_carts"),
+
+    path("abandoned-cart/<int:cart_id>/send/", views.send_abandoned_cart_email, name="send_abandoned_cart_email"),
+
+    path("wishlist-recovery/", views.wishlist_recovery, name="wishlist_recovery"),
+
+    path("wishlist-recovery/<int:wishlist_id>/send/", views.send_wishlist_promotion, name="send_wishlist_promotion"),
 
     path("currency/", views.currency_exchange, name="currency_exchange"),
 
@@ -113,5 +130,16 @@ urlpatterns = [
     path("returns/<int:pk>/review/", views.return_review, name="return_review"),
 
     path("product-ranking/", views.product_ranking, name="product_ranking"),
+
+
+    # ==========================================
+    # Email Marketing
+    # ==========================================
+
+    path("marketing/email/", views.email_campaign_list, name="email_campaign_list"),
+
+    path("marketing/email/create/", views.email_campaign_create, name="email_campaign_create"),
+
+    path("marketing/email/<int:campaign_id>/send/", views.email_campaign_send, name="email_campaign_send"),
 
 ]

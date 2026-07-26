@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.db.models import F
 from dashboard.helpers import feature_enabled
 from django.http import Http404
+from dashboard.models import CustomerActivity
 # Create your views here.
 
 def product_list(request, category_slug=None):
@@ -370,12 +371,25 @@ def add_to_wishlist(request, product_id):
         id=product_id,
     )
 
-    Wishlist.objects.get_or_create(
+    wishlist, created = Wishlist.objects.get_or_create(
         user=request.user,
         product=product,
     )
 
-    return redirect(request.META.get("HTTP_REFERER", "store:product_list"))
+    if created:
+
+        CustomerActivity.objects.create(
+            user=request.user,
+            product=product,
+            action="wishlist_add",
+        )
+
+    return redirect(
+        request.META.get(
+            "HTTP_REFERER",
+            "store:product_list",
+        )
+    )
 
 # ==========================================
 # Remove Product From Wishlist
@@ -397,7 +411,18 @@ def remove_from_wishlist(request, product_id):
         product=product,
     ).delete()
 
-    return redirect(request.META.get("HTTP_REFERER", "store:product_list"))
+    CustomerActivity.objects.create(
+        user=request.user,
+        product=product,
+        action="wishlist_remove",
+    )
+
+    return redirect(
+        request.META.get(
+            "HTTP_REFERER",
+            "store:product_list",
+        )
+    )
 
 # ==========================================
 # Wishlist Page

@@ -162,3 +162,155 @@ class Announcement(models.Model):
 
     def __str__(self):
         return self.text[:50]
+
+
+class CustomerActivity(models.Model):
+
+    ACTIONS = (
+
+        ("cart_add", "Cart Add"),
+
+        ("cart_remove", "Cart Remove"),
+
+        ("wishlist_add", "Wishlist Add"),
+
+        ("wishlist_remove", "Wishlist Remove"),
+
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+    product = models.ForeignKey(
+        "store.Product",
+        on_delete=models.CASCADE,
+    )
+
+    action = models.CharField(
+        max_length=30,
+        choices=ACTIONS,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+
+        ordering = [
+            "-created_at",
+        ]
+
+    def __str__(self):
+
+        return f"{self.user} - {self.action}"
+
+    
+class EmailCampaign(models.Model):
+
+    TARGET_CHOICES = [
+
+        ("all", "All Customers"),
+
+        ("wishlist", "Wishlist Customers"),
+
+        ("cart", "Cart Customers"),
+
+        ("no_order", "Customers Without Orders"),
+
+        ("selected", "Selected Customers"),
+
+    ]
+
+    STATUS_CHOICES = [
+
+        ("draft", "Draft"),
+
+        ("sending", "Sending"),
+
+        ("completed", "Completed"),
+
+        ("failed", "Failed"),
+
+    ]
+
+    title = models.CharField(
+        max_length=200,
+    )
+
+    subject = models.CharField(
+        max_length=255,
+    )
+
+    message = models.TextField()
+
+    target = models.CharField(
+        max_length=20,
+        choices=TARGET_CHOICES,
+        default="all",
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="draft",
+    )
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="email_campaigns",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    sent_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    def __str__(self):
+        return self.title
+
+
+class EmailCampaignLog(models.Model):
+
+    STATUS_CHOICES = [
+
+        ("success", "Success"),
+
+        ("failed", "Failed"),
+
+    ]
+
+    campaign = models.ForeignKey(
+        EmailCampaign,
+        on_delete=models.CASCADE,
+        related_name="logs",
+    )
+
+    customer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+    )
+
+    error = models.TextField(
+        blank=True,
+    )
+
+    sent_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+        return f"{self.customer.email} - {self.status}"

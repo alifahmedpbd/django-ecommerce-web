@@ -1,0 +1,611 @@
+{% extends "dashboard/base.html" %}
+
+{% block dashboard_content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+
+        <h2 class="fw-bold mb-1">
+
+            Customer Activity Monitor
+
+        </h2>
+
+        <p class="text-muted mb-0">
+
+            Monitor online and offline customers in real time.
+
+        </p>
+
+    </div>
+
+    <button
+        class="btn btn-outline-secondary"
+        onclick="location.reload();">
+
+        <i class="bi bi-arrow-clockwise me-2"></i>
+
+        Refresh
+
+    </button>
+
+</div>
+
+<!-- ========================================= -->
+<!-- Statistics -->
+<!-- ========================================= -->
+
+<div class="row g-4 mb-4">
+
+    <div class="col-lg-4">
+
+        <div class="card border-0 shadow-sm">
+
+            <div class="card-body">
+
+                <small class="text-muted">
+
+                    Total Customers
+
+                </small>
+
+                <h2 class="fw-bold mt-2">
+
+                    {{ customers.count }}
+
+                </h2>
+
+                <span class="badge bg-dark">
+
+                    Registered
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-4">
+
+        <div class="card border-0 shadow-sm">
+
+            <div class="card-body">
+
+                <small class="text-muted">
+
+                    Online
+
+                </small>
+
+                <h2 class="fw-bold text-success mt-2">
+
+                    {{ online_count }}
+
+                </h2>
+
+                <span class="badge bg-success">
+
+                    Active Now
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-4">
+
+        <div class="card border-0 shadow-sm">
+
+            <div class="card-body">
+
+                <small class="text-muted">
+
+                    Offline
+
+                </small>
+
+                <h2 class="fw-bold text-secondary mt-2">
+
+                    {{ offline_count }}
+
+                </h2>
+
+                <span class="badge bg-secondary">
+
+                    Inactive
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ========================================= -->
+<!-- Search -->
+<!-- ========================================= -->
+
+<div class="card border-0 shadow-sm mb-4">
+
+    <div class="card-body">
+
+        <form method="get">
+
+            <div class="row g-3">
+
+                <div class="col-lg-10">
+
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ request.GET.q }}"
+                        class="form-control"
+                        placeholder="Search customer name, email or phone...">
+
+                </div>
+
+                <div class="col-lg-2 d-grid">
+
+                    <button class="btn btn-primary">
+
+                        <i class="bi bi-search me-2"></i>
+
+                        Search
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- ========================================= -->
+<!-- Customer Table -->
+<!-- ========================================= -->
+
+<div class="card border-0 shadow-sm">
+
+<div class="table-responsive">
+
+<table class="table table-hover align-middle mb-0">
+
+<thead class="table-light">
+
+<tr>
+
+<th style="width:280px;">
+
+Customer
+
+</th>
+
+<th style="width:130px;">
+
+Status
+
+</th>
+
+<th>
+
+Last Seen
+
+</th>
+
+<th>
+
+Current Page
+
+</th>
+
+<th>
+
+Browser
+
+</th>
+
+<th>
+
+IP
+
+</th>
+
+<th class="text-center">
+
+Actions
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+    <tbody>
+
+{% for customer in customers %}
+
+<tr>
+
+<td>
+
+<div class="d-flex align-items-center">
+
+{% if customer.profile_image %}
+
+<img
+src="{{ customer.profile_image.url }}"
+class="rounded-circle me-3 border"
+width="50"
+height="50"
+style="object-fit:cover;">
+
+{% else %}
+
+<div
+class="rounded-circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center me-3"
+style="width:50px;height:50px;">
+
+{{ customer.username|first|upper }}
+
+</div>
+
+{% endif %}
+
+<div>
+
+<div class="fw-semibold">
+
+{{ customer.get_full_name|default:customer.username }}
+
+</div>
+
+<small class="text-muted">
+
+{{ customer.email }}
+
+</small>
+
+{% if customer.phone %}
+
+<br>
+
+<small class="text-primary">
+
+{{ customer.phone }}
+
+</small>
+
+{% endif %}
+
+</div>
+
+</div>
+
+</td>
+
+<!-- Status -->
+
+<td>
+
+{% if customer.last_activity and customer.last_activity >= online_threshold %}
+
+<span class="badge bg-success">
+
+🟢 Online
+
+</span>
+
+{% else %}
+
+<span class="badge bg-secondary">
+
+⚪ Offline
+
+</span>
+
+{% endif %}
+
+</td>
+
+<!-- Last Seen -->
+
+<td>
+
+{% if customer.last_activity %}
+
+<div class="fw-semibold">
+
+⏱ {{ customer.last_activity|timesince }} ago
+
+</div>
+
+<small class="text-muted">
+
+{{ customer.last_activity|date:"d M Y • h:i A" }}
+
+</small>
+
+{% else %}
+
+<span class="text-muted">
+
+Never
+
+</span>
+
+{% endif %}
+
+</td>
+
+<!-- Current Page -->
+
+<td>
+
+{% if customer.last_seen_page %}
+
+<code>
+
+{{ customer.last_seen_page }}
+
+</code>
+
+{% else %}
+
+<span class="text-muted">
+
+-
+
+</span>
+
+{% endif %}
+
+</td>
+
+<!-- Browser -->
+
+<td style="min-width:260px;">
+
+    <div>
+
+        {{ customer.device|default:"-" }}
+
+    </div>
+
+    <small class="text-primary">
+
+        {{ customer.browser|default:"-" }}
+
+    </small>
+
+    <br>
+
+    <small class="text-muted">
+
+        {{ customer.operating_system|default:"-" }}
+
+    </small>
+
+</td>
+
+<!-- IP -->
+
+<td>
+
+<span class="badge bg-light text-dark">
+
+🌍 {{ customer.last_ip|default:"Unknown" }}
+
+</span>
+
+</td>
+
+<!-- Actions -->
+
+<td>
+
+<div class="btn-group">
+
+<a
+href="{% url 'dashboard:dashboard_customer_detail' customer.id %}"
+class="btn btn-outline-primary btn-sm"
+title="Customer Detail">
+
+<i class="bi bi-person"></i>
+
+</a>
+
+<a
+href="mailto:{{ customer.email }}"
+class="btn btn-outline-success btn-sm"
+title="Email">
+
+<i class="bi bi-envelope-fill"></i>
+
+</a>
+
+{% if customer.phone %}
+
+<a
+href="https://wa.me/{{ customer.phone|cut:'+' }}"
+target="_blank"
+class="btn btn-success btn-sm"
+title="WhatsApp">
+
+<i class="bi bi-whatsapp"></i>
+
+</a>
+
+{% endif %}
+
+{% if customer.is_blocked %}
+
+<a
+href="{% url 'dashboard:customer_unblock' customer.id %}"
+class="btn btn-warning btn-sm"
+title="Unblock">
+
+<i class="bi bi-unlock-fill"></i>
+
+</a>
+
+{% else %}
+
+<a
+href="{% url 'dashboard:customer_block' customer.id %}"
+class="btn btn-danger btn-sm"
+title="Block">
+
+<i class="bi bi-lock-fill"></i>
+
+</a>
+
+{% endif %}
+
+</div>
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+
+<td colspan="7" class="text-center py-5">
+
+<i class="bi bi-wifi-off display-4 text-secondary"></i>
+
+<h5 class="mt-3">
+
+No Customer Found
+
+</h5>
+
+<p class="text-muted mb-0">
+
+No customer activity available.
+
+</p>
+
+</td>
+
+</tr>
+
+{% endfor %}
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- ========================================= -->
+<!-- Pagination -->
+<!-- ========================================= -->
+
+{% if customers.has_other_pages %}
+
+<nav class="mt-4">
+
+    <ul class="pagination justify-content-center">
+
+        {% if customers.has_previous %}
+
+        <li class="page-item">
+
+            <a
+                class="page-link"
+                href="?page={{ customers.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+
+                <i class="bi bi-chevron-left"></i>
+
+            </a>
+
+        </li>
+
+        {% endif %}
+
+        {% for page in customers.paginator.page_range %}
+
+            {% if customers.number == page %}
+
+                <li class="page-item active">
+
+                    <span class="page-link">
+
+                        {{ page }}
+
+                    </span>
+
+                </li>
+
+            {% elif page > customers.number|add:"-3" and page < customers.number|add:"3" %}
+
+                <li class="page-item">
+
+                    <a
+                        class="page-link"
+                        href="?page={{ page }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+
+                        {{ page }}
+
+                    </a>
+
+                </li>
+
+            {% endif %}
+
+        {% endfor %}
+
+        {% if customers.has_next %}
+
+        <li class="page-item">
+
+            <a
+                class="page-link"
+                href="?page={{ customers.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+
+                <i class="bi bi-chevron-right"></i>
+
+            </a>
+
+        </li>
+
+        {% endif %}
+
+    </ul>
+
+</nav>
+
+{% endif %}
+
+<!-- ========================================= -->
+<!-- Auto Refresh -->
+<!-- ========================================= -->
+
+<script>
+
+setInterval(function () {
+
+    location.reload();
+
+}, 30000);
+
+</script>
+
+{% endblock %}

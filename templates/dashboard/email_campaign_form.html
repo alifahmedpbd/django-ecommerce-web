@@ -1,0 +1,169 @@
+{% extends "dashboard/base.html" %}
+
+{% block dashboard_content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-xl-10">
+
+        <div class="card border-0 shadow rounded-4">
+
+            <div class="card-header bg-white py-4 border-0">
+
+                <h3 class="fw-bold mb-1">
+                    📧 Create Email Campaign
+                </h3>
+
+                <p class="text-muted mb-0">
+                    Create and send professional marketing emails to your customers.
+                </p>
+
+            </div>
+
+            <div class="card-body p-4">
+
+                <form method="post">
+
+                    {% csrf_token %}
+
+                    <!-- Campaign Information -->
+
+                    <h5 class="fw-bold mb-3">
+                        Campaign Information
+                    </h5>
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-4">
+
+                            <label class="form-label fw-semibold">
+                                Campaign Title
+                            </label>
+
+                            {{ form.title }}
+
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+
+                            <label class="form-label fw-semibold">
+                                Target Audience
+                            </label>
+
+                            {{ form.target }}
+
+                        </div>
+
+                    </div>
+
+                    <hr>
+
+                    <!-- Email -->
+
+                    <h5 class="fw-bold mb-3">
+                        Email Details
+                    </h5>
+
+                    <div class="mb-4">
+
+                        <label class="form-label fw-semibold">
+                            Subject
+                        </label>
+
+                        {{ form.subject }}
+
+                    </div>
+
+                    <div class="mb-4">
+
+                        <label class="form-label fw-semibold">
+                            Message
+                        </label>
+
+                        {{ form.message }}
+
+                        <small class="text-muted">
+
+                            Available variables:
+                            <code>{{ customer.first_name }}</code>,
+                            <code>{{ shop_name }}</code>
+
+                        </small>
+
+                    </div>
+
+                    <hr>
+
+                    <!-- Preview -->
+
+                    <div class="alert alert-light border">
+
+                        <h6 class="fw-bold mb-3">
+                            Email Preview
+                        </h6>
+
+                        <div class="border rounded-4 p-4 bg-white">
+
+                            <h4 class="fw-bold text-primary">
+
+                                {{ form.subject.value|default:"Your Email Subject" }}
+
+                            </h4>
+
+                            <hr>
+
+                            <p>
+
+                                {{ form.message.value|default:"Your campaign message will appear here." }}
+
+                            </p>
+
+                            <div class="mt-4">
+
+                                <a href="#"
+                                   class="btn btn-primary rounded-pill px-4">
+
+                                    Shop Now
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+
+                        <a href="{% url 'dashboard:email_campaign_list' %}"
+                           class="btn btn-outline-secondary rounded-pill px-4">
+
+                            ← Back
+
+                        </a>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary rounded-pill px-5">
+
+                            <i class="bi bi-envelope-paper-fill me-2"></i>
+
+                            Save Campaign
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

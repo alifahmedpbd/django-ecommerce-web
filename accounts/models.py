@@ -36,6 +36,40 @@ class User(AbstractUser):
         null=True,
     )
 
+    is_blocked = models.BooleanField(
+        default=False,
+    )
+
+    last_activity = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    last_seen_page = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
+    last_ip = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+    )
+
+    device = models.CharField(
+        max_length=200,
+        blank=True,
+    )
+
+    operating_system = models.CharField(
+    max_length=50,
+    blank=True,
+    )
+
+    browser = models.CharField(
+        max_length=200,
+        blank=True,
+    )
+
     def __str__(self):
         return self.username
 
