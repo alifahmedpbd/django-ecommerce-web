@@ -68,7 +68,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    #'accounts.middleware.UserActivityMiddleware',
+    "accounts.middleware.UserActivityMiddleware",
     "accounts.middleware.BlockedUserMiddleware",
     "dashboard.middleware.MaintenanceModeMiddleware",
     "dashboard.middleware.ComingSoonMiddleware",
