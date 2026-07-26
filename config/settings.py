@@ -68,7 +68,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'accounts.middleware.UserActivityMiddleware',
+    #'accounts.middleware.UserActivityMiddleware',
     "accounts.middleware.BlockedUserMiddleware",
     "dashboard.middleware.MaintenanceModeMiddleware",
     "dashboard.middleware.ComingSoonMiddleware",
@@ -249,6 +249,13 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
     SECURE_HSTS_PRELOAD = True
+
+    SECURE_PROXY_SSL_HEADER = (
+        "HTTP_X_FORWARDED_PROTO",
+        "https",
+    )
+
+    USE_X_FORWARDED_HOST = True
     
 
 csrf_trusted_origins = [
