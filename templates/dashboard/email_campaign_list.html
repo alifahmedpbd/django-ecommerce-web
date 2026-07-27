@@ -2,55 +2,194 @@
 
 {% block dashboard_content %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container-fluid">
 
-    <div>
+    <!-- Header -->
 
-        <h3 class="fw-bold mb-1">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
 
-            Email Marketing
+        <div>
 
-        </h3>
+            <h2 class="fw-bold mb-1">
 
-        <p class="text-muted mb-0">
+                <i class="bi bi-envelope-paper-heart text-primary me-2"></i>
 
-            Create and send promotional email campaigns.
+                Email Marketing Center
 
-        </p>
+            </h2>
+
+            <p class="text-muted mb-0">
+
+                Create, manage and send professional marketing campaigns to your customers.
+
+            </p>
+
+        </div>
+
+        <a
+            href="{% url 'dashboard:email_campaign_create' %}"
+            class="btn btn-primary rounded-pill px-4">
+
+            <i class="bi bi-plus-circle me-2"></i>
+
+            New Campaign
+
+        </a>
 
     </div>
 
-    <a href="{% url 'dashboard:email_campaign_create' %}"
-       class="btn btn-primary rounded-pill px-4">
 
-        <i class="bi bi-plus-circle me-2"></i>
+    <!-- Statistics -->
 
-        New Campaign
+    <div class="row g-4 mb-4">
 
-    </a>
+        <div class="col-xl-3 col-md-6">
 
-</div>
+            <div class="card border-0 shadow-sm h-100">
 
+                <div class="card-body">
 
-<div class="row g-4 mb-4">
+                    <div class="d-flex justify-content-between">
 
-    <div class="col-lg-4">
+                        <div>
 
-        <div class="card border-0 shadow-sm rounded-4">
+                            <small class="text-muted">
 
-            <div class="card-body">
+                                Total Campaigns
 
-                <small class="text-muted">
+                            </small>
 
-                    Total Campaigns
+                            <h2 class="fw-bold mt-2 mb-0">
 
-                </small>
+                                {{ total_campaigns }}
 
-                <h2 class="fw-bold mt-2">
+                            </h2>
 
-                    {{ campaigns.count }}
+                        </div>
 
-                </h2>
+                        <div class="fs-1 text-primary">
+
+                            <i class="bi bi-envelope-fill"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <small class="text-muted">
+
+                                Draft Campaigns
+
+                            </small>
+
+                            <h2 class="fw-bold text-secondary mt-2 mb-0">
+
+                                {{ draft_count }}
+
+                            </h2>
+
+                        </div>
+
+                        <div class="fs-1 text-secondary">
+
+                            <i class="bi bi-pencil-square"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <small class="text-muted">
+
+                                Completed
+
+                            </small>
+
+                            <h2 class="fw-bold text-success mt-2 mb-0">
+
+                                {{ completed_count }}
+
+                            </h2>
+
+                        </div>
+
+                        <div class="fs-1 text-success">
+
+                            <i class="bi bi-check-circle-fill"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <small class="text-muted">
+
+                                Total Emails Sent
+
+                            </small>
+
+                            <h2 class="fw-bold text-warning mt-2 mb-0">
+
+                                {{ total_sent }}
+
+                            </h2>
+
+                        </div>
+
+                        <div class="fs-1 text-warning">
+
+                            <i class="bi bi-send-check-fill"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
 
             </div>
 
@@ -58,200 +197,592 @@
 
     </div>
 
-    <div class="col-lg-4">
 
-        <div class="card border-0 shadow-sm rounded-4">
+    <!-- Search & Filters -->
 
-            <div class="card-body">
+    <div class="card border-0 shadow-sm mb-4">
 
-                <small class="text-muted">
+        <div class="card-body">
 
-                    Completed
+            <form method="get">
 
-                </small>
+                <div class="row g-3 align-items-center">
 
-                <h2 class="fw-bold mt-2 text-success">
+                    <div class="col-lg-5">
 
-                    {{ campaigns|length }}
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ request.GET.search }}"
+                            class="form-control"
+                            placeholder="Search campaign title or subject...">
 
-                </h2>
+                    </div>
 
-            </div>
+                    <div class="col-lg-3">
+
+                        <select
+                            name="status"
+                            class="form-select">
+
+                            <option value="">
+
+                                All Status
+
+                            </option>
+
+                            <option value="draft">
+
+                                Draft
+
+                            </option>
+
+                            <option value="sending">
+
+                                Sending
+
+                            </option>
+
+                            <option value="completed">
+
+                                Completed
+
+                            </option>
+
+                            <option value="failed">
+
+                                Failed
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-lg-3">
+
+                        <select
+                            name="target"
+                            class="form-select">
+
+                            <option value="">
+
+                                All Targets
+
+                            </option>
+
+                            <option value="all">
+
+                                All Customers
+
+                            </option>
+
+                            <option value="wishlist">
+
+                                Wishlist
+
+                            </option>
+
+                            <option value="cart">
+
+                                Abandoned Cart
+
+                            </option>
+
+                            <option value="no_order">
+
+                                No Order
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-lg-1 d-grid">
+
+                        <button
+                            class="btn btn-dark">
+
+                            <i class="bi bi-search"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
 
         </div>
 
     </div>
 
-    <div class="col-lg-4">
 
-        <div class="card border-0 shadow-sm rounded-4">
+    <!-- Campaign Table -->
 
-            <div class="card-body">
-
-                <small class="text-muted">
-
-                    Marketing Center
-
-                </small>
-
-                <h5 class="fw-bold mt-3">
-
-                    Ready
-
-                </h5>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<div class="card border-0 shadow-sm rounded-4">
-
-    <div class="card-body">
+    <div class="card border-0 shadow-sm">
 
         <div class="table-responsive">
 
-            <table class="table align-middle">
+            <table class="table table-hover align-middle mb-0">
 
-                <thead>
+                <thead class="table-light">
 
                 <tr>
 
-                    <th>Title</th>
-
-                    <th>Subject</th>
+                    <th>Campaign</th>
 
                     <th>Target</th>
 
+                    <th>Created By</th>
+
                     <th>Status</th>
+
+                    <th>Recipients</th>
+
+                    <th>Success</th>
+
+                    <th>Failed</th>
 
                     <th>Created</th>
 
-                    <th width="180"></th>
+                    <th class="text-center">
+
+                        Actions
+
+                    </th>
 
                 </tr>
 
                 </thead>
 
                 <tbody>
+                    {% for campaign in campaigns %}
 
-                {% for campaign in campaigns %}
+<tr>
 
-                <tr>
+    <!-- Campaign -->
 
-                    <td>
+    <td style="min-width:280px;">
 
-                        <strong>
+        <div>
 
-                            {{ campaign.title }}
+            <strong class="fs-6">
 
-                        </strong>
+                {{ campaign.title }}
 
-                    </td>
+            </strong>
 
-                    <td>
+            <br>
 
-                        {{ campaign.subject }}
+            <small class="text-muted">
 
-                    </td>
+                {{ campaign.subject|truncatechars:70 }}
 
-                    <td>
+            </small>
 
-                        {{ campaign.get_target_display }}
+        </div>
 
-                    </td>
+    </td>
 
-                    <td>
+    <!-- Target -->
 
-                        {% if campaign.status == "draft" %}
+    <td>
 
-                            <span class="badge bg-secondary">
+        {% if campaign.target == "all" %}
 
-                                Draft
+            <span class="badge bg-primary">
 
-                            </span>
+                All Customers
 
-                        {% elif campaign.status == "sending" %}
+            </span>
 
-                            <span class="badge bg-warning">
+        {% elif campaign.target == "wishlist" %}
 
-                                Sending
+            <span class="badge bg-danger">
 
-                            </span>
+                Wishlist
 
-                        {% else %}
+            </span>
 
-                            <span class="badge bg-success">
+        {% elif campaign.target == "cart" %}
 
-                                Completed
+            <span class="badge bg-warning text-dark">
 
-                            </span>
+                Abandoned Cart
 
-                        {% endif %}
+            </span>
 
-                    </td>
+        {% elif campaign.target == "no_order" %}
 
-                    <td>
+            <span class="badge bg-info text-dark">
 
-                        {{ campaign.created_at|date:"d M Y" }}
+                No Order
 
-                    </td>
+            </span>
 
-                    <td>
+        {% else %}
 
-                        {% if campaign.status == "draft" %}
+            <span class="badge bg-secondary">
 
-                        <a href="{% url 'dashboard:email_campaign_send' campaign.id %}"
-                           class="btn btn-success btn-sm rounded-pill">
+                Selected
 
-                            <i class="bi bi-send-fill me-1"></i>
+            </span>
 
-                            Send
+        {% endif %}
 
-                        </a>
+    </td>
 
-                        {% else %}
+    <!-- Created By -->
 
-                        <button class="btn btn-outline-secondary btn-sm rounded-pill"
-                                disabled>
+    <td>
 
-                            Sent
+        {% if campaign.created_by %}
 
-                        </button>
+            <div class="d-flex align-items-center">
 
-                        {% endif %}
+                <div class="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center me-2"
+                     style="width:38px;height:38px;">
 
-                    </td>
+                    {{ campaign.created_by.username|first|upper }}
 
-                </tr>
+                </div>
 
-                {% empty %}
+                <div>
 
-                <tr>
+                    <strong>
 
-                    <td colspan="6"
-                        class="text-center py-5 text-muted">
+                        {{ campaign.created_by.username }}
 
-                        No Email Campaign Found
+                    </strong>
 
-                    </td>
+                    <br>
 
-                </tr>
+                    <small class="text-muted">
 
-                {% endfor %}
+                        {{ campaign.created_by.email }}
 
+                    </small>
+
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <span class="text-muted">
+
+                -
+
+            </span>
+
+        {% endif %}
+
+    </td>
+
+    <!-- Status -->
+
+    <td>
+
+        {% if campaign.status == "draft" %}
+
+            <span class="badge bg-secondary">
+
+                <i class="bi bi-pencil-square me-1"></i>
+
+                Draft
+
+            </span>
+
+        {% elif campaign.status == "sending" %}
+
+            <span class="badge bg-warning text-dark">
+
+                <i class="bi bi-arrow-repeat me-1"></i>
+
+                Sending
+
+            </span>
+
+        {% elif campaign.status == "completed" %}
+
+            <span class="badge bg-success">
+
+                <i class="bi bi-check-circle-fill me-1"></i>
+
+                Completed
+
+            </span>
+
+        {% else %}
+
+            <span class="badge bg-danger">
+
+                <i class="bi bi-x-circle-fill me-1"></i>
+
+                Failed
+
+            </span>
+
+        {% endif %}
+
+    </td>
+
+    <!-- Recipients -->
+
+    <td>
+
+        <span class="badge bg-dark">
+
+            {{ campaign.recipient_count }}
+
+        </span>
+
+    </td>
+
+    <!-- Success -->
+
+    <td>
+
+        <span class="badge bg-success">
+
+            {{ campaign.success_count }}
+
+        </span>
+
+    </td>
+
+    <!-- Failed -->
+
+    <td>
+
+        <span class="badge bg-danger">
+
+            {{ campaign.failed_count }}
+
+        </span>
+
+    </td>
+
+    <!-- Created -->
+
+    <td>
+
+        {{ campaign.created_at|date:"d M Y" }}
+
+        <br>
+
+        <small class="text-muted">
+
+            {{ campaign.created_at|time:"h:i A" }}
+
+        </small>
+
+    </td>
+
+    <!-- Actions -->
+
+    <td class="text-center" style="min-width:250px;">
+
+        <div class="btn-group">
+
+            {% if campaign.status == "draft" %}
+
+            <a
+                href="{% url 'dashboard:email_campaign_send' campaign.id %}"
+                class="btn btn-success btn-sm"
+                title="Send">
+
+                <i class="bi bi-send-fill"></i>
+
+            </a>
+
+            {% endif %}
+
+            <a
+                href="{% url 'dashboard:email_campaign_edit' campaign.id %}"
+                class="btn btn-primary btn-sm"
+                title="Edit">
+
+                <i class="bi bi-pencil-square"></i>
+
+            </a>
+
+            <a
+                href="{% url 'dashboard:email_campaign_edit' campaign.id %}"
+                class="btn btn-info btn-sm text-white"
+                title="Logs">
+
+                <i class="bi bi-clock-history"></i>
+
+            </a>
+
+            <a
+                href="{% url 'dashboard:email_campaign_delete' campaign.id %}"
+                class="btn btn-danger btn-sm"
+                onclick="return confirm('Delete this campaign permanently?')"
+                title="Delete">
+
+                <i class="bi bi-trash-fill"></i>
+
+            </a>
+
+        </div>
+
+    </td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+
+    <td colspan="9" class="text-center py-5">
+
+        <i class="bi bi-envelope-x display-3 text-muted"></i>
+
+        <h5 class="mt-3">
+
+            No Campaign Found
+
+        </h5>
+
+        <p class="text-muted">
+
+            Create your first email campaign to start marketing.
+
+        </p>
+
+    </td>
+
+</tr>
+
+{% endfor %}
                 </tbody>
 
             </table>
 
         </div>
 
+        <!-- Pagination -->
+
+        {% if is_paginated %}
+
+        <div class="card-footer bg-white">
+
+            <nav>
+
+                <ul class="pagination justify-content-center mb-0">
+
+                    {% if page_obj.has_previous %}
+
+                    <li class="page-item">
+
+                        <a
+                            class="page-link"
+                            href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.target %}&target={{ request.GET.target }}{% endif %}">
+
+                            <i class="bi bi-chevron-left"></i>
+
+                        </a>
+
+                    </li>
+
+                    {% else %}
+
+                    <li class="page-item disabled">
+
+                        <span class="page-link">
+
+                            <i class="bi bi-chevron-left"></i>
+
+                        </span>
+
+                    </li>
+
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+
+                        {% if page_obj.number == num %}
+
+                        <li class="page-item active">
+
+                            <span class="page-link">
+
+                                {{ num }}
+
+                            </span>
+
+                        </li>
+
+                        {% else %}
+
+                        <li class="page-item">
+
+                            <a
+                                class="page-link"
+                                href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.target %}&target={{ request.GET.target }}{% endif %}">
+
+                                {{ num }}
+
+                            </a>
+
+                        </li>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+
+                    <li class="page-item">
+
+                        <a
+                            class="page-link"
+                            href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.target %}&target={{ request.GET.target }}{% endif %}">
+
+                            <i class="bi bi-chevron-right"></i>
+
+                        </a>
+
+                    </li>
+
+                    {% else %}
+
+                    <li class="page-item disabled">
+
+                        <span class="page-link">
+
+                            <i class="bi bi-chevron-right"></i>
+
+                        </span>
+
+                    </li>
+
+                    {% endif %}
+
+                </ul>
+
+            </nav>
+
+        </div>
+
+        {% endif %}
+
     </div>
 
 </div>
+
+<script>
+
+setTimeout(function(){
+
+    location.reload();
+
+},60000);
+
+</script>
 
 {% endblock %}

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Brand, Category, Product, Wishlist, Review
+from .models import Brand, Category, Product, Wishlist, Review, ProductImage
 
 
 @admin.register(Brand)
@@ -62,6 +62,15 @@ class ProductAdmin(admin.ModelAdmin):
     prepopulated_fields = {
         "slug": ("name",)
     }
+
+
+
+class ProductImageInline(admin.TabularInline):
+
+    model = ProductImage
+
+    extra = 3
+
 
 
 @admin.register(Wishlist)

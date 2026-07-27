@@ -8,7 +8,7 @@ from orders.models import Order, Coupon, OrderTimeline, ReturnRequest,Refund, Re
 from django.contrib import messages
 
 from store.models import Category, Product, Brand, ProductImage, AbandonedCart, Wishlist
-from .forms import CategoryForm, ProductForm, BrandForm, ProductImageForm, CouponForm, AnnouncementForm, EmailCampaignForm
+from .forms import CategoryForm, ProductForm, BrandForm, ProductGalleryForm, CouponForm, AnnouncementForm, EmailCampaignForm
 
 from .decorators import owner_required
 from django.core.paginator import Paginator
@@ -1053,8 +1053,10 @@ def product_list(request):
 # ==========================================
 # Product Create
 # ==========================================
+
 @owner_required
 def product_create(request):
+
 
     if request.method == "POST":
 
@@ -1065,10 +1067,17 @@ def product_create(request):
 
         if form.is_valid():
 
-            form.save()
+            product = form.save()
+
+            for image in request.FILES.getlist("images"):
+
+                ProductImage.objects.create(
+                    product=product,
+                    image=image,
+                )
 
             messages.success(
-                request,
+                    request,
                 "Product created successfully.",
             )
 
@@ -1078,20 +1087,20 @@ def product_create(request):
 
         form = ProductForm()
 
+        
+
     return render(
         request,
         "dashboard/products/create.html",
         {
-
             "form": form,
-
         },
     )
-
 
 # ==========================================
 # Product Update
 # ==========================================
+
 @owner_required
 def product_update(request, pk):
 
@@ -1110,7 +1119,15 @@ def product_update(request, pk):
 
         if form.is_valid():
 
-            form.save()
+            product = form.save()
+
+            for image in request.FILES.getlist("images"):
+
+                ProductImage.objects.create(
+                    product=product,
+                    image=image,
+                )
+                
 
             messages.success(
                 request,
@@ -1125,15 +1142,15 @@ def product_update(request, pk):
             instance=product,
         )
 
+        
+
     return render(
         request,
         "dashboard/products/update.html",
         {
-
             "form": form,
-
             "product": product,
-
+            "gallery": product.gallery.all(),
         },
     )
 
@@ -1188,7 +1205,7 @@ def product_gallery(request, pk):
         "image",
     )
 
-    form = ProductImageForm()
+    form = ProductGalleryForm()
 
     context = {
 
@@ -1228,7 +1245,7 @@ def product_image_create(request, pk):
 
     if request.method == "POST":
 
-        form = ProductImageForm(
+        form = ProductGalleryForm(
 
             request.POST,
 
@@ -1269,14 +1286,12 @@ def product_image_create(request, pk):
 # Delete Product Image
 # ==========================================
 
+@owner_required
 def product_image_delete(request, pk):
 
     image = get_object_or_404(
-
         ProductImage,
-
         pk=pk,
-
     )
 
     product_id = image.product.id
@@ -1284,19 +1299,13 @@ def product_image_delete(request, pk):
     image.delete()
 
     messages.success(
-
         request,
-
-        "Image Deleted Successfully.",
-
+        "Image deleted successfully.",
     )
 
     return redirect(
-
-        "dashboard:product_gallery",
-
+        "dashboard:product_update",
         pk=product_id,
-
     )
 
 
@@ -4278,22 +4287,53 @@ def product_ranking(request):
         },
     )
 
+
+
+
 @owner_or_staff_required
 def email_campaign_list(request):
 
     campaigns = (
         EmailCampaign.objects
         .select_related("created_by")
+        .annotate(
+            success_count=Count(
+                "logs",
+                filter=Q(logs__status="success"),
+            ),
+            failed_count=Count(
+                "logs",
+                filter=Q(logs__status="failed"),
+            ),
+            recipient_count=Count("logs"),
+        )
         .order_by("-created_at")
     )
+
+    context = {
+        "campaigns": campaigns,
+
+        "total_campaigns": campaigns.count(),
+
+        "draft_count": EmailCampaign.objects.filter(
+            status="draft"
+        ).count(),
+
+        "completed_count": EmailCampaign.objects.filter(
+            status="completed"
+        ).count(),
+
+        "total_sent": EmailCampaignLog.objects.filter(
+            status="success"
+        ).count(),
+    }
 
     return render(
         request,
         "dashboard/email_campaign_list.html",
-        {
-            "campaigns": campaigns,
-        },
+        context,
     )
+
 
 @owner_or_staff_required
 def email_campaign_create(request):
@@ -4441,6 +4481,70 @@ def email_campaign_send(request, campaign_id):
     messages.success(
         request,
         "Campaign sent successfully.",
+    )
+
+    return redirect(
+        "dashboard:email_campaign_list",
+    )
+
+
+@owner_or_staff_required
+def email_campaign_edit(request, campaign_id):
+
+    campaign = get_object_or_404(
+        EmailCampaign,
+        id=campaign_id,
+    )
+
+    if request.method == "POST":
+
+        form = EmailCampaignForm(
+            request.POST,
+            instance=campaign,
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+                request,
+                "Campaign updated successfully.",
+            )
+
+            return redirect(
+                "dashboard:email_campaign_list",
+            )
+
+    else:
+
+        form = EmailCampaignForm(
+            instance=campaign,
+        )
+
+    return render(
+        request,
+        "dashboard/email_campaign_form.html",
+        {
+            "form": form,
+            "campaign": campaign,
+        },
+    )
+
+
+@owner_or_staff_required
+def email_campaign_delete(request, campaign_id):
+
+    campaign = get_object_or_404(
+        EmailCampaign,
+        id=campaign_id,
+    )
+
+    campaign.delete()
+
+    messages.success(
+        request,
+        "Campaign deleted successfully.",
     )
 
     return redirect(

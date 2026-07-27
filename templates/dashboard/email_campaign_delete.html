@@ -1,0 +1,50 @@
+{% extends "dashboard/base.html" %}
+
+{% block dashboard_content %}
+
+<div class="card shadow-sm border-0">
+
+    <div class="card-body text-center py-5">
+
+        <i class="bi bi-trash display-3 text-danger"></i>
+
+        <h3 class="mt-3">
+
+            Delete Campaign
+
+        </h3>
+
+        <p class="text-muted">
+
+            Are you sure you want to delete
+            <strong>{{ campaign.name }}</strong>?
+
+        </p>
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            <button class="btn btn-danger">
+
+                <i class="bi bi-trash"></i>
+
+                Delete
+
+            </button>
+
+            <a
+                href="{% url 'dashboard:email_campaign_list' %}"
+                class="btn btn-secondary">
+
+                Cancel
+
+            </a>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

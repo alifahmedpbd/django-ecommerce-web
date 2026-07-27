@@ -112,27 +112,25 @@ class BrandForm(forms.ModelForm):
 
 
 # ==========================================
-# Product Image Form
+# Product Gallery Form
 # ==========================================
 
-class ProductImageForm(forms.ModelForm):
-
-    class Meta:
-
-        model = ProductImage
-
-        fields = [
-
-            "image",
-
-        ]
-
-        widgets = {
-            "image": forms.FileInput(attrs={"class": "form-control"}),
-
-        }
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
 
 
+class ProductGalleryForm(forms.Form):
+
+    images = forms.FileField(
+        required=False,
+        widget=MultipleFileInput(
+            attrs={
+                "multiple": True,
+                "class": "form-control",
+                "accept": "image/*",
+            }
+        ),
+    )
 
 # ==========================================
 # Coupon Form

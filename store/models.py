@@ -358,20 +358,24 @@ class Product(models.Model):
 
 class ProductImage(models.Model):
 
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="gallery")
-    image = models.ImageField(upload_to="products/gallery/")
-    created_at = models.DateTimeField(auto_now_add=True)
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="gallery",
+    )
+
+    image = CloudinaryField(
+        "image",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
 
     class Meta:
-
-        ordering = [
-
-            "id",
-
-        ]
+        ordering = ["id"]
 
     def __str__(self):
-
         return self.product.name
 
     

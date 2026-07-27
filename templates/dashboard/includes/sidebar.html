@@ -74,7 +74,7 @@
 
     </a>
 
-
+    {% if request.user.role == "owner" %}
     <!-- Categories -->
 
     <a href="{% url 'dashboard:category_list' %}"
@@ -85,7 +85,7 @@
     </a>
 
     <!-- Currency -->
-     {% if request.user.role == "owner" %}
+     
 
     <a href="{% url 'dashboard:currency_exchange' %}"
         class="btn btn-dark w-100 text-start mb-2">
@@ -93,7 +93,7 @@
         💱 Currency Exchange
 
     </a>
-    {% endif %}
+    
 
     
     <a href="{% url 'dashboard:announcement_list' %}" class="btn btn-dark w-100 text-start mb-2">
@@ -115,6 +115,8 @@
         🌐 Website Features
 
     </a>
+
+    {% endif %}
 
     <a href="{% url 'dashboard:brand_list' %}"
         class="btn btn-dark w-100 text-start mb-2">

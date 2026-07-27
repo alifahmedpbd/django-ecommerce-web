@@ -142,4 +142,8 @@ urlpatterns = [
 
     path("marketing/email/<int:campaign_id>/send/", views.email_campaign_send, name="email_campaign_send"),
 
+    path("email-campaign/<int:campaign_id>/edit/", views.email_campaign_edit, name="email_campaign_edit"),
+
+    path("email-campaign/<int:campaign_id>/delete/", views.email_campaign_delete, name="email_campaign_delete"),
+
 ]
