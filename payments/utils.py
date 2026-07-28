@@ -3,34 +3,63 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 from cart.cart import Cart
+import logging
 
+logger = logging.getLogger(__name__)
 
 def send_brevo_email(subject, html_content, recipients):
     """
-    Localhost -> Gmail SMTP
-    Render -> Skip email completely
+    Universal Email Sender
+
+    Local  -> Gmail SMTP
+
+    Render -> Skip Email
+
+    Future -> Domain SMTP Ready
     """
 
-    # Render / Production
     if not settings.DEBUG:
-        print("📭 Email skipped (Production)")
-        return
 
-    plain = strip_tags(html_content)
+        logger.info(
+            "Email skipped (Production): %s",
+            subject,
+        )
 
-    email = EmailMultiAlternatives(
-        subject=subject,
-        body=plain,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=recipients,
-    )
+        return True
 
-    email.attach_alternative(
-        html_content,
-        "text/html",
-    )
+    try:
 
-    email.send(fail_silently=False)
+        plain = strip_tags(html_content)
+
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=plain,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=recipients,
+        )
+
+        email.attach_alternative(
+            html_content,
+            "text/html",
+        )
+
+        email.send()
+
+        logger.info(
+            "Email Sent: %s",
+            subject,
+        )
+
+        return True
+
+    except Exception as e:
+
+        logger.exception(
+            "Email Failed: %s",
+            e,
+        )
+
+        return False
 
 
 def clear_user_cart(request):

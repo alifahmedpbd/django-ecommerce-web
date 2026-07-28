@@ -21,6 +21,8 @@ from django.db import transaction
 
 from dashboard.helpers import feature_enabled
 from dashboard.models import CustomerActivity
+import logging
+logger = logging.getLogger(__name__)
 
 # ===============================
 # Add Product To Cart
@@ -442,9 +444,15 @@ def checkout(request):
 
             if order.payment_method == "cod":
 
-                send_order_confirmation_email(request, order)
+                try:
 
-                send_owner_new_order_email(request, order)
+                    send_order_confirmation_email(request, order)
+
+                    send_owner_new_order_email(request, order)
+
+                except Exception as e:
+
+                    logger.exception(e)
 
             # ==========================================
             # Recover Abandoned Cart
