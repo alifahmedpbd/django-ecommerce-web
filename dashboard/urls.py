@@ -7,10 +7,9 @@ urlpatterns = [
 
     path("", views.dashboard_home, name="home"),
 
+    # Sales Reports
     path("reports/", views.reports, name="reports"),
-
     path("reports/pdf/", views.sales_report_pdf, name="sales_report_pdf"),
-
     path("reports/excel/", views.sales_report_excel, name="sales_report_excel"),
 
     # Categories
@@ -19,131 +18,94 @@ urlpatterns = [
     path("categories/<int:pk>/edit/", views.category_update, name="category_edit"),
     path("categories/<int:pk>/delete/", views.category_delete, name="category_delete"),
 
-    # ==========================================
     # Product
-    # ==========================================
     path("products/", views.product_list, name="product_list"),
     path("products/create/", views.product_create, name="product_create"),
     path("products/<int:pk>/update/", views.product_update, name="product_update"),
     path("products/<int:pk>/delete/", views.product_delete, name="product_delete"),
 
-
-    # ==========================================
     # Product Gallery
-    # ==========================================
-
     path("products/<int:pk>/gallery/", views.product_gallery, name="product_gallery"),
     path("products/<int:pk>/gallery/add/", views.product_image_create, name="product_image_create"),
     path("gallery/<int:pk>/delete/", views.product_image_delete, name="product_image_delete"),
 
-
-    # ==========================
     # Brand
-    # ==========================
     path("brands/", views.brand_list, name="brand_list"),
     path("brands/create/", views.brand_create, name="brand_create"),
     path("brands/<int:pk>/update/", views.brand_update, name="brand_update"),
     path("brands/<int:pk>/delete/", views.brand_delete, name="brand_delete"),
 
-
-    # ==========================
     # Coupon
-    # ==========================
     path("coupons/", views.coupon_list, name="coupon_list"),
     path("coupons/add/", views.coupon_add, name="coupon_add"),
     path("coupons/<int:pk>/edit/", views.coupon_edit, name="coupon_edit"),
     path("coupons/<int:pk>/delete/", views.coupon_delete, name="coupon_delete"),
 
+    # Orders
     path("orders/<int:order_id>/", views.dashboard_order_detail, name="dashboard_order_detail"),
     path("orders/", views.dashboard_orders, name="dashboard_orders"),
-
     path("orders/export/excel/", views.export_orders_excel, name="export_orders_excel"),
 
+    # Low stock Reports
     path("reports/low-stock/", views.low_stock_report, name="low_stock_report"),
-
     path("reports/low-stock/pdf/", views.low_stock_report_pdf, name="low_stock_report_pdf"),
-
     path("reports/low-stock/excel/", views.low_stock_report_excel, name="low_stock_report_excel"),
 
+    # Customer Dashboard
     path("customers/", views.dashboard_customers, name="dashboard_customers"),
-
     path("customers/<int:user_id>/", views.dashboard_customer_detail, name="dashboard_customer_detail"),
-
     path("customers/<int:user_id>/block/", views.customer_block, name="customer_block"),
-
     path("customers/<int:user_id>/unblock/", views.customer_unblock, name="customer_unblock"),
-
     path("customer-activity/", views.customer_activity, name="customer_activity"),
-
     path("customers/online/", views.online_customers, name="online_customers"),
 
+    # Abandoned Cart
     path("marketing/abandoned-carts/", views.abandoned_carts, name="abandoned_carts"),
-
     path("abandoned-cart/<int:cart_id>/send/", views.send_abandoned_cart_email, name="send_abandoned_cart_email"),
 
+    # Abandoned Wishlist
     path("wishlist-recovery/", views.wishlist_recovery, name="wishlist_recovery"),
-
     path("wishlist-recovery/<int:wishlist_id>/send/", views.send_wishlist_promotion, name="send_wishlist_promotion"),
 
+    # Currency Change
     path("currency/", views.currency_exchange, name="currency_exchange"),
 
+    # Feature Toggle
     path("feature-toggle/", views.feature_toggle_list, name="feature_toggle_list"),
 
+    # wWbsite Settings
     path("website-settings/", views.website_features, name="website_features"),
 
     # Announcement
-
     path("announcements/add/", views.announcement_add, name="announcement_add"),
-
     path("announcements/", views.announcement_list, name="announcement_list"),
-
     path("announcements/<int:pk>/edit/", views.announcement_edit, name="announcement_edit"),
-
     path("announcements/<int:pk>/delete/", views.announcement_delete, name="announcement_delete"),
 
+    #Return, Refund
     path("returns/",views.dashboard_returns, name="dashboard_returns"),
-
     path("refunds/", views.dashboard_refunds, name="dashboard_refunds"),
-
     path("refunds/<int:pk>/", views.dashboard_refund_detail, name="dashboard_refund_detail"),
-
     path("refunds/<int:pk>/complete/", views.complete_refund, name="complete_refund"),
-
     path("refunds/<int:pk>/cancel/", views.cancel_refund, name="cancel_refund"),
-
     path("exchanges/", views.dashboard_exchanges, name="dashboard_exchanges"),
-
     path("exchange/<int:pk>/", views.dashboard_exchange_detail, name="dashboard_exchange_detail"),
-
     path("exchange/<int:pk>/complete/", views.complete_exchange, name="complete_exchange"),
-
     path("exchange/<int:pk>/cancel/", views.cancel_exchange, name="cancel_exchange"),
-
     path("replacements/", views.dashboard_replacements, name="dashboard_replacements"),
-
     path("replacement/<int:pk>/", views.dashboard_replacement_detail, name="dashboard_replacement_detail"),
-
     path("replacement/<int:pk>/complete/", views.complete_replacement, name="complete_replacement",),
-
     path("replacement/<int:pk>/cancel/", views.cancel_replacement, name="cancel_replacement"),
-
     path("returns/<int:pk>/review/", views.return_review, name="return_review"),
 
+    # Product Ranking
     path("product-ranking/", views.product_ranking, name="product_ranking"),
 
-
-    # ==========================================
     # Email Marketing
-    # ==========================================
-
     path("marketing/email/", views.email_campaign_list, name="email_campaign_list"),
-
     path("marketing/email/create/", views.email_campaign_create, name="email_campaign_create"),
-
     path("marketing/email/<int:campaign_id>/send/", views.email_campaign_send, name="email_campaign_send"),
-
     path("email-campaign/<int:campaign_id>/edit/", views.email_campaign_edit, name="email_campaign_edit"),
-
     path("email-campaign/<int:campaign_id>/delete/", views.email_campaign_delete, name="email_campaign_delete"),
 
 ]

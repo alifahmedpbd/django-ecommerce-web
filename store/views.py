@@ -138,8 +138,6 @@ def product_list(request, category_slug=None):
     return render(request, "store/product_list.html", context)
 
 
-
-
 def product_detail(request, slug):
 
     product = get_object_or_404(
@@ -264,36 +262,22 @@ def product_detail(request, slug):
 
                 review.save()
 
-                messages.success(
-                    request,
-                    "Thank you for your review.",
-                )
+                messages.success(request, "Thank you for your review.")
 
-                return redirect(
-                    "store:product_detail",
-                    slug=product.slug,
-                )
+                return redirect("store:product_detail", slug=product.slug)
 
         else:
 
-            form = ReviewForm(
-                instance=review,
-            )
+            form = ReviewForm(instance=review)
 
     features = {
 
         "wishlist": feature_enabled("wishlist"),
-
         "reviews": feature_enabled("reviews"),
-
         "flash_sale": feature_enabled("flash_sale"),
-
         "free_delivery": feature_enabled("free_delivery"),
-
         "trending": feature_enabled("trending"),
-
         "new_arrival": feature_enabled("new_arrival"),
-
     }
 
     context = {
@@ -320,13 +304,7 @@ def product_detail(request, slug):
 
     }
 
-    return render(
-        request,
-        "store/product_detail.html",
-        context,
-    )
-
-
+    return render(request, "store/product_detail.html", context)
 
 
 @login_required
@@ -336,25 +314,14 @@ def delete_review(request, review_id):
     if not feature_enabled("reviews"):
         raise Http404("Review feature is disabled.")
 
-    review = get_object_or_404(
-        Review,
-        id=review_id,
-        user=request.user,
-    )
-
+    review = get_object_or_404(Review, id=review_id, user=request.user)
     product_slug = review.product.slug
 
     review.delete()
 
-    messages.success(
-        request,
-        "Review deleted successfully.",
-    )
+    messages.success(request, "Review deleted successfully.")
 
-    return redirect(
-        "store:product_detail",
-        slug=product_slug,
-    )
+    return redirect("store:product_detail", slug=product_slug)
 
 # ==========================================
 # Add Product To Wishlist
@@ -366,15 +333,9 @@ def add_to_wishlist(request, product_id):
     if not feature_enabled("wishlist"):
         raise Http404("Wishlist feature is disabled.")
 
-    product = get_object_or_404(
-        Product,
-        id=product_id,
-    )
+    product = get_object_or_404(Product, id=product_id)
 
-    wishlist, created = Wishlist.objects.get_or_create(
-        user=request.user,
-        product=product,
-    )
+    wishlist, created = Wishlist.objects.get_or_create(user=request.user, product=product)
 
     if created:
 
@@ -401,10 +362,7 @@ def remove_from_wishlist(request, product_id):
     if not feature_enabled("wishlist"):
         raise Http404("Wishlist feature is disabled.")
 
-    product = get_object_or_404(
-        Product,
-        id=product_id,
-    )
+    product = get_object_or_404(Product, id=product_id)
 
     Wishlist.objects.filter(
         user=request.user,
@@ -440,10 +398,4 @@ def wishlist(request):
         user=request.user,
     )
 
-    return render(
-        request,
-        "store/wishlist.html",
-        {
-            "wishlist_items": wishlist_items,
-        },
-    )
+    return render(request, "store/wishlist.html", {"wishlist_items": wishlist_items})

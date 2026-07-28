@@ -35,10 +35,7 @@ def register_view(request):
             if settings.DEBUG:
 
                 try:
-                    create_and_send_otp(
-                        user=user,
-                        purpose="verify",
-                    )
+                    create_and_send_otp(user=user, purpose="verify")
                 except Exception as e:
                     print("OTP Error:", e)
 
@@ -49,10 +46,7 @@ def register_view(request):
 
                 request.session["verify_email"] = user.email
 
-                messages.success(
-                    request,
-                    "Verification code has been sent to your email.",
-                )
+                messages.success(request, "Verification code has been sent to your email.")
 
                 return redirect("accounts:verify_email")
 

@@ -30,10 +30,7 @@ def create_checkout_session(request, order_id):
         id=order_id,
     )
 
-    session = create_stripe_checkout_session(
-        request,
-        order,
-    )
+    session = create_stripe_checkout_session(request, order)
 
     return redirect(session.url)
 
@@ -54,9 +51,7 @@ def payment_success(request, order_id):
 
     if not session_id:
 
-        return redirect(
-            "payments:payment_cancel"
-        )
+        return redirect("payments:payment_cancel")
 
     session = validate_stripe_payment(
         session_id
@@ -64,9 +59,7 @@ def payment_success(request, order_id):
 
     if session is None:
 
-        return redirect(
-            "payments:payment_cancel"
-        )
+        return redirect("payments:payment_cancel")
 
     # ==========================================
     # Prevent duplicate payment
@@ -74,10 +67,7 @@ def payment_success(request, order_id):
 
     if order.paid:
 
-        return redirect(
-            "orders:order_success",
-            order.id,
-        )
+        return redirect("orders:order_success", order.id)
 
     # ==========================================
     # Save payment info
@@ -91,11 +81,8 @@ def payment_success(request, order_id):
         )
 
         order.paid = True
-
         order.payment_status = "paid"
-
         order.status = "processing"
-
         order.save(
             update_fields=[
                 "payment_id",
@@ -113,7 +100,6 @@ def payment_success(request, order_id):
     # ==========================================
     # Reduce Stock
     # ==========================================
-
 
         reduce_order_stock(order)
 
@@ -138,10 +124,7 @@ def payment_success(request, order_id):
     # Clear Coupon Session
     # ==========================================
 
-    request.session.pop(
-        "coupon_code",
-        None,
-    )
+    request.session.pop("coupon_code", None)
 
     # ==========================================
 # Recover Abandoned Cart
@@ -166,25 +149,13 @@ def payment_success(request, order_id):
     # Send Email
     # ==========================================
 
-    send_order_confirmation_email(
-        request,
-        order,
-    )
+    send_order_confirmation_email(request, order)
 
-    send_owner_new_order_email(
-        request,
-        order,
-    )
+    send_owner_new_order_email(request, order)
 
-    return redirect(
-        "orders:order_success",
-        order.id,
-    )
+    return redirect("orders:order_success", order.id)
 
 
 def payment_cancel(request):
 
-    return render(
-        request,
-        "payments/cancel.html",
-    )
+    return render(request, "payments/cancel.html")

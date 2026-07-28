@@ -11,21 +11,13 @@ class OrderCreateForm(forms.ModelForm):
         model = Order
 
         fields = [
-
             "full_name",
-
             "email",
-
             "phone",
-
             "city",
-
             "address",
-
             "payment_method",
-
             "emi_months",
-
         ]
 
         widgets = {

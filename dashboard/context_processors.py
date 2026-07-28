@@ -5,11 +5,7 @@ from dashboard.models import Announcement, WebsiteSettings
 
 def feature_toggles(request):
 
-    return {
-
-        "features": get_feature_toggles()
-
-    }
+    return {"features": get_feature_toggles()}
 
 
 def website_context(request):

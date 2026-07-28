@@ -29,42 +29,24 @@ class ProductForm(forms.ModelForm):
         model = Product
 
         fields = [
-
             "category",
-
             "brand",
-
             "name",
-
             "image",
-
             "description",
-
             "price",
-
             "flash_price",
-
             "flash_end",
-
             "stock",
-
             "available",
-
             "featured",
-
             "is_flash_sale",
-
             "is_free_delivery",
-
             "is_trending",
-
             "is_new_arrival",
-
         ]
 
-        widgets = {
-
-            "description": forms.Textarea(
+        widgets = {"description": forms.Textarea(
 
                 attrs={
 
@@ -97,11 +79,8 @@ class BrandForm(forms.ModelForm):
         model = Brand
 
         fields = [
-
             "name",
-
             "logo",
-
         ]
 
         widgets = {
@@ -143,25 +122,15 @@ class CouponForm(forms.ModelForm):
         model = Coupon
 
         fields = [
-
             "code",
-
             "discount_type",
-
             "discount",
-
             "minimum_purchase",
-
             "usage_limit",
-
             "active",
-
             "one_time_per_user",
-
             "valid_from",
-
             "valid_to",
-
         ]
 
         widgets = {
@@ -208,15 +177,10 @@ class EmailCampaignForm(forms.ModelForm):
         model = EmailCampaign
 
         fields = [
-
             "title",
-
             "subject",
-
             "target",
-
             "message",
-
         ]
 
         widgets = {

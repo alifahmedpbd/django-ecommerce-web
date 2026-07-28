@@ -15,11 +15,8 @@ from django.conf import settings
 class Coupon(models.Model):
 
     DISCOUNT_TYPE = (
-
         ("percentage", "Percentage"),
-
         ("fixed", "Fixed Amount"),
-
     )
 
     code = models.CharField(max_length=50, unique=True)
@@ -56,19 +53,12 @@ class Coupon(models.Model):
     def is_available(self):
 
         return (
-
             self.active
-
             and
-
             not self.is_expired
-
             and
-
             self.used_count < self.usage_limit
-
         )
-
 class DeliveryCharge(models.Model):
 
     CITY_CHOICES = (
@@ -76,18 +66,8 @@ class DeliveryCharge(models.Model):
         ("outside", "Outside Dhaka"),
     )
 
-    city = models.CharField(
-        max_length=20,
-        choices=CITY_CHOICES,
-        unique=True,
-    )
-
-    charge = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0,
-        help_text="USD Amount",
-    )
+    city = models.CharField(max_length=20, choices=CITY_CHOICES, unique=True)
+    charge = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="USD Amount")
 
     class Meta:
         ordering = ["city"]
@@ -115,19 +95,12 @@ class Order(models.Model):
     )
 
     PAYMENT_STATUS_CHOICES = (
-
-    ("pending", "Pending"),
-
-    ("paid", "Paid"),
-
-    ("partial", "Partial Paid"),
-
-    ("failed", "Failed"),
-
-    ("refunded", "Refunded"),
-
-    ("cancelled", "Cancelled"),
-
+        ("pending", "Pending"),
+        ("paid", "Paid"),
+        ("partial", "Partial Paid"),
+        ("failed", "Failed"),
+        ("refunded", "Refunded"),   
+        ("cancelled", "Cancelled"),
     )
 
     COURIER_CHOICES = (
@@ -311,45 +284,15 @@ class ReturnRequest(models.Model):
         ("replacement", "Replacement"),
     )
 
-    order = models.OneToOneField(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="return_request",
-    )
-
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-    )
-
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name="return_request")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     reason = models.TextField()
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="pending",
-    )
-
-    resolution = models.CharField(
-        max_length=20,
-        choices=RESOLUTION_CHOICES,
-        blank=True,
-    )
-
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    resolution = models.CharField(max_length=20, choices=RESOLUTION_CHOICES, blank=True)
     admin_note = models.TextField(blank=True)
-
-    refund_amount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0,
-    )
-
+    refund_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
-
     updated_at = models.DateTimeField(auto_now=True)
-
-
-
 
 class Refund(models.Model):
 
@@ -361,85 +304,25 @@ class Refund(models.Model):
     )
 
     REFUND_METHODS = (
-
         ("manual", "Manual"),
-
         ("bank", "Bank Transfer"),
-
         ("sslcommerz", "SSLCommerz"),
-
         ("stripe", "Stripe"),
-
     )
 
-    return_request = models.OneToOneField(
-        ReturnRequest,
-        on_delete=models.CASCADE,
-        related_name="refund",
-    )
-
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="refunds", null=True, blank=True
-    )
-
-    amount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-    )
-
-    payment_method = models.CharField(
-        max_length=50,
-        blank=True,
-    )
-
-    transaction_id = models.CharField(
-        max_length=150,
-        blank=True,
-    )
-
-    admin_note = models.TextField(
-        blank=True,
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="pending",
-    )
-
-    refund_method = models.CharField(
-        max_length=30,
-        choices=REFUND_METHODS,
-        default="manual",
-    )
-
-    transaction_id = models.CharField(
-        max_length=150,
-        blank=True,
-    )
-
-    gateway_response = models.TextField(
-        blank=True,
-    )
-
-    completed_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="completed_refunds",
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    completed_at = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
+    return_request = models.OneToOneField(ReturnRequest, on_delete=models.CASCADE, related_name="refund")
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="refunds", null=True, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_method = models.CharField(max_length=50, blank=True)
+    transaction_id = models.CharField(max_length=150, blank=True)
+    admin_note = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending",)
+    refund_method = models.CharField(max_length=30, choices=REFUND_METHODS, default="manual")
+    transaction_id = models.CharField(max_length=150, blank=True)
+    gateway_response = models.TextField(blank=True)
+    completed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="completed_refunds")
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
 
@@ -461,73 +344,18 @@ class Exchange(models.Model):
         ("cancelled", "Cancelled"),
     )
 
-    return_request = models.OneToOneField(
-        ReturnRequest,
-        on_delete=models.CASCADE,
-        related_name="exchange",
-    )
-
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="exchanges",
-    )
-
-    old_product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        related_name="exchange_old_product",
-    )
-
-    new_product = models.ForeignKey(
-        Product,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="exchange_new_product",
-    )
-
-    admin_note = models.TextField(
-        blank=True,
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="pending",
-    )
-
-    completed_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    completed_at = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
-
-    courier_name = models.CharField(
-        max_length=120,
-        blank=True,
-    )
-
-    tracking_number = models.CharField(
-        max_length=120,
-        blank=True,
-    )
-
-    estimated_delivery = models.DateField(
-        null=True,
-        blank=True,
-    )
-
+    return_request = models.OneToOneField(ReturnRequest, on_delete=models.CASCADE, related_name="exchange")
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="exchanges")
+    old_product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="exchange_old_product")
+    new_product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True, related_name="exchange_new_product")
+    admin_note = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    completed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    courier_name = models.CharField(max_length=120, blank=True)
+    tracking_number = models.CharField(max_length=120, blank=True)
+    estimated_delivery = models.DateField(null=True, blank=True)
     class Meta:
 
         ordering = [
@@ -547,52 +375,15 @@ class Replacement(models.Model):
         ("cancelled", "Cancelled"),
     )
 
-    return_request = models.OneToOneField(
-        ReturnRequest,
-        on_delete=models.CASCADE,
-        related_name="replacement",
-    )
-
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="replacements",
-    )
-
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-    )
-
-    quantity = models.PositiveIntegerField(
-        default=1,
-    )
-
-    admin_note = models.TextField(
-        blank=True,
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="pending",
-    )
-
-    completed_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    completed_at = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
+    return_request = models.OneToOneField(ReturnRequest, on_delete=models.CASCADE, related_name="replacement")
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="replacements")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    admin_note = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    completed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
 
@@ -606,29 +397,11 @@ class Replacement(models.Model):
 
 class ReturnComment(models.Model):
 
-    return_request = models.ForeignKey(
-        ReturnRequest,
-        on_delete=models.CASCADE,
-        related_name="comments",
-    )
-
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-    )
-
+    return_request = models.ForeignKey(ReturnRequest, on_delete=models.CASCADE, related_name="comments")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     message = models.TextField()
-
-    customer_visible = models.BooleanField(
-        default=True,
-        help_text="Visible to customer",
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    customer_visible = models.BooleanField(default=True, help_text="Visible to customer")
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
 

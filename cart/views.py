@@ -235,11 +235,8 @@ def checkout(request):
         if coupon:
 
             discount = calculate_discount(
-
                 coupon,
-
                 subtotal,
-
             )
 
             final_total = subtotal - discount + delivery_charge
@@ -254,13 +251,7 @@ def checkout(request):
 
             )
 
-            messages.error(
-
-                request,
-
-                error,
-
-            )
+            messages.error(request, error)
 
     # ==========================================
     # Checkout Submit
@@ -269,10 +260,7 @@ def checkout(request):
     if request.method == "POST":
 
         form = OrderCreateForm(
-
-            request.POST
-
-        )
+            request.POST)
 
         if form.is_valid():
 
@@ -290,11 +278,7 @@ def checkout(request):
             # COD Feature Toggle
             # ==========================================
 
-            payment_method = form.cleaned_data.get(
-
-                "payment_method"
-
-            )
+            payment_method = form.cleaned_data.get("payment_method")
 
             if (
 
@@ -304,19 +288,9 @@ def checkout(request):
 
             ):
 
-                messages.error(
+                messages.error(request, "Cash On Delivery is currently unavailable.")
 
-                    request,
-
-                    "Cash On Delivery is currently unavailable."
-
-                )
-
-                return redirect(
-
-                    "cart:checkout"
-
-                )
+                return redirect("cart:checkout")
             
             if (
                 payment_method == "emi"
@@ -328,9 +302,7 @@ def checkout(request):
                     "EMI payment is currently unavailable.",
                 )
 
-                return redirect(
-                    "cart:checkout",
-                )
+                return redirect("cart:checkout")
 
             # ==========================================
             # Final Stock Validation
@@ -346,19 +318,9 @@ def checkout(request):
 
                 ):
 
-                    messages.error(
+                    messages.error(request, f"{item['product'].name} only has {item['product'].stock} item(s).")
 
-                        request,
-
-                        f"{item['product'].name} only has {item['product'].stock} item(s)."
-
-                    )
-
-                    return redirect(
-
-                        "cart:cart_detail"
-
-                    )
+                    return redirect("cart:cart_detail")
 
             # ==========================================
             # Database Transaction
@@ -427,11 +389,8 @@ def checkout(request):
                     order.save(
 
                         update_fields=[
-
                             "status",
-
                             "paid",
-
                             "payment_status",
 
                         ]
@@ -461,7 +420,6 @@ def checkout(request):
                         coupon.save(
 
                             update_fields=[
-
                                 "used_count",
 
                             ]
@@ -476,13 +434,7 @@ def checkout(request):
                 
                 request.session.pop("coupon_code", None)
 
-                return redirect(
-
-                    "payments:create_checkout_session",
-
-                    order.id,
-
-                )
+                return redirect("payments:create_checkout_session", order.id)
 
             # ==========================================
             # COD
@@ -563,26 +515,14 @@ def apply_coupon(request):
 
     if not feature_enabled("coupon"):
 
-        messages.error(
+        messages.error(request, "Coupon system is currently disabled.")
 
-            request,
-
-            "Coupon system is currently disabled."
-
-        )
-
-        return redirect(
-
-            "cart:checkout",
-
-        )
+        return redirect("cart:checkout")
 
     if request.method == "POST":
 
         code = request.POST.get(
-
             "coupon_code",
-
             "",
 
         ).strip()
@@ -605,29 +545,13 @@ def apply_coupon(request):
 
             request.session["coupon_code"] = coupon.code
 
-            messages.success(
-
-                request,
-
-                "Coupon applied successfully."
-
-            )
+            messages.success(request, "Coupon applied successfully.")
 
         else:
 
-            messages.error(
+            messages.error(request, error)
 
-                request,
-
-                error,
-
-            )
-
-    return redirect(
-
-        "cart:checkout",
-
-    )
+    return redirect("cart:checkout")
 
 # ==========================================
 # Remove Coupon
@@ -637,41 +561,15 @@ def remove_coupon(request):
 
     if not feature_enabled("coupon"):
 
-        messages.error(
+        messages.error(request, "Coupon system is currently disabled.")
 
-            request,
+        return redirect("cart:checkout")
 
-            "Coupon system is currently disabled."
+    request.session.pop("coupon_code", None)
 
-        )
+    messages.success(request, "Coupon removed.")
 
-        return redirect(
-
-            "cart:checkout",
-
-        )
-
-    request.session.pop(
-
-        "coupon_code",
-
-        None,
-
-    )
-
-    messages.success(
-
-        request,
-
-        "Coupon removed."
-
-    )
-
-    return redirect(
-
-        "cart:checkout",
-
-    )
+    return redirect("cart:checkout")
 
 # ==========================================
 # Buy Now

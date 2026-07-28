@@ -15,13 +15,7 @@ def home(request):
 
     featured_products = (
 
-        Product.objects
-
-        .filter(
-
-            available=True,
-
-        )
+        Product.objects.filter(available=True)
 
         .only(
 
@@ -142,16 +136,7 @@ def home(request):
 
     }
 
-    return render(
-
-        request,
-
-        "core/home.html",
-
-        context,
-
-    )
-
+    return render(request, "core/home.html",  context)
 
 # ==========================================
 # Static Pages
@@ -159,54 +144,24 @@ def home(request):
 
 def about(request):
 
-    return render(
-
-        request,
-
-        "core/about.html",
-
-    )
+    return render(request, "core/about.html")
 
 
 def contact(request):
 
-    return render(
-
-        request,
-
-        "core/contact.html",
-
-    )
+    return render(request, "core/contact.html")
 
 
 def faq(request):
 
-    return render(
-
-        request,
-
-        "core/faq.html",
-
-    )
+    return render(request, "core/faq.html")
 
 
 def privacy(request):
 
-    return render(
-
-        request,
-
-        "core/privacy.html",
-
-    )
+    return render(request, "core/privacy.html")
 
 
 def terms(request):
 
-    return render(
-
-        request,
-
-        "core/terms.html",
-
-    )
+    return render(request,"core/terms.html",)

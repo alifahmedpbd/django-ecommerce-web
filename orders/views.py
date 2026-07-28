@@ -76,13 +76,7 @@ def order_detail(request, order_id):
 
     order = get_object_or_404(
 
-        Order.objects.prefetch_related(
-
-            "items__product",
-
-            "timeline",
-
-        ),
+        Order.objects.prefetch_related("items__product", "timeline"),
 
         id=order_id,
 
@@ -94,13 +88,7 @@ def order_detail(request, order_id):
 
             if order.user != request.user and not request.user.is_staff:
 
-                messages.error(
-
-                    request,
-
-                    "You are not allowed to view this order.",
-
-                )
+                messages.error(request, "You are not allowed to view this order.")
 
                 return redirect("orders:order_list")
 
@@ -110,13 +98,7 @@ def order_detail(request, order_id):
 
         if email != order.email:
 
-            messages.error(
-
-                request,
-
-                "Invalid order access.",
-
-            )
+            messages.error(request, "Invalid order access.")
 
             return redirect("orders:track_order")
 
@@ -145,16 +127,7 @@ def order_detail(request, order_id):
 
     }
 
-    return render(
-
-        request,
-
-        "orders/order_detail.html",
-
-        context,
-
-    )
-
+    return render(request, "orders/order_detail.html", context)
 
 @login_required
 def invoice_pdf(request, order_id):
@@ -175,9 +148,7 @@ def invoice_pdf(request, order_id):
     # Create PDF Response
     # ==========================================
 
-    response = HttpResponse(
-        content_type="application/pdf"
-    )
+    response = HttpResponse(content_type="application/pdf")
 
     response["Content-Disposition"] = (
         f'attachment; filename="invoice_{order.id}.pdf"'
@@ -323,7 +294,7 @@ def invoice_pdf(request, order_id):
 
     elements.append(Spacer(1, 25))
 
-        # ==========================================
+    # ==========================================
     # Products Table
     # ==========================================
 
@@ -345,15 +316,10 @@ def invoice_pdf(request, order_id):
         data.append(
 
             [
-
                 item.product.name,
-
                 f"${item.price}",
-
                 str(item.quantity),
-
                 f"${item.get_total_price()}",
-
             ]
 
         )
@@ -363,27 +329,17 @@ def invoice_pdf(request, order_id):
     # ==========================================
 
     data.append(
-
         [
-
             "",
-
             "",
-
             "Grand Total",
-
             f"${order.final_total}"
-
         ]
-
     )
 
     table = Table(
-
         data,
-
         colWidths=[220, 90, 70, 100]
-
     )
 
     # ==========================================
@@ -399,41 +355,26 @@ def invoice_pdf(request, order_id):
             # -----------------------------
 
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0d6efd")),
-
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-
             ("FONTSIZE", (0, 0), (-1, 0), 11),
-
             ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-
             # -----------------------------
             # Body
             # -----------------------------
-
             ("BACKGROUND", (0, 1), (-1, -2), colors.whitesmoke),
-
             ("FONTNAME", (0, 1), (-1, -2), "Helvetica"),
-
             ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-
             # -----------------------------
             # Grand Total
             # -----------------------------
 
             ("BACKGROUND", (0, -1), (-1, -1), colors.HexColor("#dbeafe")),
-
             ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
-
             ("TEXTCOLOR", (0, -1), (-1, -1), colors.black),
-
             ("FONTSIZE", (0, -1), (-1, -1), 11),
-
             ("BOTTOMPADDING", (0, -1), (-1, -1), 10),
-
         ])
 
     )
@@ -525,31 +466,13 @@ def cancel_order(request, order_id):
             OrderTimeline.objects.create(
                 order=order, user=request.user, note="Customer cancelled this order.")
 
-        messages.success(
-
-            request,
-
-            "Your order has been cancelled successfully."
-
-        )
+        messages.success(request, "Your order has been cancelled successfully.")
 
     else:
 
-        messages.error(
+        messages.error(request, "This order can no longer be cancelled.")
 
-            request,
-
-            "This order can no longer be cancelled."
-
-        )
-
-    return redirect(
-
-        "orders:order_detail",
-
-        order.id,
-
-    )
+    return redirect("orders:order_detail", order.id)
 
 
 def track_order(request):
@@ -604,13 +527,9 @@ def track_order(request):
 
             except Order.DoesNotExist:
 
-                messages.error(
-                    request,
-                    "Order not found.",
-                )
+                messages.error(request, "Order not found.")
 
-    return render(
-        request,
+    return render(request,
         "orders/track_order.html",
         {
             "form": form,
@@ -625,18 +544,11 @@ def track_order(request):
 @login_required
 def return_request(request, order_id):
 
-    order = get_object_or_404(
-        Order,
-        id=order_id,
-        user=request.user,
-    )
+    order = get_object_or_404(Order, id=order_id, user=request.user)
 
     if order.status != "delivered":
 
-        messages.error(
-            request,
-            "Only delivered orders can be returned.",
-        )
+        messages.error(request, "Only delivered orders can be returned.")
 
         return redirect(
             "orders:order_detail",
@@ -645,15 +557,9 @@ def return_request(request, order_id):
 
     if hasattr(order, "return_request"):
 
-        messages.warning(
-            request,
-            "Return request already submitted.",
-        )
+        messages.warning(request, "Return request already submitted.")
 
-        return redirect(
-            "orders:order_detail",
-            order.id,
-        )
+        return redirect("orders:order_detail", order.id)
 
     if request.method == "POST":
 
@@ -661,63 +567,26 @@ def return_request(request, order_id):
 
         if not reason:
 
-            messages.error(
-                request,
-                "Return reason is required.",
-            )
+            messages.error(request, "Return reason is required.")
 
-            return redirect(
-                "orders:return_request",
-                order.id,
-            )
+            return redirect("orders:return_request", order.id)
 
         ReturnRequest.objects.create(
-
             order=order,
-
             user=request.user,
-
             reason=reason,
-
             refund_amount=order.final_total,
-
         )
 
         OrderTimeline.objects.create(
-
             order=order,
-
             user=request.user,
-
             created_by=request.user.username,
-
             note="↩ Customer requested a return.",
-
         )
 
-        messages.success(
+        messages.success(request, "Return request submitted successfully.")
 
-            request,
+        return redirect("orders:order_detail", order.id)
 
-            "Return request submitted successfully.",
-
-        )
-
-        return redirect(
-            "orders:order_detail",
-            order.id,
-        )
-
-    return render(
-
-        request,
-
-        "orders/return_request.html",
-
-        {
-
-            "order": order,
-
-        },
-
-    )
+    return render(request, "orders/return_request.html", {"order": order})

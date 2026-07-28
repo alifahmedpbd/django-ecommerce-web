@@ -15,60 +15,17 @@ class User(AbstractUser):
         ("owner", "Owner"),
     )
 
-    email = models.EmailField(
-        unique=True,
-    )
-
-    role = models.CharField(
-        max_length=20,
-        choices=ROLE_CHOICES,
-        default="customer",
-    )
-
-    phone = models.CharField(
-        max_length=15,
-        blank=True,
-    )
-
-    profile_image = models.ImageField(
-        upload_to="profile_images/",
-        blank=True,
-        null=True,
-    )
-
-    is_blocked = models.BooleanField(
-        default=False,
-    )
-
-    last_activity = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
-
-    last_seen_page = models.CharField(
-        max_length=255,
-        blank=True,
-    )
-
-    last_ip = models.GenericIPAddressField(
-        null=True,
-        blank=True,
-    )
-
-    device = models.CharField(
-        max_length=200,
-        blank=True,
-    )
-
-    operating_system = models.CharField(
-    max_length=50,
-    blank=True,
-    )
-
-    browser = models.CharField(
-        max_length=200,
-        blank=True,
-    )
+    email = models.EmailField(unique=True)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="customer")
+    phone = models.CharField(max_length=15, blank=True)
+    profile_image = models.ImageField(upload_to="profile_images/", blank=True, null=True)
+    is_blocked = models.BooleanField(default=False)
+    last_activity = models.DateTimeField(null=True, blank=True)
+    last_seen_page = models.CharField(max_length=255, blank=True)
+    last_ip = models.GenericIPAddressField(null=True, blank=True)
+    device = models.CharField(max_length=200, blank=True)
+    operating_system = models.CharField(max_length=50, blank=True)
+    browser = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return self.username
@@ -92,32 +49,12 @@ class EmailOTP(models.Model):
 
     RESEND_INTERVAL_SECONDS = 30
 
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="email_otps",
-    )
-
-    purpose = models.CharField(
-        max_length=20,
-        choices=PURPOSE_CHOICES,
-    )
-
-    otp = models.CharField(
-        max_length=OTP_LENGTH,
-    )
-
-    is_verified = models.BooleanField(
-        default=False,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="email_otps")
+    purpose = models.CharField(max_length=20, choices=PURPOSE_CHOICES)
+    otp = models.CharField(max_length=OTP_LENGTH)
+    is_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
 

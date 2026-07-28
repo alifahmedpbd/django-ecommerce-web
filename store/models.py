@@ -8,12 +8,6 @@ from cloudinary.models import CloudinaryField
 
 # Create your models here.
 
-
-
-# ==========================================
-# Brand Model
-# ==========================================
-
 class Brand(models.Model):
 
     name = models.CharField(max_length=100, unique=True)
@@ -60,125 +54,26 @@ class Category(models.Model):
 
 class Product(models.Model):
 
-
-    # ==========================================
-    # Basic
-    # ==========================================
-
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.CASCADE,
-        related_name="products",
-    )
-
-    brand = models.ForeignKey(
-        Brand,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="products",
-    )
-
-    name = models.CharField(
-        max_length=200,
-    )
-
-    slug = models.SlugField(
-        unique=True,
-        blank=True,
-    )
-
-    image = CloudinaryField(
-        "image",
-        blank=True,
-        null=True,
-    )
-
-    description = models.TextField(
-        blank=True,
-    )
-
-    # ==========================================
-    # Price
-    # ==========================================
-
-    price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-    )
-
-    flash_price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Discounted flash sale price",
-    )
-
-    flash_end = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text="Flash sale ending time",
-    )
-
-    # ==========================================
-    # Stock
-    # ==========================================
-
-    stock = models.PositiveIntegerField(
-        default=0,
-        help_text="Available Stock",
-    )
-
-    available = models.BooleanField(
-        default=True,
-    )
-
-    featured = models.BooleanField(
-        default=False,
-    )
-
-    # ==========================================
-    # Marketing Flags
-    # ==========================================
-
-    is_flash_sale = models.BooleanField(
-        default=False,
-    )
-
-    is_free_delivery = models.BooleanField(
-        default=False,
-    )
-
-    is_trending = models.BooleanField(
-        default=False,
-    )
-
-    is_new_arrival = models.BooleanField(
-        default=False,
-    )
-
-    # ==========================================
-    # Analytics
-    # ==========================================
-
-    views = models.PositiveIntegerField(
-        default=0,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
-
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="products")
+    brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True, related_name="products")
+    name = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True, blank=True)
+    image = CloudinaryField("image", blank=True, null=True)
+    description = models.TextField(blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    flash_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Discounted flash sale price")
+    flash_end = models.DateTimeField(null=True, blank=True, help_text="Flash sale ending time")
+    stock = models.PositiveIntegerField(default=0, help_text="Available Stock")
+    available = models.BooleanField(default=True)
+    featured = models.BooleanField(default=False)
+    is_flash_sale = models.BooleanField(default=False)
+    is_free_delivery = models.BooleanField(default=False)
+    is_trending = models.BooleanField(default=False)
+    is_new_arrival = models.BooleanField(default=False)
+    views = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     display_order = models.PositiveIntegerField(default=9999, db_index=True, verbose_name="Display Order", help_text="Lower number shows first.")
-
-    # ==========================================
-    # Save
-    # ==========================================
 
     def save(self, *args, **kwargs):
 
@@ -187,11 +82,6 @@ class Product(models.Model):
             self.slug = slugify(self.name)
 
         super().save(*args, **kwargs)
-
-    # ==========================================
-    # Meta
-    # ==========================================
-
     class Meta:
 
         ordering = [
@@ -201,17 +91,11 @@ class Product(models.Model):
 
         ]
 
-    # ==========================================
-    # String
-    # ==========================================
 
     def __str__(self):
 
         return self.name
 
-    # ==========================================
-    # URL
-    # ==========================================
 
     def get_absolute_url(self):
 
@@ -223,9 +107,6 @@ class Product(models.Model):
 
         )
 
-    # ==========================================
-    # Rating
-    # ==========================================
 
     def average_rating(self):
 
@@ -241,9 +122,7 @@ class Product(models.Model):
 
         )
 
-    # ==========================================
-    # Stock Helpers
-    # ==========================================
+ 
 
     @property
     def in_stock(self):
@@ -268,9 +147,6 @@ class Product(models.Model):
 
         return "In Stock"
 
-    # ==========================================
-    # Flash Sale
-    # ==========================================
 
     @property
     def has_flash_sale(self):
@@ -351,26 +227,11 @@ class Product(models.Model):
         )
 
 
-    
-# ==========================================
-# Product Images
-# ==========================================
-
 class ProductImage(models.Model):
 
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        related_name="gallery",
-    )
-
-    image = CloudinaryField(
-        "image",
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="gallery")
+    image = CloudinaryField("image")
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["id"]
@@ -378,10 +239,6 @@ class ProductImage(models.Model):
     def __str__(self):
         return self.product.name
 
-    
-# ==========================================
-# Wishlist Model
-# ==========================================
 
 class Wishlist(models.Model):
 
@@ -399,9 +256,6 @@ class Wishlist(models.Model):
     def __str__(self):
         return f"{self.user.username} ❤️ {self.product.name}"
     
-# ==========================================
-# Product Review Model
-# ==========================================
 
 class Review(models.Model):
     RATING_CHOICES = (
@@ -438,25 +292,12 @@ class Review(models.Model):
 
 class AbandonedCart(models.Model):
 
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="abandoned_carts",
-    )
-
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-    )
-
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="abandoned_carts")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
-
     recovered = models.BooleanField(default=False)
-
     reminder_sent = models.BooleanField(default=False)
-
     created_at = models.DateTimeField(auto_now_add=True)
-
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

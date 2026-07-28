@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from accounts.decorators import owner_or_staff_required
 
 from accounts.models import User
-from orders.models import Order, Coupon, OrderTimeline, ReturnRequest,Refund, Replacement, Exchange, ReturnComment
+from orders.models import Order, Coupon, OrderTimeline, ReturnRequest,Refund, Replacement, Exchange, ExchangeRate, ReturnComment
 from django.contrib import messages
 
 from store.models import Category, Product, Brand, ProductImage, AbandonedCart, Wishlist
@@ -27,14 +27,12 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph
-from orders.models import ExchangeRate
 
 from .models import FeatureToggle, Announcement, WebsiteSettings, CustomerActivity, EmailCampaign, EmailCampaignLog
 from .helpers import clear_feature_cache
 from django.views.decorators.http import require_POST
 from django.db import transaction
 from django.core.mail import EmailMultiAlternatives
-from .email_utils import send_campaign_email
 from django.core.mail import send_mail
 from django.conf import settings
 # Create your views here.
@@ -78,72 +76,40 @@ def dashboard_home(request):
         )["total"] or 0
     )
 
-    monthly_revenue = (
-
-        Order.objects.filter(
-
+    monthly_revenue = (Order.objects.filter(
             paid=True,
-
             status="delivered",
 
         )
-
         .annotate(
-
             month=TruncMonth("created_at"),
-
         )
-
         .values(
-
             "month",
-
         )
-
         .annotate(
-
             revenue=Sum("final_total"),
-
         )
-
         .order_by(
-
             "month",
-
         )
-
     )
 
     monthly_orders = (
-
         Order.objects.annotate(
-
             month=TruncMonth(
-
                 "created_at"
-
             )
-
         )
-
         .values(
-
             "month"
-
         )
-
         .annotate(
-
             total=Count("id")
-
         )
-
         .order_by(
-
             "month"
-
         )
-
     )
 
     top_products = (
@@ -366,19 +332,11 @@ def dashboard_home(request):
 
     if request.user.role == "owner":
 
-        return render(
-            request,
-            "dashboard/owner_dashboard.html",
-            context,
-        )
+        return render(request, "dashboard/owner_dashboard.html", context)
 
     if request.user.role == "staff":
 
-        return render(
-            request,
-            "dashboard/staff_dashboard.html",
-            context,
-        )
+        return render(request, "dashboard/staff_dashboard.html", context)
 
     return redirect("home")
 
@@ -387,48 +345,28 @@ def dashboard_home(request):
 def reports(request):
 
     revenue_by_payment = (
-
         Order.objects.filter(
-
             paid=True,
             status="delivered",
-
         )
-
         .values("payment_method")
-
         .annotate(
-
             total=Sum("final_total"),
-
             orders=Count("id"),
-
         )
-
     )
 
     best_customers = (
-
         User.objects.filter(
-
             role="customer",
-
         )
-
         .annotate(
-
             total_spent=Sum("orders__final_total"),
-
             total_orders=Count("orders"),
-
         )
-
         .order_by(
-
             "-total_spent",
-
         )[:10]
-
     )
 
     low_stock = Product.objects.filter(
@@ -437,20 +375,12 @@ def reports(request):
         "category",
     )
 
-    return render(
-
-        request,
-
-        "dashboard/reports.html",
+    return render(request, "dashboard/reports.html",
 
         {
-
             "revenue_by_payment": revenue_by_payment,
-
             "best_customers": best_customers,
-
             "low_stock": low_stock,
-
         },
 
     )
@@ -459,25 +389,11 @@ def reports(request):
 @owner_or_staff_required
 def sales_report_pdf(request):
 
-    orders = (
-        Order.objects
-        .select_related(
-            "user",
-            "coupon",
-        )
-        .order_by("-created_at")
-    )
+    orders = (Order.objects.select_related("user", "coupon").order_by("-created_at"))
 
-    response = HttpResponse(
-        content_type="application/pdf"
-    )
-
-    response["Content-Disposition"] = (
-        'attachment; filename="sales_report.pdf"'
-    )
-
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = ('attachment; filename="sales_report.pdf"')
     doc = SimpleDocTemplate(response)
-
     data = [[
         "Order",
         "Customer",
@@ -517,11 +433,8 @@ def sales_report_pdf(request):
 
         ("BACKGROUND",(0,0),(-1,0),colors.darkblue),
         ("TEXTCOLOR",(0,0),(-1,0),colors.white),
-
         ("GRID",(0,0),(-1,-1),1,colors.grey),
-
         ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),
-
         ("BACKGROUND",(0,1),(-1,-1),colors.whitesmoke),
 
     ]))
@@ -623,28 +536,15 @@ def low_stock_report_pdf(request):
     styles = getSampleStyleSheet()
 
     data = [
-
         [
-
             "Product",
-
             "Category",
-
             "Stock",
-
         ]
 
     ]
 
-    products = Product.objects.filter(
-
-        stock__lte=5
-
-    ).select_related(
-
-        "category"
-
-    )
+    products = Product.objects.filter(stock__lte=5).select_related("category")
 
     for product in products:
 
@@ -713,15 +613,7 @@ def low_stock_report_excel(request):
 
     ])
 
-    products = Product.objects.filter(
-
-        stock__lte=5
-
-    ).select_related(
-
-        "category"
-
-    )
+    products = Product.objects.filter(stock__lte=5).select_related("category")
 
     for product in products:
 
@@ -759,13 +651,7 @@ def category_list(request):
         "name",
     ).order_by("name")
 
-    return render(
-        request,
-        "dashboard/categories/list.html",
-        {
-            "categories": categories,
-        },
-    )
+    return render(request, "dashboard/categories/list.html", {"categories": categories})
 
 
 @owner_required
@@ -779,10 +665,7 @@ def category_create(request):
 
             form.save()
 
-            messages.success(
-                request,
-                "Category created successfully.",
-            )
+            messages.success(request, "Category created successfully.")
 
             return redirect("dashboard:category_list")
 
@@ -790,39 +673,23 @@ def category_create(request):
 
         form = CategoryForm()
 
-    return render(
-        request,
-        "dashboard/categories/create.html",
-        {
-            "form": form,
-        },
-    )
+    return render(request, "dashboard/categories/create.html", {"form": form})
 
 
 @owner_required
 def category_update(request, pk):
 
-    category = get_object_or_404(
-        Category,
-        pk=pk,
-    )
+    category = get_object_or_404(Category, pk=pk)
 
     if request.method == "POST":
 
-        form = CategoryForm(
-            request.POST,
-            request.FILES,
-            instance=category,
-        )
+        form = CategoryForm(request.POST, request.FILES, instance=category)
 
         if form.is_valid():
 
             form.save()
 
-            messages.success(
-                request,
-                "Category updated successfully.",
-            )
+            messages.success(request, "Category updated successfully.")
 
             return redirect("dashboard:category_list")
 
@@ -830,30 +697,17 @@ def category_update(request, pk):
 
         form = CategoryForm(instance=category)
 
-    return render(
-        request,
-        "dashboard/categories/update.html",
-        {
-            "form": form,
-            "category": category,
-        },
-    )
+    return render(request,"dashboard/categories/update.html",{"form": form, "category": category})
 
 
 @owner_required
 def category_delete(request, pk):
 
-    category = get_object_or_404(
-        Category,
-        pk=pk,
-    )
+    category = get_object_or_404(Category, pk=pk)
 
     category.delete()
 
-    messages.success(
-        request,
-        "Category deleted successfully.",
-    )
+    messages.success(request, "Category deleted successfully.")
 
     return redirect("dashboard:category_list")
 
@@ -866,13 +720,7 @@ def brand_list(request):
 
     brands = Brand.objects.order_by("name")
 
-    return render(
-        request,
-        "dashboard/brands/list.html",
-        {
-            "brands": brands,
-        },
-    )
+    return render(request, "dashboard/brands/list.html",{"brands": brands})
 
 
 # ==========================================
@@ -883,19 +731,13 @@ def brand_create(request):
 
     if request.method == "POST":
 
-        form = BrandForm(
-            request.POST,
-            request.FILES,
-        )
+        form = BrandForm(request.POST, request.FILES)
 
         if form.is_valid():
 
             form.save()
 
-            messages.success(
-                request,
-                "Brand Added Successfully.",
-            )
+            messages.success(request, "Brand Added Successfully.")
 
             return redirect("dashboard:brand_list")
 
@@ -903,13 +745,7 @@ def brand_create(request):
 
         form = BrandForm()
 
-    return render(
-        request,
-        "dashboard/brands/create.html",
-        {
-            "form": form,
-        },
-    )
+    return render(request, "dashboard/brands/create.html",{"form": form})
 
 
 # ==========================================
@@ -918,43 +754,25 @@ def brand_create(request):
 
 def brand_update(request, pk):
 
-    brand = get_object_or_404(
-        Brand,
-        pk=pk,
-    )
+    brand = get_object_or_404(Brand, pk=pk)
 
     if request.method == "POST":
 
-        form = BrandForm(
-            request.POST,
-            request.FILES,
-            instance=brand,
-        )
+        form = BrandForm(request.POST, request.FILES, instance=brand)
 
         if form.is_valid():
 
             form.save()
 
-            messages.success(
-                request,
-                "Brand Updated Successfully.",
-            )
+            messages.success(request, "Brand Updated Successfully.")
 
             return redirect("dashboard:brand_list")
 
     else:
 
-        form = BrandForm(
-            instance=brand,
-        )
+        form = BrandForm(instance=brand)
 
-    return render(
-        request,
-        "dashboard/brands/update.html",
-        {
-            "form": form,
-        },
-    )
+    return render(request, "dashboard/brands/update.html", {"form": form})
 
 
 # ==========================================
@@ -969,29 +787,17 @@ def brand_delete(request, pk):
 
         brand.delete()
 
-        messages.success(
-            request,
-            "Brand Deleted Successfully.",
-        )
+        messages.success(request, "Brand Deleted Successfully.")
 
         return redirect("dashboard:brand_list")
 
-    return render(
-        request,
-        "dashboard/brands/delete.html",
-        {
-            "brand": brand,
-        },
-    )
+    return render(request, "dashboard/brands/delete.html",{"brand": brand})
 
 
 # ==========================================
 # Product List
 # ==========================================
 @owner_required
-
-
-
 def product_list(request):
 
     query = request.GET.get("q")
@@ -1007,14 +813,9 @@ def product_list(request):
 
     if query:
 
-        products = products.filter(
-            name__icontains=query
-        )
+        products = products.filter(name__icontains=query)
 
-    paginator = Paginator(
-        products,
-        10,
-    )
+    paginator = Paginator(products, 10)
 
     page_number = request.GET.get("page")
 
@@ -1044,11 +845,7 @@ def product_list(request):
 
     }
 
-    return render(
-        request,
-        "dashboard/products/list.html",
-        context,
-    )
+    return render(request, "dashboard/products/list.html", context)
 
 # ==========================================
 # Product Create
@@ -1057,13 +854,9 @@ def product_list(request):
 @owner_required
 def product_create(request):
 
-
     if request.method == "POST":
 
-        form = ProductForm(
-            request.POST,
-            request.FILES,
-        )
+        form = ProductForm(request.POST, request.FILES)
 
         if form.is_valid():
 
@@ -1071,15 +864,9 @@ def product_create(request):
 
             for image in request.FILES.getlist("images"):
 
-                ProductImage.objects.create(
-                    product=product,
-                    image=image,
-                )
+                ProductImage.objects.create(product=product, image=image)
 
-            messages.success(
-                    request,
-                "Product created successfully.",
-            )
+            messages.success(request, "Product created successfully.")
 
             return redirect("dashboard:product_list")
 
@@ -1089,13 +876,7 @@ def product_create(request):
 
         
 
-    return render(
-        request,
-        "dashboard/products/create.html",
-        {
-            "form": form,
-        },
-    )
+    return render(request, "dashboard/products/create.html", {"form": form})
 
 # ==========================================
 # Product Update
@@ -1104,18 +885,11 @@ def product_create(request):
 @owner_required
 def product_update(request, pk):
 
-    product = get_object_or_404(
-        Product,
-        pk=pk,
-    )
+    product = get_object_or_404(Product, pk=pk)
 
     if request.method == "POST":
 
-        form = ProductForm(
-            request.POST,
-            request.FILES,
-            instance=product,
-        )
+        form = ProductForm(request.POST, request.FILES, instance=product)
 
         if form.is_valid():
 
@@ -1123,36 +897,18 @@ def product_update(request, pk):
 
             for image in request.FILES.getlist("images"):
 
-                ProductImage.objects.create(
-                    product=product,
-                    image=image,
-                )
+                ProductImage.objects.create(product=product, image=image)
                 
 
-            messages.success(
-                request,
-                "Product updated successfully.",
-            )
+            messages.success(request, "Product updated successfully.")
 
             return redirect("dashboard:product_list")
 
     else:
 
-        form = ProductForm(
-            instance=product,
-        )
+        form = ProductForm(instance=product)
 
-        
-
-    return render(
-        request,
-        "dashboard/products/update.html",
-        {
-            "form": form,
-            "product": product,
-            "gallery": product.gallery.all(),
-        },
-    )
+    return render(request, "dashboard/products/update.html", {"form": form, "product": product, "gallery": product.gallery.all()})
 
 
 # ==========================================
@@ -1161,31 +917,17 @@ def product_update(request, pk):
 @owner_required
 def product_delete(request, pk):
 
-    product = get_object_or_404(
-        Product,
-        pk=pk,
-    )
+    product = get_object_or_404(Product, pk=pk)
 
     if request.method == "POST":
 
         product.delete()
 
-        messages.success(
-            request,
-            "Product deleted successfully.",
-        )
+        messages.success(request, "Product deleted successfully.")
 
         return redirect("dashboard:product_list")
 
-    return render(
-        request,
-        "dashboard/products/delete.html",
-        {
-
-            "product": product,
-
-        },
-    )
+    return render(request, "dashboard/products/delete.html", {"product": product})
 
 
 
@@ -1195,37 +937,19 @@ def product_delete(request, pk):
 
 def product_gallery(request, pk):
 
-    product = get_object_or_404(
-        Product,
-        pk=pk,
-    )
+    product = get_object_or_404(Product, pk=pk)
 
-    images = product.gallery.only(
-        "id",
-        "image",
-    )
+    images = product.gallery.only("id", "image")
 
     form = ProductGalleryForm()
 
     context = {
-
         "product": product,
-
         "images": images,
-
         "form": form,
-
     }
 
-    return render(
-
-        request,
-
-        "dashboard/product_images/gallery.html",
-
-        context,
-
-    )
+    return render(request, "dashboard/product_images/gallery.html", context)
 
 
 
@@ -1235,51 +959,23 @@ def product_gallery(request, pk):
 
 def product_image_create(request, pk):
 
-    product = get_object_or_404(
-
-        Product,
-
-        pk=pk,
-
-    )
+    product = get_object_or_404(Product, pk=pk)
 
     if request.method == "POST":
 
-        form = ProductGalleryForm(
-
-            request.POST,
-
-            request.FILES,
-
-        )
+        form = ProductGalleryForm(request.POST, request.FILES)
 
         if form.is_valid():
 
-            image = form.save(
-
-                commit=False,
-
-            )
+            image = form.save(commit=False)
 
             image.product = product
 
             image.save()
 
-            messages.success(
+            messages.success(request, "Image Uploaded Successfully.")
 
-                request,
-
-                "Image Uploaded Successfully.",
-
-            )
-
-    return redirect(
-
-        "dashboard:product_gallery",
-
-        pk=pk,
-
-    )
+    return redirect("dashboard:product_gallery", pk=pk)
 
 
 # ==========================================
@@ -1289,25 +985,15 @@ def product_image_create(request, pk):
 @owner_required
 def product_image_delete(request, pk):
 
-    image = get_object_or_404(
-        ProductImage,
-        pk=pk,
-    )
+    image = get_object_or_404(ProductImage, pk=pk)
 
     product_id = image.product.id
 
     image.delete()
 
-    messages.success(
-        request,
-        "Image deleted successfully.",
-    )
+    messages.success(request, "Image deleted successfully.")
 
-    return redirect(
-        "dashboard:product_update",
-        pk=product_id,
-    )
-
+    return redirect("dashboard:product_update", pk=product_id)
 
 # ==========================================
 # Coupon List
@@ -1324,20 +1010,7 @@ def coupon_list(request):
         "valid_to",
     ).order_by("-id")
 
-    return render(
-
-        request,
-
-        "dashboard/coupon/list.html",
-
-        {
-
-            "coupons": coupons,
-
-        },
-
-    )
-
+    return render(request, "dashboard/coupon/list.html", {"coupons": coupons})
 
 # ==========================================
 # Coupon Add
@@ -1359,21 +1032,7 @@ def coupon_add(request):
 
         form = CouponForm()
 
-    return render(
-
-        request,
-
-        "dashboard/coupon/form.html",
-
-        {
-
-            "form": form,
-
-            "title": "Add Coupon",
-
-        },
-
-    )
+    return render(request, "dashboard/coupon/form.html", {"form": form, "title": "Add Coupon"})
 
 
 # ==========================================
@@ -1382,58 +1041,23 @@ def coupon_add(request):
 
 def coupon_edit(request, pk):
 
-    coupon = get_object_or_404(
-
-        Coupon,
-
-        pk=pk,
-
-    )
+    coupon = get_object_or_404(Coupon, pk=pk)
 
     if request.method == "POST":
 
-        form = CouponForm(
-
-            request.POST,
-
-            instance=coupon,
-
-        )
+        form = CouponForm(request.POST, instance=coupon)
 
         if form.is_valid():
 
             form.save()
 
-            return redirect(
-
-                "dashboard:coupon_list"
-
-            )
+            return redirect("dashboard:coupon_list")
 
     else:
 
-        form = CouponForm(
+        form = CouponForm(instance=coupon)
 
-            instance=coupon,
-
-        )
-
-    return render(
-
-        request,
-
-        "dashboard/coupon/form.html",
-
-        {
-
-            "form": form,
-
-            "title": "Edit Coupon",
-
-        },
-
-    )
-
+    return render(request, "dashboard/coupon/form.html", {"form": form, "title": "Edit Coupon"})
 
 # ==========================================
 # Coupon Delete
@@ -1441,21 +1065,11 @@ def coupon_edit(request, pk):
 
 def coupon_delete(request, pk):
 
-    coupon = get_object_or_404(
-
-        Coupon,
-
-        pk=pk,
-
-    )
+    coupon = get_object_or_404(Coupon, pk=pk)
 
     coupon.delete()
 
-    return redirect(
-
-        "dashboard:coupon_list"
-
-    )
+    return redirect("dashboard:coupon_list")
 
 @owner_or_staff_required
 def dashboard_order_detail(request, order_id):
@@ -1491,15 +1105,9 @@ def dashboard_order_detail(request, order_id):
 
             )
 
-            messages.success(
-                request,
-                "Timeline note added successfully."
-            )
+            messages.success(request, "Timeline note added successfully.")
 
-            return redirect(
-                "dashboard:dashboard_order_detail",
-                order.id,
-            )
+            return redirect("dashboard:dashboard_order_detail", order.id)
 
         # ====================================================
         # Previous Values
@@ -1516,42 +1124,25 @@ def dashboard_order_detail(request, order_id):
         # Payment
         # ====================================================
 
-        order.payment_status = request.POST.get(
-            "payment_status",
-            order.payment_status,
-        )
+        order.payment_status = request.POST.get("payment_status", order.payment_status)
 
-        order.paid = order.payment_status in [
-            "paid",
-            "partial",
-        ]
+        order.paid = order.payment_status in ["paid", "partial"]
 
         # ====================================================
         # Order Status
         # ====================================================
 
-        order.status = request.POST.get(
-            "status",
-            order.status,
-        )
+        order.status = request.POST.get("status", order.status)
 
         # ====================================================
         # Courier
         # ====================================================
 
-        order.courier_name = request.POST.get(
-            "courier_name",
-            "",
-        )
+        order.courier_name = request.POST.get("courier_name", "")
 
-        order.delivery_charge = (
-            request.POST.get("delivery_charge")
-            or 0
-        )
+        order.delivery_charge = (request.POST.get("delivery_charge")or 0)
 
-        estimated = request.POST.get(
-            "estimated_delivery"
-        )
+        estimated = request.POST.get("estimated_delivery")
 
         if estimated:
 
@@ -1574,15 +1165,9 @@ def dashboard_order_detail(request, order_id):
 
             old_return_status = request_obj.status
 
-            return_status = request.POST.get(
-                "return_status",
-                request_obj.status,
-            )
+            return_status = request.POST.get("return_status", request_obj.status)
 
-            resolution = request.POST.get(
-                "resolution",
-                request_obj.resolution,
-            )
+            resolution = request.POST.get("resolution", request_obj.resolution)
 
             request_obj.status = return_status
             request_obj.resolution = resolution
@@ -1591,42 +1176,27 @@ def dashboard_order_detail(request, order_id):
             request_obj.save()
 
             # ==========================================
-# Return Comment
-# ==========================================
+            # Return Comment
+            # ==========================================
 
-            new_admin_note = request.POST.get(
-                "return_admin_note",
-                "",
-            ).strip()
+            new_admin_note = request.POST.get("return_admin_note", "").strip()
 
-            customer_visible = (
-                request.POST.get("customer_visible") == "on"
-            )
+            customer_visible = (request.POST.get("customer_visible") == "on")
 
             if new_admin_note:
 
                 ReturnComment.objects.create(
-
                     return_request=request_obj,
-
                     user=request.user,
-
                     message=new_admin_note,
-
                     customer_visible=customer_visible,
-
                 )
 
                 OrderTimeline.objects.create(
-
                     order=order,
-
                     user=request.user,
-
                     created_by=request.user.username,
-
                     note="💬 Admin replied to return request.",
-
                 )
 
             if old_return_status != return_status:
@@ -1641,17 +1211,17 @@ def dashboard_order_detail(request, order_id):
                     ),
                 )
 
-    # ==========================================
-    # Approved
-    # ==========================================
+            # ==========================================
+            # Approved
+            # ==========================================
 
             if return_status == "approved":
 
-                first_item = order.items.select_related(
-                    "product"
-                ).first()
+                first_item = order.items.select_related("product").first()
 
-        # ---------------- Refund ----------------
+            # ==========================================
+            # Refund
+            # ==========================================
 
                 if resolution == "refund":
 
@@ -1671,7 +1241,9 @@ def dashboard_order_detail(request, order_id):
                         note="💰 Refund request sent to Refund Center.",
                     )
 
-        # ---------------- Exchange ----------------
+            # ==========================================
+            # Exchange 
+            # ==========================================
 
                 elif resolution == "exchange":
 
@@ -1692,8 +1264,10 @@ def dashboard_order_detail(request, order_id):
                             created_by=request.user.username,
                             note="🔄 Exchange request sent to Exchange Center.",
                     )
-
-        # ---------------- Replacement ----------------
+            
+            # ==========================================
+            # Replacement
+            # ==========================================
 
                 elif resolution == "replacement":
 
@@ -1723,45 +1297,30 @@ def dashboard_order_detail(request, order_id):
         if old_tracking != order.tracking_number and order.tracking_number:
 
             OrderTimeline.objects.create(
-
                 order=order,
-
                 user=request.user,
-
                 created_by=request.user.username,
-
                 note=f"📍 Tracking Number Added : {order.tracking_number}",
-
             )
 
 
         if old_courier != order.courier_name and order.courier_name:
 
             OrderTimeline.objects.create(
-
                 order=order,
-
                 user=request.user,
-
                 created_by=request.user.username,
-
                 note=f"🚚 Courier Assigned : {order.courier_name}",
-
             )
 
 
         if old_delivery != order.estimated_delivery and order.estimated_delivery:
 
             OrderTimeline.objects.create(
-
                 order=order,
-
                 user=request.user,
-
                 created_by=request.user.username,
-
                 note=f"📅 Estimated Delivery : {order.estimated_delivery}",
-
             )
 
         # ====================================================
@@ -1773,15 +1332,10 @@ def dashboard_order_detail(request, order_id):
         if admin_note:
 
             OrderTimeline.objects.create(
-
                 order=order,
-
                 user=request.user,
-
                 created_by=request.user.username,
-
                 note=admin_note,
-
             )
 
         # ====================================================
@@ -1799,15 +1353,10 @@ def dashboard_order_detail(request, order_id):
             }
 
             OrderTimeline.objects.create(
-
                 order=order,
-
                 user=request.user,
-
                 created_by=request.user.username,
-
                 note=STATUS_MESSAGES.get(order.status, order.status),
-
             )
 
         if old_payment != order.payment_status:
@@ -1821,15 +1370,10 @@ def dashboard_order_detail(request, order_id):
             }
 
             OrderTimeline.objects.create(
-
                 order=order,
-
                 user=request.user,
-
                 created_by=request.user.username,
-
                 note=PAYMENT_MESSAGES.get(order.payment_status),
-
             )
 
         # ====================================================
@@ -1868,45 +1412,17 @@ def dashboard_order_detail(request, order_id):
             ):
             send_cancelled_email(request, order)
 
-        messages.success(
+        messages.success(request, "Order updated successfully.")
 
-            request,
+        return redirect("dashboard:dashboard_order_detail", order.id)
 
-            "Order updated successfully."
-
-        )
-
-        return redirect(
-
-            "dashboard:dashboard_order_detail",
-
-            order.id,
-
-        )
-
-    return render(
-
-        request,
-
-        "dashboard/order_detail.html",
-
-        {
-
-            "order": order,
-
-        },
-
-    )
+    return render(request, "dashboard/order_detail.html", {"order": order})
 
 
 @owner_or_staff_required
 def dashboard_orders(request):
 
-    orders = Order.objects.select_related(
-        "user"
-    ).order_by(
-        "-created_at"
-    )
+    orders = Order.objects.select_related("user").order_by("-created_at")
 
     # ==========================
     # Search
@@ -1917,21 +1433,13 @@ def dashboard_orders(request):
     if q:
 
         orders = orders.filter(
-
             Q(id__icontains=q)
-
             |
-
             Q(full_name__icontains=q)
-
             |
-
             Q(email__icontains=q)
-
             |
-
             Q(phone__icontains=q)
-
         )
 
     # ==========================
@@ -1942,9 +1450,7 @@ def dashboard_orders(request):
 
     if status:
 
-        orders = orders.filter(
-            status=status
-        )
+        orders = orders.filter(status=status)
 
     # ==========================
     # Payment Method
@@ -1954,9 +1460,7 @@ def dashboard_orders(request):
 
     if payment:
 
-        orders = orders.filter(
-            payment_method=payment
-        )
+        orders = orders.filter(payment_method=payment)
 
     # ==========================
     # Paid
@@ -1966,44 +1470,23 @@ def dashboard_orders(request):
 
     if paid == "yes":
 
-        orders = orders.filter(
-            paid=True
-        )
+        orders = orders.filter(paid=True)
 
     elif paid == "no":
 
-        orders = orders.filter(
-            paid=False
-        )
+        orders = orders.filter(paid=False)
 
     # ==========================
     # Pagination
     # ==========================
 
-    paginator = Paginator(
-        orders,
-        20,
-    )
+    paginator = Paginator(orders, 20,)
 
     page_number = request.GET.get("page")
 
     page_obj = paginator.get_page(page_number)
 
-    return render(
-
-        request,
-
-        "dashboard/orders.html",
-
-        {
-
-            "orders": page_obj,
-
-            "page_obj": page_obj,
-
-        },
-
-    )
+    return render(request, "dashboard/orders.html", {"orders": page_obj, "page_obj": page_obj})
 
 
 @owner_or_staff_required
@@ -2069,9 +1552,7 @@ def export_orders_excel(request):
 
     )
 
-    response["Content-Disposition"] = (
-        'attachment; filename="orders.xlsx"'
-    )
+    response["Content-Disposition"] = ('attachment; filename="orders.xlsx"')
 
     wb.save(response)
 
@@ -2082,13 +1563,7 @@ def low_stock_report(request):
 
     products = Product.objects.filter(stock__lte=5)
 
-    return render(
-        request,
-        "dashboard/low_stock_report.html",
-        {
-            "products": products,
-        },
-    )
+    return render(request, "dashboard/low_stock_report.html", {"products": products})
 
 
 @owner_or_staff_required
@@ -2154,27 +1629,14 @@ def dashboard_customers(request):
         ).count(),
     }
 
-    return render(
-        request,
-        "dashboard/customers.html",
-        context,
-    )
-
+    return render(request, "dashboard/customers.html", context)
 
 @owner_or_staff_required
 def dashboard_customer_detail(request, user_id):
 
-    customer = get_object_or_404(
-        User,
-        id=user_id,
-        role="customer",
-    )
+    customer = get_object_or_404(User, id=user_id, role="customer")
 
-    orders = customer.orders.select_related(
-        "coupon",
-    ).order_by(
-        "-created_at",
-    )
+    orders = customer.orders.select_related("coupon").order_by("-created_at")
 
     total_spent = (
         orders.filter(
@@ -2198,67 +1660,38 @@ def dashboard_customer_detail(request, user_id):
     context = {
 
         "customer": customer,
-
         "orders": orders,
-
         "total_spent": total_spent,
-
         "is_online": is_online,
-
     }
 
-    return render(
-        request,
-        "dashboard/customer_detail.html",
-        context,
-    )
+    return render(request, "dashboard/customer_detail.html",context)
 
 
 @owner_or_staff_required
 def customer_block(request, user_id):
 
-    customer = get_object_or_404(
-        User,
-        id=user_id,
-        role="customer",
-    )
+    customer = get_object_or_404(User, id=user_id, role="customer")
 
     customer.is_blocked = True
     customer.save(update_fields=["is_blocked"])
 
-    messages.success(
-        request,
-        f"{customer.username} has been blocked.",
-    )
+    messages.success(request, f"{customer.username} has been blocked.")
 
-    return redirect(
-        "dashboard:dashboard_customer_detail",
-        user_id=customer.id,
-    )
+    return redirect("dashboard:dashboard_customer_detail", user_id=customer.id)
 
 
 @owner_or_staff_required
 def customer_unblock(request, user_id):
 
-    customer = get_object_or_404(
-        User,
-        id=user_id,
-        role="customer",
-    )
+    customer = get_object_or_404(User, id=user_id, role="customer")
 
     customer.is_blocked = False
     customer.save(update_fields=["is_blocked"])
 
-    messages.success(
-        request,
-        f"{customer.username} has been unblocked.",
-    )
+    messages.success(request, f"{customer.username} has been unblocked.")
 
-    return redirect(
-        "dashboard:dashboard_customer_detail",
-        user_id=customer.id,
-    )
-
+    return redirect("dashboard:dashboard_customer_detail", user_id=customer.id)
 
 @owner_or_staff_required
 def customer_activity(request):
@@ -2316,11 +1749,7 @@ def customer_activity(request):
 
     }
 
-    return render(
-        request,
-        "dashboard/customer_activity.html",
-        context,
-    )
+    return render(request, "dashboard/customer_activity.html", context)
 
 @owner_or_staff_required
 def online_customers(request):
@@ -2348,23 +1777,14 @@ def online_customers(request):
     )
 
     context = {
-
         "customers": customers,
-
         "online_threshold": online_threshold,
-
         "online_count": customers.filter(
             last_activity__gte=online_threshold,
         ).count(),
-
     }
 
-    return render(
-        request,
-        "dashboard/online_customers.html",
-        context,
-    )
-
+    return render(request, "dashboard/online_customers.html", context)
 
 @owner_or_staff_required
 def abandoned_carts(request):
@@ -2383,17 +1803,9 @@ def abandoned_carts(request):
         )
     )
 
-    context = {
+    context = {"carts": carts}
 
-        "carts": carts,
-
-    }
-
-    return render(
-        request,
-        "dashboard/abandoned_carts.html",
-        context,
-    )
+    return render(request, "dashboard/abandoned_carts.html", context)
 
 @owner_or_staff_required
 def send_abandoned_cart_email(request, cart_id):
@@ -2430,7 +1842,6 @@ Thank you.
         body=message,
         to=[customer.email],
     )
-
     email.send()
 
     cart.reminder_sent = True
@@ -2445,14 +1856,9 @@ Thank you.
         ]
     )
 
-    messages.success(
-        request,
-        "Reminder email sent successfully.",
-    )
+    messages.success(request, "Reminder email sent successfully.")
 
-    return redirect(
-        "dashboard:abandoned_carts",
-    )
+    return redirect("dashboard:abandoned_carts")
 
 @owner_or_staff_required
 def wishlist_recovery(request):
@@ -2483,25 +1889,17 @@ def wishlist_recovery(request):
     page_obj = paginator.get_page(page_number)
 
     context = {
-
         "page_obj": page_obj,
-
         "total_items": Wishlist.objects.count(),
-
         "pending_items": Wishlist.objects.filter(
             promotion_sent=False,
         ).count(),
-
         "sent_items": Wishlist.objects.filter(
             promotion_sent=True,
         ).count(),
     }
 
-    return render(
-        request,
-        "dashboard/wishlist_recovery.html",
-        context,
-    )
+    return render(request, "dashboard/wishlist_recovery.html",context)
 
 @owner_or_staff_required
 def send_wishlist_promotion(request, wishlist_id):
@@ -2553,14 +1951,9 @@ Thank you.
         ]
     )
 
-    messages.success(
-        request,
-        "Promotion email sent successfully.",
-    )
+    messages.success(request, "Promotion email sent successfully.")
 
-    return redirect(
-        "dashboard:wishlist_recovery",
-    )
+    return redirect("dashboard:wishlist_recovery")
 
 @owner_or_staff_required
 def currency_exchange(request):
@@ -2577,15 +1970,11 @@ def currency_exchange(request):
         exchange_rate.rate = request.POST.get("rate")
         exchange_rate.save()
 
-        messages.success(
-            request,
-            "USD exchange rate updated successfully.",
-        )
+        messages.success(request, "USD exchange rate updated successfully.")
 
         return redirect("dashboard:home")
 
-    return render(
-        request,
+    return render(request,
         "dashboard/currency_exchange.html",
         {
             "exchange_rate": exchange_rate,
@@ -2596,7 +1985,6 @@ def currency_exchange(request):
 def feature_toggle_list(request):
 
     defaults = [
-
         {
             "key": "flash_sale",
             "category": "marketing",
@@ -2697,23 +2085,15 @@ def feature_toggle_list(request):
             key=item["key"],
 
             defaults={
-
                 "category": item["category"],
-
                 "icon": item["icon"],
-
                 "description": item["description"],
-
             },
-
         )
 
     if request.method == "POST":
 
-        feature = get_object_or_404(
-            FeatureToggle,
-            id=request.POST.get("id"),
-        )
+        feature = get_object_or_404(FeatureToggle, id=request.POST.get("id"))
 
         feature.enabled = not feature.enabled
 
@@ -2723,10 +2103,7 @@ def feature_toggle_list(request):
 
         clear_feature_cache()
 
-        messages.success(
-            request,
-            f"{feature.get_key_display()} updated successfully.",
-        )
+        messages.success(request, f"{feature.get_key_display()} updated successfully.")
 
         return redirect("dashboard:feature_toggle_list")
 
@@ -2737,20 +2114,12 @@ def feature_toggle_list(request):
     if category:
         features = features.filter(category=category)
 
-    return render(
-
-        request,
-
+    return render(request,
         "dashboard/feature_toggle_list.html",
-
         {
-
             "features": features,
-
             "active_category": category,
-
             "categories": FeatureToggle.CATEGORY_CHOICES,
-
         },
 
     )
@@ -2792,26 +2161,14 @@ def website_features(request):
         messages.success(request, "Website settings updated successfully.")
         return redirect("dashboard:website_features")
 
-    return render(
-        request,
-        "dashboard/website_features.html",
-        {
-            "settings": settings,
-        },
-    )
+    return render(request, "dashboard/website_features.html", {"settings": settings})
 
 @owner_required
 def announcement_list(request):
 
     announcements = Announcement.objects.all()
 
-    return render(
-        request,
-        "dashboard/announcement/list.html",
-        {
-            "announcements": announcements,
-        },
-    )
+    return render(request, "dashboard/announcement/list.html", {"announcements": announcements})
 
 
 @owner_required
@@ -2825,10 +2182,7 @@ def announcement_add(request):
 
             form.save()
 
-            messages.success(
-                request,
-                "Announcement added successfully.",
-            )
+            messages.success(request, "Announcement added successfully.")
 
             return redirect("dashboard:announcement_list")
 
@@ -2836,8 +2190,7 @@ def announcement_add(request):
 
         form = AnnouncementForm()
 
-    return render(
-        request,
+    return render(request,
         "dashboard/announcement/form.html",
         {
             "form": form,
@@ -2849,37 +2202,25 @@ def announcement_add(request):
 @owner_required
 def announcement_edit(request, pk):
 
-    announcement = get_object_or_404(
-        Announcement,
-        pk=pk,
-    )
+    announcement = get_object_or_404(Announcement, pk=pk)
 
     if request.method == "POST":
 
-        form = AnnouncementForm(
-            request.POST,
-            instance=announcement,
-        )
+        form = AnnouncementForm(request.POST, instance=announcement)
 
         if form.is_valid():
 
             form.save()
 
-            messages.success(
-                request,
-                "Announcement updated successfully.",
-            )
+            messages.success(request, "Announcement updated successfully.")
 
             return redirect("dashboard:announcement_list")
 
     else:
 
-        form = AnnouncementForm(
-            instance=announcement,
-        )
+        form = AnnouncementForm(instance=announcement)
 
-    return render(
-        request,
+    return render(request,
         "dashboard/announcement/form.html",
         {
             "form": form,
@@ -2890,24 +2231,17 @@ def announcement_edit(request, pk):
 @owner_required
 def announcement_delete(request, pk):
 
-    announcement = get_object_or_404(
-        Announcement,
-        pk=pk,
-    )
+    announcement = get_object_or_404(Announcement, pk=pk)
 
     if request.method == "POST":
 
         announcement.delete()
 
-        messages.success(
-            request,
-            "Announcement deleted successfully.",
-        )
+        messages.success(request, "Announcement deleted successfully.")
 
         return redirect("dashboard:announcement_list")
 
-    return render(
-        request,
+    return render(request,
         "dashboard/announcement/delete.html",
         {
             "announcement": announcement,
@@ -2946,11 +2280,7 @@ def dashboard_returns(request):
         "all_count": ReturnRequest.objects.count(),
     }
 
-    return render(
-        request,
-        "dashboard/returns.html",
-        context,
-    )
+    return render(request, "dashboard/returns.html", context)
 
 
 @owner_or_staff_required
@@ -2970,41 +2300,29 @@ def dashboard_refunds(request):
 
     if status:
 
-        refunds = refunds.filter(
-            status=status,
-        )
+        refunds = refunds.filter(status=status)
 
-    paginator = Paginator(
-        refunds,
-        20,
-    )
+    paginator = Paginator(refunds, 20)
 
     page = request.GET.get("page")
 
     page_obj = paginator.get_page(page)
 
     context = {
-
         "refunds": page_obj,
-
         "page_obj": page_obj,
-
         "pending_count": Refund.objects.filter(
             status="pending",
         ).count(),
-
         "processing_count": Refund.objects.filter(
             status="processing",
         ).count(),
-
         "completed_count": Refund.objects.filter(
             status="completed",
         ).count(),
-
         "cancelled_count": Refund.objects.filter(
             status="cancelled",
         ).count(),
-
         "total_amount": (
             Refund.objects.filter(
                 status="completed",
@@ -3013,22 +2331,10 @@ def dashboard_refunds(request):
             )["total"]
             or 0
         ),
-
         "current_status": status,
-
     }
 
-    return render(
-
-        request,
-
-        "dashboard/refunds.html",
-
-        context,
-
-    )
-
-
+    return render(request, "dashboard/refunds.html", context)
 
 @owner_or_staff_required
 def dashboard_refund_detail(request, pk):
@@ -3041,13 +2347,7 @@ def dashboard_refund_detail(request, pk):
         pk=pk,
     )
 
-    return render(
-        request,
-        "dashboard/refund_detail.html",
-        {
-            "refund": refund,
-        },
-    )
+    return render(request, "dashboard/refund_detail.html", {"refund": refund})
 
 @require_POST
 @owner_or_staff_required
@@ -3064,28 +2364,16 @@ def complete_refund(request, pk):
     # Already completed
     if refund.status == "completed":
 
-        messages.warning(
-            request,
-            "Refund already completed.",
-        )
+        messages.warning(request, "Refund already completed.")
 
-        return redirect(
-            "dashboard:dashboard_refund_detail",
-            refund.id,
-        )
+        return redirect("dashboard:dashboard_refund_detail", refund.id)
 
     # Cancelled refund cannot be completed
     if refund.status == "cancelled":
 
-        messages.error(
-            request,
-            "Cancelled refund cannot be completed.",
-        )
+        messages.error(request, "Cancelled refund cannot be completed.")
 
-        return redirect(
-            "dashboard:dashboard_refund_detail",
-            refund.id,
-        )
+        return redirect("dashboard:dashboard_refund_detail", refund.id)
 
     # ==========================================
     # Refund
@@ -3121,8 +2409,7 @@ def complete_refund(request, pk):
     order.payment_status = "refunded"
     order.status = "cancelled"
 
-    order.save(
-        update_fields=[
+    order.save(update_fields=[
             "payment_status",
             "status",
         ]
@@ -3135,8 +2422,7 @@ def complete_refund(request, pk):
     refund.return_request.status = "refunded"
     refund.return_request.admin_note = refund.admin_note
 
-    refund.return_request.save(
-        update_fields=[
+    refund.return_request.save(update_fields=[
             "status",
             "admin_note",
             "updated_at",
@@ -3158,15 +2444,9 @@ def complete_refund(request, pk):
         ),
     )
 
-    messages.success(
-        request,
-        "Refund completed successfully.",
-    )
+    messages.success(request, "Refund completed successfully.")
 
-    return redirect(
-        "dashboard:dashboard_refund_detail",
-        refund.id,
-    )
+    return redirect("dashboard:dashboard_refund_detail", refund.id)
 
 @require_POST
 @owner_or_staff_required
@@ -3183,15 +2463,9 @@ def cancel_refund(request, pk):
     # Already completed
     if refund.status == "completed":
 
-        messages.error(
-            request,
-            "Completed refund cannot be cancelled.",
-        )
+        messages.error(request, "Completed refund cannot be cancelled.")
 
-        return redirect(
-            "dashboard:dashboard_refund_detail",
-            refund.id,
-        )
+        return redirect("dashboard:dashboard_refund_detail", refund.id)
 
     refund.status = "cancelled"
 
@@ -3225,15 +2499,9 @@ def cancel_refund(request, pk):
         note="❌ Refund request cancelled by admin.",
     )
 
-    messages.success(
-        request,
-        "Refund cancelled successfully.",
-    )
+    messages.success(request, "Refund cancelled successfully.")
 
-    return redirect(
-        "dashboard:dashboard_refund_detail",
-        refund.id,
-    )
+    return redirect("dashboard:dashboard_refund_detail", refund.id)
 
 @owner_or_staff_required
 def dashboard_exchanges(request):
@@ -3258,10 +2526,7 @@ def dashboard_exchanges(request):
             status=status,
         )
 
-    paginator = Paginator(
-        exchanges,
-        20,
-    )
+    paginator = Paginator(exchanges, 20)
 
     page = request.GET.get("page")
 
@@ -3293,17 +2558,7 @@ def dashboard_exchanges(request):
 
     }
 
-    return render(
-
-        request,
-
-        "dashboard/exchanges.html",
-
-        context,
-
-    )
-
-
+    return render(request, "dashboard/exchanges.html", context)
 
 @owner_or_staff_required
 def dashboard_exchange_detail(request, pk):
@@ -3358,40 +2613,13 @@ def dashboard_exchange_detail(request, pk):
 
         )
 
-        messages.success(
+        messages.success(request, "Exchange updated successfully.")
 
-            request,
+        return redirect("dashboard:dashboard_exchange_detail", exchange.id)
 
-            "Exchange updated successfully.",
+    products = Product.objects.filter(available=True).order_by("name")
 
-        )
-
-        return redirect(
-
-            "dashboard:dashboard_exchange_detail",
-
-            exchange.id,
-
-        )
-
-    products = Product.objects.filter(
-    available=True,
-    ).order_by(
-        "name",
-    )
-
-    return render(
-
-        request,
-
-        "dashboard/exchange_detail.html",
-
-        {
-            "exchange": exchange,
-            "products": products,
-        },
-
-    )
+    return render(request, "dashboard/exchange_detail.html",{"exchange": exchange, "products": products})
 
 
 @require_POST
@@ -3412,59 +2640,33 @@ def complete_exchange(request, pk):
 
     if exchange.status == "completed":
 
-        messages.warning(
-            request,
-            "Exchange already completed.",
-        )
+        messages.warning(request, "Exchange already completed.")
 
-        return redirect(
-            "dashboard:dashboard_exchange_detail",
-            exchange.id,
-        )
+        return redirect("dashboard:dashboard_exchange_detail", exchange.id)
 
     if exchange.status == "cancelled":
 
-        messages.error(
-            request,
-            "Cancelled exchange cannot be completed.",
-        )
+        messages.error(request, "Cancelled exchange cannot be completed.")
 
-        return redirect(
-            "dashboard:dashboard_exchange_detail",
-            exchange.id,
-        )
+        return redirect("dashboard:dashboard_exchange_detail", exchange.id)
 
     if not exchange.new_product:
 
-        messages.error(
-            request,
-            "Please select a new product before completing the exchange.",
-        )
+        messages.error(request, "Please select a new product before completing the exchange.")
 
-        return redirect(
-            "dashboard:dashboard_exchange_detail",
-            exchange.id,
-        )
+        return redirect("dashboard:dashboard_exchange_detail", exchange.id)
 
     # ==========================================
     # Order Item & Quantity
     # ==========================================
 
-    order_item = exchange.order.items.select_related(
-        "product"
-    ).first()
+    order_item = exchange.order.items.select_related("product").first()
 
     if not order_item:
 
-        messages.error(
-            request,
-            "Order item not found.",
-        )
+        messages.error(request, "Order item not found.")
 
-        return redirect(
-            "dashboard:dashboard_exchange_detail",
-            exchange.id,
-        )
+        return redirect("dashboard:dashboard_exchange_detail", exchange.id)
 
     quantity = order_item.quantity
 
@@ -3474,15 +2676,9 @@ def complete_exchange(request, pk):
 
     if exchange.new_product.stock < quantity:
 
-        messages.error(
-            request,
-            "Insufficient stock for the selected product.",
-        )
+        messages.error(request, "Insufficient stock for the selected product.")
 
-        return redirect(
-            "dashboard:dashboard_exchange_detail",
-            exchange.id,
-        )
+        return redirect("dashboard:dashboard_exchange_detail", exchange.id)
 
     # ==========================================
     # Complete Exchange
@@ -3557,21 +2753,9 @@ def complete_exchange(request, pk):
 
     )
 
-    messages.success(
+    messages.success(request, "Exchange completed successfully.")
 
-        request,
-
-        "Exchange completed successfully.",
-
-    )
-
-    return redirect(
-
-        "dashboard:dashboard_exchange_detail",
-
-        exchange.id,
-
-    )
+    return redirect("dashboard:dashboard_exchange_detail", exchange.id)
 
 
 @require_POST
@@ -3588,22 +2772,13 @@ def cancel_exchange(request, pk):
 
     if exchange.status == "completed":
 
-        messages.error(
-            request,
-            "Completed exchange cannot be cancelled.",
-        )
+        messages.error(request, "Completed exchange cannot be cancelled.")
 
-        return redirect(
-            "dashboard:dashboard_exchange_detail",
-            exchange.id,
-        )
+        return redirect("dashboard:dashboard_exchange_detail", exchange.id)
 
     exchange.status = "cancelled"
 
-    exchange.admin_note = request.POST.get(
-        "admin_note",
-        exchange.admin_note,
-    )
+    exchange.admin_note = request.POST.get("admin_note", exchange.admin_note)
 
     exchange.save(
         update_fields=[
@@ -3635,21 +2810,9 @@ def cancel_exchange(request, pk):
 
     )
 
-    messages.success(
+    messages.success(request, "Exchange cancelled successfully.")
 
-        request,
-
-        "Exchange cancelled successfully.",
-
-    )
-
-    return redirect(
-
-        "dashboard:dashboard_exchange_detail",
-
-        exchange.id,
-
-    )
+    return redirect("dashboard:dashboard_exchange_detail", exchange.id)
 
 @owner_or_staff_required
 def dashboard_replacements(request):
@@ -3673,19 +2836,12 @@ def dashboard_replacements(request):
         replacements = replacements.filter(
 
             Q(order__id__icontains=q)
-
             |
-
             Q(order__full_name__icontains=q)
-
             |
-
             Q(order__email__icontains=q)
-
             |
-
             Q(product__name__icontains=q)
-
         )
 
     if status:
@@ -3694,10 +2850,7 @@ def dashboard_replacements(request):
             status=status
         )
 
-    paginator = Paginator(
-        replacements,
-        20,
-    )
+    paginator = Paginator(replacements, 20)
 
     page = request.GET.get("page")
 
@@ -3727,11 +2880,7 @@ def dashboard_replacements(request):
 
     }
 
-    return render(
-        request,
-        "dashboard/replacements.html",
-        context,
-    )
+    return render(request,"dashboard/replacements.html", context)
 
     
 @owner_or_staff_required
@@ -3740,70 +2889,31 @@ def dashboard_replacement_detail(request, pk):
     replacement = get_object_or_404(
 
         Replacement.objects.select_related(
-
             "order",
-
             "product",
-
             "return_request",
-
             "completed_by",
-
         ),
-
         pk=pk,
-
     )
 
     if request.method == "POST":
 
         replacement.status = request.POST.get(
-
             "status",
-
             replacement.status,
-
         )
-
         replacement.admin_note = request.POST.get(
-
             "admin_note",
-
             replacement.admin_note,
-
         )
-
         replacement.save()
 
-        messages.success(
+        messages.success(request, "Replacement updated successfully.")
 
-            request,
+        return redirect("dashboard:dashboard_replacement_detail", replacement.id)
 
-            "Replacement updated successfully.",
-
-        )
-
-        return redirect(
-
-            "dashboard:dashboard_replacement_detail",
-
-            replacement.id,
-
-        )
-
-    return render(
-
-        request,
-
-        "dashboard/replacement_detail.html",
-
-        {
-
-            "replacement": replacement,
-
-        },
-
-    )
+    return render(request, "dashboard/replacement_detail.html", {"replacement": replacement})
 
 @require_POST
 @owner_or_staff_required
@@ -3820,15 +2930,9 @@ def complete_replacement(request, pk):
 
     if replacement.status == "completed":
 
-        messages.warning(
-            request,
-            "Replacement already completed.",
-        )
+        messages.warning(request, "Replacement already completed.")
 
-        return redirect(
-            "dashboard:dashboard_replacement_detail",
-            replacement.id,
-        )
+        return redirect("dashboard:dashboard_replacement_detail", replacement.id)
 
     # ==========================
     # Update Replacement
@@ -3864,37 +2968,19 @@ def complete_replacement(request, pk):
     # ==========================
 
     OrderTimeline.objects.create(
-
         order=replacement.order,
-
         user=request.user,
-
         created_by=request.user.username,
-
         note=(
             f"📦 Replacement completed.\n"
             f"Product : {replacement.product.name}\n"
             f"Quantity : {replacement.quantity}"
         ),
-
     )
 
-    messages.success(
+    messages.success(request, "Replacement completed successfully.")
 
-        request,
-
-        "Replacement completed successfully.",
-
-    )
-
-    return redirect(
-
-        "dashboard:dashboard_replacement_detail",
-
-        replacement.id,
-
-    )
-
+    return redirect("dashboard:dashboard_replacement_detail", replacement.id)
 
 @require_POST
 @owner_or_staff_required
@@ -3910,61 +2996,29 @@ def cancel_replacement(request, pk):
 
     if replacement.status == "completed":
 
-        messages.error(
+        messages.error(request, "Completed replacement cannot be cancelled.")
 
-            request,
-
-            "Completed replacement cannot be cancelled.",
-
-        )
-
-        return redirect(
-
-            "dashboard:dashboard_replacement_detail",
-
-            replacement.id,
-
-        )
+        return redirect("dashboard:dashboard_replacement_detail", replacement.id)
 
     replacement.status = "cancelled"
 
     replacement.admin_note = request.POST.get(
-
         "admin_note",
-
         replacement.admin_note,
-
     )
 
     replacement.save()
 
     OrderTimeline.objects.create(
-
         order=replacement.order,
-
         user=request.user,
-
         created_by=request.user.username,
-
         note="❌ Replacement cancelled.",
-
     )
 
-    messages.success(
+    messages.success(request, "Replacement cancelled successfully.",)
 
-        request,
-
-        "Replacement cancelled successfully.",
-
-    )
-
-    return redirect(
-
-        "dashboard:dashboard_replacement_detail",
-
-        replacement.id,
-
-    )
+    return redirect("dashboard:dashboard_replacement_detail", replacement.id)
 
 
 @owner_or_staff_required
@@ -3994,14 +3048,9 @@ def return_review(request, pk):
 
         if not resolution:
 
-            messages.error(
-                request,
-                "Please select a resolution.",
-            )
+            messages.error(request, "Please select a resolution.")
 
-            return redirect(
-                "dashboard:return_review",
-                pk=pk,
+            return redirect("dashboard:return_review", pk=pk,
             )
 
         return_request.admin_note = admin_note
@@ -4025,14 +3074,9 @@ def return_review(request, pk):
                 note="❌ Return request rejected.",
             )
 
-            messages.success(
-                request,
-                "Return request rejected.",
-            )
+            messages.success(request, "Return request rejected.")
 
-            return redirect(
-                "dashboard:dashboard_returns",
-            )
+            return redirect("dashboard:dashboard_returns")
 
         # =====================================
         # Approved
@@ -4053,14 +3097,9 @@ def return_review(request, pk):
 
         if not order_item:
 
-            messages.error(
-                request,
-                "Order item not found.",
-            )
+            messages.error(request, "Order item not found.")
 
-            return redirect(
-                "dashboard:dashboard_returns",
-            )
+            return redirect("dashboard:dashboard_returns")
 
         # =====================================
         # Refund
@@ -4084,10 +3123,7 @@ def return_review(request, pk):
                 note="💰 Sent to Refund Center.",
             )
 
-            messages.success(
-                request,
-                "Refund request sent to Refund Center.",
-            )
+            messages.success(request, "Refund request sent to Refund Center.")
 
         # =====================================
         # Exchange
@@ -4111,10 +3147,7 @@ def return_review(request, pk):
                 note="🔄 Sent to Exchange Center.",
             )
 
-            messages.success(
-                request,
-                "Exchange request sent to Exchange Center.",
-            )
+            messages.success(request, "Exchange request sent to Exchange Center.")
 
         # =====================================
         # Replacement
@@ -4139,18 +3172,11 @@ def return_review(request, pk):
                 note="📦 Sent to Replacement Center.",
             )
 
-            messages.success(
-                request,
-                "Replacement request sent to Replacement Center.",
-            )
+            messages.success(request, "Replacement request sent to Replacement Center.")
 
-        return redirect(
-            "dashboard:dashboard_returns",
-        )
+        return redirect("dashboard:dashboard_returns")
 
-    return render(
-        request,
-        "dashboard/return_review.html",
+    return render(request, "dashboard/return_review.html",
         {
             "return_request": return_request,
             "order": order,
@@ -4162,10 +3188,7 @@ def return_review(request, pk):
 @owner_required
 def product_ranking(request):
 
-    products = Product.objects.order_by(
-        "display_order",
-        "-created_at",
-    )
+    products = Product.objects.order_by("display_order", "-created_at")
 
     if request.method == "POST":
 
@@ -4178,14 +3201,9 @@ def product_ranking(request):
 
         except (Product.DoesNotExist, ValueError):
 
-            messages.error(
-                request,
-                "Invalid request.",
-            )
+            messages.error(request, "Invalid request.")
 
-            return redirect(
-                "dashboard:product_ranking",
-            )
+            return redirect("dashboard:product_ranking")
 
         # ==========================================
         # Validation
@@ -4195,14 +3213,9 @@ def product_ranking(request):
 
         if new_rank < 1 or new_rank > max_rank:
 
-            messages.error(
-                request,
-                f"Rank must be between 1 and {max_rank}.",
-            )
+            messages.error(request, f"Rank must be between 1 and {max_rank}.")
 
-            return redirect(
-                "dashboard:product_ranking",
-            )
+            return redirect("dashboard:product_ranking")
 
         # ==========================================
         # Already Same Rank
@@ -4210,14 +3223,9 @@ def product_ranking(request):
 
         if product.display_order == new_rank:
 
-            messages.info(
-                request,
-                "This product is already in that position.",
-            )
+            messages.info(request, "This product is already in that position.")
 
-            return redirect(
-                "dashboard:product_ranking",
-            )
+            return redirect("dashboard:product_ranking")
 
         # ==========================================
         # Swap Ranking
@@ -4253,14 +3261,9 @@ def product_ranking(request):
                 ]
             )
 
-        messages.success(
-            request,
-            "Product ranking updated successfully.",
-        )
+        messages.success(request, "Product ranking updated successfully.")
 
-        return redirect(
-            "dashboard:product_ranking",
-        )
+        return redirect("dashboard:product_ranking")
 
     # ==========================================
     # Statistics
@@ -4286,8 +3289,6 @@ def product_ranking(request):
             "lowest": lowest,
         },
     )
-
-
 
 
 @owner_or_staff_required
@@ -4328,11 +3329,7 @@ def email_campaign_list(request):
         ).count(),
     }
 
-    return render(
-        request,
-        "dashboard/email_campaign_list.html",
-        context,
-    )
+    return render(request, "dashboard/email_campaign_list.html", context)
 
 
 @owner_or_staff_required
@@ -4350,35 +3347,21 @@ def email_campaign_create(request):
 
             campaign.save()
 
-            messages.success(
-                request,
-                "Campaign created successfully.",
-            )
+            messages.success(request, "Campaign created successfully.")
 
-            return redirect(
-                "dashboard:email_campaign_list",
-            )
+            return redirect("dashboard:email_campaign_list")
 
     else:
 
         form = EmailCampaignForm()
 
-    return render(
-        request,
-        "dashboard/email_campaign_form.html",
-        {
-            "form": form,
-        },
-    )
+    return render(request, "dashboard/email_campaign_form.html", {"form": form})
 
 
 @owner_or_staff_required
 def email_campaign_send(request, campaign_id):
 
-    campaign = get_object_or_404(
-        EmailCampaign,
-        id=campaign_id,
-    )
+    campaign = get_object_or_404(EmailCampaign, id=campaign_id)
 
     campaign.status = "sending"
     campaign.save(update_fields=["status"])
@@ -4432,39 +3415,26 @@ def email_campaign_send(request, campaign_id):
         try:
 
             email = EmailMultiAlternatives(
-
                 subject=campaign.subject,
-
                 body=campaign.message,
-
                 to=[customer.email],
-
             )
 
             email.send()
 
             EmailCampaignLog.objects.create(
-
                 campaign=campaign,
-
                 customer=customer,
-
                 status="success",
-
             )
 
         except Exception as e:
 
             EmailCampaignLog.objects.create(
-
                 campaign=campaign,
-
                 customer=customer,
-
                 status="failed",
-
                 error=str(e),
-
             )
 
     campaign.status = "completed"
@@ -4478,75 +3448,42 @@ def email_campaign_send(request, campaign_id):
         ]
     )
 
-    messages.success(
-        request,
-        "Campaign sent successfully.",
-    )
+    messages.success(request, "Campaign sent successfully.")
 
-    return redirect(
-        "dashboard:email_campaign_list",
-    )
+    return redirect("dashboard:email_campaign_list")
 
 
 @owner_or_staff_required
 def email_campaign_edit(request, campaign_id):
 
-    campaign = get_object_or_404(
-        EmailCampaign,
-        id=campaign_id,
-    )
+    campaign = get_object_or_404(EmailCampaign, id=campaign_id)
 
     if request.method == "POST":
 
-        form = EmailCampaignForm(
-            request.POST,
-            instance=campaign,
-        )
+        form = EmailCampaignForm(request.POST, instance=campaign)
 
         if form.is_valid():
 
             form.save()
 
-            messages.success(
-                request,
-                "Campaign updated successfully.",
-            )
+            messages.success(request, "Campaign updated successfully.")
 
-            return redirect(
-                "dashboard:email_campaign_list",
-            )
+            return redirect("dashboard:email_campaign_list")
 
     else:
 
-        form = EmailCampaignForm(
-            instance=campaign,
-        )
+        form = EmailCampaignForm(instance=campaign)
 
-    return render(
-        request,
-        "dashboard/email_campaign_form.html",
-        {
-            "form": form,
-            "campaign": campaign,
-        },
-    )
+    return render(request,"dashboard/email_campaign_form.html",{"form": form, "campaign": campaign})
 
 
 @owner_or_staff_required
 def email_campaign_delete(request, campaign_id):
 
-    campaign = get_object_or_404(
-        EmailCampaign,
-        id=campaign_id,
-    )
+    campaign = get_object_or_404(EmailCampaign, id=campaign_id)
 
     campaign.delete()
 
-    messages.success(
-        request,
-        "Campaign deleted successfully.",
-    )
+    messages.success(request, "Campaign deleted successfully.")
 
-    return redirect(
-        "dashboard:email_campaign_list",
-    )
+    return redirect("dashboard:email_campaign_list")
