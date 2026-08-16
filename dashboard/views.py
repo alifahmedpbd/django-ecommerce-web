@@ -521,6 +521,7 @@ def sales_report_excel(request):
     return response
 
 
+@owner_required
 def low_stock_report_pdf(request):
 
     response = HttpResponse(
@@ -594,7 +595,7 @@ def low_stock_report_pdf(request):
 
     return response
 
-
+@owner_required
 def low_stock_report_excel(request):
 
     wb = Workbook()
@@ -716,6 +717,7 @@ def category_delete(request, pk):
 # Brand List
 # ==========================================
 
+@owner_required
 def brand_list(request):
 
     brands = Brand.objects.order_by("name")
@@ -726,7 +728,7 @@ def brand_list(request):
 # ==========================================
 # Brand Create
 # ==========================================
-
+@owner_required
 def brand_create(request):
 
     if request.method == "POST":
@@ -751,7 +753,7 @@ def brand_create(request):
 # ==========================================
 # Brand Update
 # ==========================================
-
+@owner_required
 def brand_update(request, pk):
 
     brand = get_object_or_404(Brand, pk=pk)
@@ -778,7 +780,7 @@ def brand_update(request, pk):
 # ==========================================
 # Brand Delete
 # ==========================================
-
+@owner_required
 def brand_delete(request, pk):
 
     brand = get_object_or_404(Brand, pk=pk)
@@ -934,7 +936,7 @@ def product_delete(request, pk):
 # ==========================================
 # Product Gallery
 # ==========================================
-
+@owner_required
 def product_gallery(request, pk):
 
     product = get_object_or_404(Product, pk=pk)
@@ -956,7 +958,7 @@ def product_gallery(request, pk):
 # ==========================================
 # Upload Product Image
 # ==========================================
-
+@owner_required
 def product_image_create(request, pk):
 
     product = get_object_or_404(Product, pk=pk)
@@ -998,7 +1000,7 @@ def product_image_delete(request, pk):
 # ==========================================
 # Coupon List
 # ==========================================
-
+@owner_required
 def coupon_list(request):
 
     coupons = Coupon.objects.only(
@@ -1015,7 +1017,7 @@ def coupon_list(request):
 # ==========================================
 # Coupon Add
 # ==========================================
-
+@owner_required
 def coupon_add(request):
 
     if request.method == "POST":
@@ -1038,7 +1040,7 @@ def coupon_add(request):
 # ==========================================
 # Coupon Edit
 # ==========================================
-
+@owner_required
 def coupon_edit(request, pk):
 
     coupon = get_object_or_404(Coupon, pk=pk)
@@ -1062,7 +1064,7 @@ def coupon_edit(request, pk):
 # ==========================================
 # Coupon Delete
 # ==========================================
-
+@owner_required
 def coupon_delete(request, pk):
 
     coupon = get_object_or_404(Coupon, pk=pk)

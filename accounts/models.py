@@ -27,6 +27,14 @@ class User(AbstractUser):
     operating_system = models.CharField(max_length=50, blank=True)
     browser = models.CharField(max_length=200, blank=True)
 
+    class Meta:
+
+        indexes = [
+            models.Index(fields=["role"]),
+            models.Index(fields=["is_blocked"]),
+            models.Index(fields=["role", "is_active"]),
+        ]
+
     def __str__(self):
         return self.username
 

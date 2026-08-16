@@ -350,6 +350,7 @@ def checkout(request):
                 order.final_total = final_total
 
                 order.save()
+                request.session["pending_order_id"] = order.id
                 order.generate_tracking_number()
 
                 order.save(

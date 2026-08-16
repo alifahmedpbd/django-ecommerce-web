@@ -1,29 +1,21 @@
 from django.conf import settings
 from django.core.mail import send_mail
+
 from .models import EmailOTP
 
 
 def send_otp_email(user, otp):
-    """
-    Localhost (DEBUG=True) -> Gmail SMTP
-    Render (DEBUG=False) -> Skip email
-    """
 
-    # Production (Render) এ কোনো email পাঠাবে না
-    if not settings.DEBUG:
-        print("Email sending skipped (Production).")
-        return
-
-    subject = "Shopora Email Verification"
+    subject = "Shopora Verification Code"
 
     message = f"""
 Hello {user.get_full_name() or user.username},
 
-Your verification code is:
+Your Shopora verification code is:
 
 {otp}
 
-This OTP will expire in 10 minutes.
+This OTP will expire in 5 minutes.
 
 Thanks,
 Shopora
@@ -53,12 +45,9 @@ def create_and_send_otp(user, purpose):
 
     otp.generate_otp()
 
-    try:
-        send_otp_email(
-            user=user,
-            otp=otp.otp,
-        )
-    except Exception as e:
-        print("OTP Email Error:", e)
+    send_otp_email(
+        user=user,
+        otp=otp.otp,
+    )
 
     return otp

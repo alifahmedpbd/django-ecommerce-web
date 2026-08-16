@@ -34,7 +34,16 @@ class MaintenanceModeMiddleware:
                 return self.get_response(request)
 
             # বাকি সবাই Maintenance Page দেখবে
-            return render(request, "maintenance.html")
+            response = render(
+                request,
+                "maintenance.html",
+            )
+
+            response.status_code = 503
+
+            response["Retry-After"] = "3600"
+
+            return response
 
         return self.get_response(request)
     

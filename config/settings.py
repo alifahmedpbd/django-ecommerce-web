@@ -28,6 +28,10 @@ STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-secret-key")
 
+STRIPE_WEBHOOK_SECRET = os.getenv(
+    "STRIPE_WEBHOOK_SECRET"
+)
+
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 RENDER_EXTERNAL_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME")
@@ -288,7 +292,10 @@ cloudinary.config(
 
 SHOP_NAME = "Shopora"
 
-SHOP_URL = "http://127.0.0.1:8000"
+SHOP_URL = os.getenv(
+    "SHOP_URL",
+    "http://127.0.0.1:8000",
+).rstrip("/")
 
 FACEBOOK_URL = "https://facebook.com/"
 

@@ -86,11 +86,25 @@ def order_detail(request, order_id):
 
         if order.user:
 
-            if order.user != request.user and not request.user.is_staff:
+            if (
+                order.user != request.user
+                and not (
+                    request.user.is_superuser
+                    or request.user.role in (
+                        "owner",
+                        "staff",
+                    )
+                )
+            ):
 
-                messages.error(request, "You are not allowed to view this order.")
+                messages.error(
+                    request,
+                    "You are not allowed to view this order.",
+                )
 
-                return redirect("orders:order_list")
+                return redirect(
+                    "orders:order_list"
+                )
 
     else:
 
@@ -98,9 +112,14 @@ def order_detail(request, order_id):
 
         if email != order.email:
 
-            messages.error(request, "Invalid order access.")
+            messages.error(
+                request,
+                "Invalid order access.",
+            )
 
-            return redirect("orders:track_order")
+            return redirect(
+                "orders:track_order"
+            )
 
     timeline = order.timeline.all().order_by(
 

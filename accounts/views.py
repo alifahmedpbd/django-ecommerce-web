@@ -17,46 +17,53 @@ def register_view(request):
 
     if request.method == "POST":
 
-        form = UserRegisterForm(request.POST)
+        form = UserRegisterForm(
+            request.POST
+        )
 
         if form.is_valid():
 
-            user = form.save(commit=False)
+            user = form.save(
+                commit=False
+            )
 
-            # Localhost -> OTP required
-            if settings.DEBUG:
-                user.is_active = False
-            else:
-                # Render demo
-                user.is_active = True
+            # New users must verify email
+            user.is_active = False
 
             user.save()
 
-            if settings.DEBUG:
+            try:
 
-                try:
-                    create_and_send_otp(user=user, purpose="verify")
-                except Exception as e:
-                    print("OTP Error:", e)
+                create_and_send_otp(
+                    user=user,
+                    purpose="verify",
+                )
 
-                try:
-                    send_owner_new_customer_email(request, user)
-                except Exception as e:
-                    print("Owner Mail Error:", e)
+            except Exception:
 
-                request.session["verify_email"] = user.email
+                user.delete()
 
-                messages.success(request, "Verification code has been sent to your email.")
+                messages.error(
+                    request,
+                    "Unable to send verification email. Please try again later.",
+                )
 
-                return redirect("accounts:verify_email")
+                return redirect(
+                    "accounts:register"
+                )
 
-            # Render
+            request.session[
+                "verify_email"
+            ] = user.email
+
             messages.success(
                 request,
-                "Registration completed successfully. Please login.",
+                "Verification code has been sent to your email.",
             )
 
-            return redirect("accounts:login")
+            return redirect(
+                "accounts:verify_email"
+            )
 
     else:
 
@@ -361,23 +368,25 @@ def logout_view(request):
     return redirect("home")
 
 
-
 def forgot_password_view(request):
 
     if request.method == "POST":
 
-        form = ForgotPasswordForm(request.POST)
+        form = ForgotPasswordForm(
+            request.POST
+        )
 
         if form.is_valid():
 
-            email = form.cleaned_data["email"]
+            email = form.cleaned_data[
+                "email"
+            ]
 
             try:
 
-                user = User.objects.only(
-                    "id",
-                    "email",
-                ).get(email=email)
+                user = User.objects.get(
+                    email=email
+                )
 
             except User.DoesNotExist:
 
@@ -386,36 +395,44 @@ def forgot_password_view(request):
                     "No account found with this email.",
                 )
 
-                return redirect("accounts:forgot_password")
-
-            if settings.DEBUG:
-
-                try:
-                    create_and_send_otp(
-                        user=user,
-                        purpose="reset",
-                    )
-                except Exception as e:
-                    print("OTP Error:", e)
-
-                request.session["reset_user_id"] = user.id
-
-                messages.success(
-                    request,
-                    "OTP has been sent to your email.",
+                return redirect(
+                    "accounts:forgot_password"
                 )
 
-                return redirect("accounts:verify_reset_otp")
+            try:
 
-            # Render (OTP skip)
-            request.session["reset_user_id"] = user.id
+                create_and_send_otp(
+                    user=user,
+                    purpose="reset",
+                )
 
-            messages.info(
+            except Exception:
+
+                messages.error(
+                    request,
+                    "Unable to send verification code. Please try again later.",
+                )
+
+                return redirect(
+                    "accounts:forgot_password"
+                )
+
+            request.session[
+                "reset_user_id"
+            ] = user.id
+
+            request.session[
+                "reset_verified"
+            ] = False
+
+            messages.success(
                 request,
-                "OTP verification is disabled on demo server. Please set a new password.",
+                "OTP has been sent to your email.",
             )
 
-            return redirect("accounts:reset_password")
+            return redirect(
+                "accounts:verify_reset_otp"
+            )
 
     else:
 

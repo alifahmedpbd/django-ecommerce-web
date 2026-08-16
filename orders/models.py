@@ -205,6 +205,26 @@ class Order(models.Model):
         }
 
         return urls.get(self.courier_name, "")
+
+    class Meta:
+
+        indexes = [
+            models.Index(
+                fields=["status"]
+            ),
+            models.Index(
+                fields=["payment_status"]
+            ),
+            models.Index(
+                fields=["status", "payment_status"]
+            ),
+            models.Index(
+                fields=["tracking_number"]
+            ),
+            models.Index(
+                fields=["user", "-created_at"]
+            ),
+        ]
     
     
 class OrderItem(models.Model):

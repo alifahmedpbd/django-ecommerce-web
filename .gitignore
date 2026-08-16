@@ -8,3 +8,7 @@ media/
 .vscode/
 .idea/
 staticfiles/
+*.zip
+*.pdf
+audit_output.txt
+extract_audit.py

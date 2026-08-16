@@ -85,10 +85,23 @@ class Product(models.Model):
     class Meta:
 
         ordering = [
-
             "-created_at",
             "display_order",
+        ]
 
+        indexes = [
+            models.Index(
+                fields=["available", "stock"]
+            ),
+            models.Index(
+                fields=["available", "featured"]
+            ),
+            models.Index(
+                fields=["available", "is_flash_sale"]
+            ),
+            models.Index(
+                fields=["views"]
+            ),
         ]
 
 

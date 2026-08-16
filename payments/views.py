@@ -1,21 +1,47 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from orders.models import Order, OrderTimeline, CouponUsage
-from .utils import clear_user_cart, send_order_confirmation_email, send_owner_new_order_email
-from store.models import AbandonedCart
-from django.conf import settings
+from django.db import transaction
 
-import stripe
-
-stripe.api_key = settings.STRIPE_SECRET_KEY
+from orders.models import Order
 
 from .services import (
     create_stripe_checkout_session,
     validate_stripe_payment,
+    mark_order_as_paid,
 )
 
-from orders.services import reduce_order_stock
-from django.db.models import F
-from django.db import transaction
+from .utils import (
+    clear_user_cart,
+    send_order_confirmation_email,
+    send_owner_new_order_email,
+)
+
+
+def _can_access_order(request, order):
+    """
+    Allow:
+    - Order owner
+    - Owner/staff dashboard users
+    - Guest checkout using the current session
+    """
+
+    if request.user.is_authenticated:
+
+        if order.user_id == request.user.id:
+            return True
+
+        if (
+            request.user.is_superuser
+            or request.user.role in ("owner", "staff")
+        ):
+            return True
+
+        return False
+
+    # Guest checkout protection
+    return (
+        request.session.get("pending_order_id")
+        == order.id
+    )
 
 
 def create_checkout_session(request, order_id):
@@ -24,13 +50,35 @@ def create_checkout_session(request, order_id):
         Order.objects.select_related(
             "user",
             "coupon",
-        ).prefetch_related(
-            "items__product",
         ),
         id=order_id,
     )
 
-    session = create_stripe_checkout_session(request, order)
+    if not _can_access_order(request, order):
+
+        return redirect("home")
+
+    if order.payment_method != "stripe":
+
+        return redirect(
+            "orders:order_detail",
+            order.id,
+        )
+
+    if order.paid:
+
+        return redirect(
+            "orders:order_success",
+            order.id,
+        )
+
+    session = create_stripe_checkout_session(
+        request,
+        order,
+    )
+
+    # Remember guest checkout order
+    request.session["pending_order_id"] = order.id
 
     return redirect(session.url)
 
@@ -41,121 +89,78 @@ def payment_success(request, order_id):
         Order.objects.select_related(
             "user",
             "coupon",
-        ).prefetch_related(
-            "items__product",
         ),
         id=order_id,
     )
+
+    if not _can_access_order(request, order):
+
+        return redirect("home")
 
     session_id = request.GET.get("session_id")
 
     if not session_id:
 
-        return redirect("payments:payment_cancel")
+        return redirect(
+            "payments:payment_cancel"
+        )
 
     session = validate_stripe_payment(
-        session_id
+        session_id,
+        order,
     )
 
     if session is None:
 
-        return redirect("payments:payment_cancel")
-
-    # ==========================================
-    # Prevent duplicate payment
-    # ==========================================
-
-    if order.paid:
-
-        return redirect("orders:order_success", order.id)
-
-    # ==========================================
-    # Save payment info
-    # ==========================================
-
-    with transaction.atomic():
-        order.payment_id = (
-            session.payment_intent
-            or
-            session.id
+        return redirect(
+            "payments:payment_cancel"
         )
 
-        order.paid = True
-        order.payment_status = "paid"
-        order.status = "processing"
-        order.save(
-            update_fields=[
-                "payment_id",
-                "paid",
-                "payment_status",
-                "status",
-            ]
-        )
-    
+    order, newly_paid = mark_order_as_paid(
+        order,
+        session,
+    )
 
-        OrderTimeline.objects.create(
-            order=order, user=order.user, created_by="Stripe", note="Stripe payment completed successfully."
-        )
+    # Only send emails once
+    if newly_paid:
 
-    # ==========================================
-    # Reduce Stock
-    # ==========================================
+        try:
+            send_order_confirmation_email(
+                request,
+                order,
+            )
 
-        reduce_order_stock(order)
+            send_owner_new_order_email(
+                request,
+                order,
+            )
 
-    # ==========================================
-    # Coupon Consume
-    # ==========================================
+        except Exception:
+            # Payment must remain successful
+            # even if email fails.
+            pass
 
-        if order.coupon:
+    request.session.pop(
+        "pending_order_id",
+        None,
+    )
 
-            if order.user:
-
-                CouponUsage.objects.create(
-                    coupon=order.coupon,
-                    user=order.user,
-                    order=order,
-                )
-
-                order.coupon.used_count = F("used_count") + 1
-                order.coupon.save(update_fields=["used_count"])
-
-    # ==========================================
-    # Clear Coupon Session
-    # ==========================================
-
-    request.session.pop("coupon_code", None)
-
-    # ==========================================
-# Recover Abandoned Cart
-# ==========================================
-
-    if order.user:
-
-        AbandonedCart.objects.filter(
-            user=order.user,
-            recovered=False,
-            ).update(
-            recovered=True,
-        )
-
-    # ==========================================
-    # Clear Cart
-    # ==========================================
+    request.session.pop(
+        "coupon_code",
+        None,
+    )
 
     clear_user_cart(request)
 
-    # ==========================================
-    # Send Email
-    # ==========================================
-
-    send_order_confirmation_email(request, order)
-
-    send_owner_new_order_email(request, order)
-
-    return redirect("orders:order_success", order.id)
+    return redirect(
+        "orders:order_success",
+        order.id,
+    )
 
 
 def payment_cancel(request):
 
-    return render(request, "payments/cancel.html")
+    return render(
+        request,
+        "payments/cancel.html",
+    )
